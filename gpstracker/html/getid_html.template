@@ -1,0 +1,20 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta charset="utf-8"> 
+<title>%PAGETITLE%</title>
+<link rel="stylesheet" type="text/css" href="css/gpstracker.css">
+</head>
+<body>
+<div class="header">
+<h1>Enter device ID</h1>
+</div>
+<div class="content" style="margin-top:20px;">
+<form action="%URL%">
+<label for="id">ID</label>
+<input value="" name="id" maxlength="20" size="20">
+<button>submit</button>
+</form>
+</div>
+</body>
+</html>

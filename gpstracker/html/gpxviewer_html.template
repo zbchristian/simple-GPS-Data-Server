@@ -1,0 +1,62 @@
+<!DOCTYPE html> 
+<html lang="de"> 
+	<head> 
+		<meta charset="utf-8"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>%PAGETITLE%</title>
+		<script type="text/javascript" src="js/GM_Utils/GPX2GM.js"></script>
+		<script type="text/javascript">
+			var Doclang= "en";
+			var Legende_rr=false;
+			var Shtrh=false;
+			var Shtrs=false;
+			var Shtrtges=true;
+			var Shtrvmitt=true;
+			var Twidth=4;
+		</script>
+		<link rel="stylesheet" type="text/css" href="css/gpstracker.css">
+	</head>
+<body>
+<div class="header">
+	<h1>GPS Data of %DEVICE%<br>%STARTDATE% to %ENDDATE%</h1>
+</div>
+<div class="content">
+%DEVICEDESC%
+
+<form action="%URL%">
+<input value="%DEVID%" name="id" type="hidden">
+<input value="%TRANGE%" name="dt" type="hidden">
+<button>update (time=now)</button>
+</form>
+
+<div>%ERROR%</div>
+<div class="map gpxview:%GPXFILE%:%MAPSTYLE%"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+
+<b>Set new end date/time and period for track selection</b>
+<form action="%URL%">
+<input value="%DEVID%" name="id" type="hidden">
+<div style="display:inline-block;margin-right:10px;">
+<label for"date" style="display:block">date/time</label>
+<input id="date" value="%DATE%" name="date" maxlength="25" size="20">
+</div>
+<div style="display:inline-block;margin-right:10px;">
+<label for"dt" style="display:block">time period</label>
+<input id="dt" value="%TRANGE%" name="dt" maxlength="10" size="5">
+</div>
+<button>apply</button>
+</form>
+
+<div><p>Download <a href="%LINKTOGPX%">GPX file</a></p></div>
+<div>
+Informations
+<ul>
+<li>GPS locations are shown upto the displayed date/time and time period (in m(inutes), h(ours) or d(ays))</li>
+<li>The time period spans from the given date into the past</li>
+<li>To update the tracks for the current time and listed period, click the update button</li>
+<li>To retrieve tracks for a different date or period, enter new values and click the apply button</li>
+</ul>
+</div>
+<hr><p>GPXViewer Script: 23. 5. 2017 <a href="https://www.j-berkemeier.de/GPXViewer/">GPX-Viewer</a></p>
+</div>
+</body>
+</html>
