@@ -1,0 +1,9 @@
+RewriteEngine on
+RewriteBase /gpstracker
+
+RewriteCond $1 (js|css)
+RewriteRule ^([a-z]*)/(.*)$ -  [NC,L]
+
+RewriteCond $1 (id)
+RewriteRule ^([a-z]*)/(.*)$ ?id=$2 [R,QSA,L]
+

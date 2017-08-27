@@ -1,0 +1,30 @@
+.JBinfofenster { position:absolute; z-index:1000; margin-top:10px; margin-left:10px; border:1px solid #aaa; border-radius:3px; 
+                box-shadow:1px 1px 5px #aaa; background-color:white; padding:0.5em; font-size:0.8em; line-height:1.2em; 
+								max-width:50% } 
+.JBinfofenster strong { font-size:1.2em }
+
+.JBinfofenster_gm { }
+.JBinfofenster_gm strong{ white-space:nowrap }
+
+.JBmaphead { margin:0;padding:0;vertical-align:middle;font-size:16px;line-height:24px;white-space:nowrap }
+.JBmaphead * { margin:0;padding:0;vertical-align:middle;  }
+.JBmaphead input { margin-right:3px; margin-left:3px; }
+.JBmaphead div { display:inline; }
+
+.JBcheckbox { position:absolute;color:black;height:24px;overflow:hidden;z-index:1000 }
+.JBcheckbox:hover, .JBcheckbox:focus { height:auto;background-color:white;padding:0 0.3em 0.2em 0;overflow:auto }
+
+.JBinfodiv { border:3px solid black; background-color:white; padding:30px; font-size:1.2em; line-height:3em; text-align:center;
+						position:relative; z-index:1000; left:20%; top:-80%; width:60%; height:60%} 
+.JBinfodiv img { position:absolute; top:50%; left:50%; transform: translateX(-50%) translateY(-50%); }
+          
+.JBmapdiv_map, .JBmapdiv_map_mit_legende { width:100%; height:100%; color: black }
+.JBmapdiv_map img, .JBmapdiv_map_mit_legende img { max-width: none }
+.JBmapdiv_map_mit_legende { height:-webkit-calc(100% - 24px); height:calc(100% - 24px) }
+.JBmapdiv { font-size:16px }
+
+.JBfull { background-color:#eee; -webkit-transition: left 1s, top 1s, height 1s, width 1s; 
+                                        transition: left 1s, top 1s, height 1s, width 1s;
+          z-index: 2001}
+
+.JBprofildiv  {  }
