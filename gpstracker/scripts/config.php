@@ -21,7 +21,7 @@ $tmp="temp";	// temp directory to store gpx files
 // parameters for TCP-HTTPS-Bridge. 
 // Needed for tracking devices connecting by TCP/IP
 $httpserver="localhost";
-$port="20200";
+$port=20200;
 $urlpath="/gpstracker/index.php";
 
 // some initializations

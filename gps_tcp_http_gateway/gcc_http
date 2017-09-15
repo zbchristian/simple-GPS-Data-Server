@@ -1,1 +1,0 @@
-gcc -lstdc++ http_client.cc -lstdc++ -lboost_system -lssl -lcrypto  -o http_client
