@@ -1,9 +1,13 @@
 RewriteEngine on
 RewriteBase /gpstracker
 
+# passthru js and css dir
 RewriteCond $1 (js|css)
-RewriteRule ^([a-z]*)/(.*)$ -  [NC,L]
+RewriteRule ^([a-z]*)/(.+)$ - [NC,L]
 
+# allow gpstracker/id/123456 
 RewriteCond $1 (id)
-RewriteRule ^([a-z]*)/(.*)$ ?id=$2 [R,QSA,L]
+RewriteRule ^([a-z]*)/(.+)$ index.php?id=$2 [R,L]
+
+
 

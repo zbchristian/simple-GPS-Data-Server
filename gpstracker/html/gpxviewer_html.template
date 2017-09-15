@@ -11,7 +11,7 @@
 			var Shtrh=false;
 			var Shtrs=false;
 			var Shtrtges=true;
-			var Shtrvmitt=true;
+			var Shtrvmittwob=true;
 			var Twidth=4;
 		</script>
 		<link rel="stylesheet" type="text/css" href="css/gpstracker.css">

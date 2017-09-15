@@ -16,7 +16,10 @@ function filter_devno($n) {
 function convert_GPRMC_data($inputs) {
 	if(!isset($inputs["gprmc"])) return false;
 	$gprmc = explode(",",$inputs["gprmc"]);
-	if(!is_array($gprmc) || count($gprmc)!=12  || $gprmc[0]!== '$GPRMC') return false;
+	if(!is_array($gprmc) || count($gprmc)<12 || $gprmc[0]!== '$GPRMC') {
+		unset($inputs["gprmc"]);
+		return $inputs;
+	}
 // build date/time UTC
 	if(is_numeric($gprmc[1]) && is_numeric($gprmc[9])) {
 		sscanf(explode(".",$gprmc[1])[0],"%2d%2d%2d",$h,$m,$s); // time might be hhmmss.ss
@@ -50,7 +53,7 @@ function convert_GPRMC_data($inputs) {
 }
 
 function create_gpx_data($devno,$gps) {
-	global $prog,$tmp,$timezone,$SplitTrackSec,$error,$date_fmt;
+	global $prog,$tmp,$timezone,$SplitTrackSec,$WayPointSec,$error,$date_fmt;
 	if(count($gps) == 0) return false;
 	if(!empty($error) ||  $gps[0]["n"] == 0 ) return array();
 	list($name,$namenb)=get_devname_db($devno); 
@@ -63,16 +66,30 @@ function create_gpx_data($devno,$gps) {
 	$gpx .= '<metadata><name>'.$fname.'</name><desc>GPS locations for device '.$name.' from '.$gps[0]["startdate"].' to '.$gps[0]["enddate"].' </desc><author>'.$prog.'</author></metadata>';
 	$gpx .= '<trk><trkseg>';
 	$li=0;
-	$wp_start=array(0);
-	$wp_end=array();
-	$tlast = "";
+	$wayp["type"]=array();
+	$wayp["idx"]=array();
+	$wayp["trk"]=array();
+	$tlast = date($date_fmt,0);
+	$ntrk=0;
 	foreach($gps as $i => $row) {
                 if(!empty($tlast) && (strtotime($row["time"])-strtotime($tlast)) > $SplitTrackSec ) {
                         $gpx .= '</trkseg></trk>';
-			if($i>1) $wp_end[]=$i-1;
+			if($i>1) {
+				$wayp["type"][]="End";
+				$wayp["idx"][]=$i-1;
+				$wayp["trk"][]=$ntrk;
+			} 
                         $gpx .= '<trk><trkseg>';
-			$wp_start[]=$i;
+			++$ntrk;
+			$wayp["type"][]="Start";
+			$wayp["idx"][]=$i;
+			$wayp["trk"][]=$ntrk;
                 }
+                else if(!empty($tlast) && (strtotime($row["time"])-strtotime($tlast)) > $WayPointSec ) 	{
+			$wayp["type"][]="Pause";
+			$wayp["idx"][]=$i-1;
+			$wayp["trk"][]=$ntrk;
+		}
 		$lat = number_format($row["lat"],6,".","");
 		$lon = number_format($row["lon"],6,".","");
 		$gpx .= '<trkpt lat="'.$lat.'" lon="'.$lon.'">';
@@ -92,24 +109,16 @@ function create_gpx_data($devno,$gps) {
 		$tlast = $row["time"];
 		$li = $i;
 	}
-	$wp_end[]=$li;
+	$wayp["type"][]="End";
+	$wayp["idx"][]=$i;
+	$wayp["trk"][]=$ntrk;
 	$gpx .= '</trkseg></trk>';
-	foreach($wp_start as $i => $idx) {
+	foreach($wayp["idx"] as $i => $idx) {
 		$lat = number_format($gps[$idx]["lat"],6,".","");
 		$lon = number_format($gps[$idx]["lon"],6,".","");
 		$gpx .= '<wpt lat="'.$lat.'" lon="'.$lon.'">';
 		$datetime=date($date_fmt,strtotime($gps[$idx]["time"]));
-		$gpx .= '<name>Start track '.$i.' at '.$datetime.'</name>';
-		$gpx .= '<time>'.$gps[$idx]["time"].'</time>';
-		if(isset($gps[$idx]["alt"]) && $gps[$idx]["alt"] > -10000 ) $gpx .= '<ele>'.$gps[$idx]["alt"].'</ele>';
-		$gpx .= '</wpt>';
-	}
-	foreach($wp_end as $i => $idx) {
-		$lat = number_format($gps[$idx]["lat"],6,".","");
-		$lon = number_format($gps[$idx]["lon"],6,".","");
-		$gpx .= '<wpt lat="'.$lat.'" lon="'.$lon.'">';
-		$datetime=date($date_fmt,strtotime($gps[$idx]["time"]));
-		$gpx .= '<name>End track '.$i.' at '.$datetime.'</name>';
+		$gpx .= '<name>'.$wayp["type"][$i].' track '.$wayp["trk"][$i].' at '.$datetime.'</name>';
 		$gpx .= '<time>'.$gps[$idx]["time"].'</time>';
 		if(isset($gps[$idx]["alt"]) && $gps[$idx]["alt"] > -10000 ) $gpx .= '<ele>'.$gps[$idx]["alt"].'</ele>';
 		$gpx .= '</wpt>';

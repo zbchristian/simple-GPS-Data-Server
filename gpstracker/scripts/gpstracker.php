@@ -15,13 +15,21 @@ include "scripts/webpages.php";
 include "scripts/utils.php";
 include "scripts/db.php";
 
+//var_dump($_GET);
 $inputs = filter_GET_inputs(); // filter all quotes and some characters from keys and values
 if(isset($inputs["gprmc"])) $inputs=convert_GPRMC_data($inputs);
 // var_dump($inputs);
 
+$dev=false;
 // valid device requested
 $devno=isset($inputs["id"]) && (($dev=retrieve_device_db("id",$inputs["id"],false))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
+if($devno === false)
+	$devno=isset($inputs["imei"]) && (($dev=retrieve_device_db("imei",$inputs["imei"],false))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
 if($devno === false) {
+	if(isset($inputs["imei"])) {
+		echo "FAILED";
+		exit();	
+	}
 	display_id_input();
 	if($dev===false) sleep(10);
 	exit();
@@ -36,7 +44,8 @@ if(isset($inputs["lat"]) ) {
 	foreach($parnames as $par) if(array_key_exists($par,$inputs)) 	$gps[$par]=$inputs[$par];
 	$gps["devno"]=$devno;
 	$gps["tstored"]=date("Y-m-d H:i:s");
-	insert_gps_db($gps);
+	if(insert_gps_db($gps)) echo "OK";
+	else			echo "FAILED";
 	cleanup_GPS_data();
 }
 else { // display/retrieve GPX file for given device and time range
