@@ -12,10 +12,17 @@ $mapstyle="OSMDE";
 $date_fmt="d.m.y H:i"; // european
 //$date_fmt="m/d/y H:i";	 // US style
 
-$SplitTrackSec=300;	// min. seconds to determine stop and create new track
+$WayPointSec=600;	// min. seconds to create intermediate way point on track (pause)
+$SplitTrackSec=60*60;	// min. seconds to determine stop and start new track
 
 $prog="Simple GPS data server";
 $tmp="temp";	// temp directory to store gpx files
+
+// parameters for TCP-HTTPS-Bridge. 
+// Needed for tracking devices connecting by TCP/IP
+$httpserver="localhost";
+$port="20200";
+$urlpath="/gpstracker/index.php";
 
 // some initializations
 $error="";
