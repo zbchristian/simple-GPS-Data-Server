@@ -27,8 +27,7 @@ if($devno === false)
 	$devno=isset($inputs["imei"]) && (($dev=retrieve_device_db("imei",$inputs["imei"],false))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
 if($devno === false) {
 	if(isset($inputs["imei"])) {
-	die();
-	echo "FAILED";
+		echo $inputs["imei"]." REJECTED";
 		exit();	
 	}
 	display_id_input();
@@ -45,8 +44,8 @@ if(isset($inputs["lat"]) ) {
 	foreach($parnames as $par) if(array_key_exists($par,$inputs)) 	$gps[$par]=$inputs[$par];
 	$gps["devno"]=$devno;
 	$gps["tstored"]=date("Y-m-d H:i:s");
-	if(insert_gps_db($gps)) echo "OK";
-	else			echo "FAILED";
+	if(insert_gps_db($gps)) echo "$devno OK";
+	else					echo "$devno FAILED";
 	cleanup_GPS_data();
 }
 else { // display/retrieve GPX file for given device and time range
