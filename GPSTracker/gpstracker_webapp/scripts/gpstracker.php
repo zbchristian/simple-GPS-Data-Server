@@ -27,7 +27,8 @@ if($devno === false)
 	$devno=isset($inputs["imei"]) && (($dev=retrieve_device_db("imei",$inputs["imei"],false))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
 if($devno === false) {
 	if(isset($inputs["imei"])) {
-		echo "FAILED";
+	die();
+	echo "FAILED";
 		exit();	
 	}
 	display_id_input();
