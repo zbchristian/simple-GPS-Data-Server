@@ -11,9 +11,11 @@
 $db_filename = "db/gpstracker.db";
 
 $devicelist_tbl = "device_list";
-$devicelist_schema="devno INTEGER PRIMARY KEY AUTOINCREMENT, tstamp TEXT, name TEXT, desc TEXT, id TEXT, history INTEGER";
+$devicelist_schema="devno INTEGER PRIMARY KEY AUTOINCREMENT, tstamp TEXT, name TEXT, desc TEXT, id TEXT, imei TEXT, history INTEGER";
 // devno:  is unique and used for the data table of the device "devno_nn"
 // id:     is unique and selected by the administrator. Used to post/retrieve data via the web
+// imei	   device is sending GPS data via TCP-HTTPS-Bridge (tag imei of request)
+
 // history:defines the length of time in days to store data for the device. 
 $gps_schema="ID INTEGER PRIMARY KEY AUTOINCREMENT, tstamp TEXT, tstored TEXT, lat REAL, lon REAL, alt REAL, acc REAL, spd REAL";
 // lat,lon: in degrees ; alt, acc: in meters spd :  in m/sec
@@ -162,6 +164,7 @@ function handle_device_db($devinfo,$mode) {
 		$tstamp= gmdate('c',time());
 		$name = trim($devinfo["name"]);
 		$id = preg_replace('/\s+/', '', trim($devinfo["id"]));
+		$imei = preg_replace('/\s+/', '', trim($devinfo["imei"]));
 		$desc = isset($devinfo["desc"]) ? trim($devinfo["desc"]) : "";
 		$hist = isset($devinfo["history"]) ? trim($devinfo["history"]) : 0;
 	}
@@ -169,8 +172,9 @@ function handle_device_db($devinfo,$mode) {
 	if($mode == "add") {
 		if(val_exists_db($devicelist_tbl,"name",$name)) return "Device with name $name already existing";
 		if(val_exists_db($devicelist_tbl,"id",$id)) return "Device with ID $id already existing";
-		$db->exec('INSERT INTO "'.$devicelist_tbl.'" (tstamp,name,desc,id,history) VALUES
-			("'.$tstamp.'","'.$name.'","'.$desc.'","'.$id.'",'.$hist.')' );
+		if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei)) return "Device with IMEI $imei already existing";
+		$db->exec('INSERT INTO "'.$devicelist_tbl.'" (tstamp,name,desc,id,imei,history) VALUES
+			("'.$tstamp.'","'.$name.'","'.$desc.'","'.$id.'","'.$imei.'",'.$hist.')' );
 		if(($id=$db->lastInsertRowid()) == 0) return false;
 //		echo "<h2>Registered new device $name with ID $id</h2>";
 	}
@@ -178,7 +182,8 @@ function handle_device_db($devinfo,$mode) {
 		if(($curr = retrieve_device_db("devno",$devno) === false)) return "Change of device failed";
 		if(val_exists_db($devicelist_tbl,"name",$name,"devno=".$devno)) return "New device name $name already exists";
 		if(val_exists_db($devicelist_tbl,"id",$id,"devno=".$devno)) return "New device ID $id already exists";
-		$db->exec('UPDATE "'.$devicelist_tbl.'" SET tstamp="'.$tstamp.'",name="'.$name.'",desc="'.$desc.'",id="'.$id.'",history='.$hist.' WHERE devno='.$devno);
+		if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei)) return "New device IMEI $imei already exists";
+		$db->exec('UPDATE "'.$devicelist_tbl.'" SET tstamp="'.$tstamp.'",name="'.$name.'",desc="'.$desc.'",id="'.$id.'",imei="'.$imei.'",history='.$hist.' WHERE devno='.$devno);
 //		echo "<h2>Device $name with ID $id has been modified</h2>";
 	}
 	else if (in_array($mode, array("clear","delete")) ) {
