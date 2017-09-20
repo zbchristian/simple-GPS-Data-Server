@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
      	}
      	close(sockfd);
 		time ( &now );
-		printf("%s      %s shutdown PID = %d \n",ctime(&now),argv[0],(unsigned int)pid);
+printf("%s      %s shutdown\n",ctime(&now),argv[0});
      	return 0;
 }
 
@@ -137,7 +137,7 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		}
      		if(n==0) break;	// assume closed connection
      		waittime=0;
-     		printf("Incoming message: %s\n",buffer);
+//     		printf("Incoming message: %s\n",buffer);
 			response[0]='\0';
 			isClose = strstr(buffer,statuscmd);	// status requested -> close after response
 			isExit  = strstr(buffer,closecmd);	// exit of server requested -> set Exit flag
