@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
      	sigaction(SIGCHLD, &sigchld_action, NULL);
      	signal(SIGINT, signalHandler);
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		sockfd = socket(AF_INET, SOCK_STREAM, 0);
     	if (sockfd < 0) error("ERROR opening socket");
      	fcntl(sockfd, F_SETFL, O_NONBLOCK);	// non-blocking accept
      	int optval = 1;
@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
          	}
          	else close(newsockfd);
      	}
+		printf("Close server\n");
      	close(sockfd);
      	return 0;
 }
@@ -133,11 +134,13 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		waittime=0;
      		printf("Incoming message: %s\n",buffer);
 			response[0]='\0';
-			isClose = strcmp(buffer,statuscmd)== 0;	// status requested -> close after response
-			isExit  = strcmp(buffer,closecmd) ==0;	// exit of server requested -> set Exit flag
-			if(isExit || isClose) 
-				sprintf(response,"OK");	// status response
-     		else if(GetQueryString(buffer,response,query,BUFSIZE)) {
+			isClose = strstr(buffer,statuscmd);	// status requested -> close after response
+			isExit  = strstr(buffer,closecmd);	// exit of server requested -> set Exit flag
+			if(isExit || isClose) {
+				if(isClose) sprintf(response,"OK");	// status response
+				if(isExit) sprintf(response,"SHUTDOWN");	// exit server
+			}
+			else if(GetQueryString(buffer,response,query,BUFSIZE)) {
 				if(strlen(query)>0) {
 					url += "?";
 					url += query;
@@ -151,6 +154,7 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
 				if (n < 0) error("ERROR writing to socket");
 			}
 	}
+	printf("Close connection\n");
 	close(sock);
 }
 
