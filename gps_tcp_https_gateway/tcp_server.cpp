@@ -1,7 +1,11 @@
 /* A simple server in the internet domain using TCP
-   The port number is passed as an argument
-   This version runs forever, forking off a separate
-   process for each connection */
+   ================================================
+   Parameters:
+   tcp port number
+   HTTPS server name or IP address (can be localhost)
+   url path of HTTPS page (e.g. /gpstracker)
+   secret_key (key to authorize close command via TCP port) 
+ */
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -26,6 +30,7 @@
 
 
 bool	isExit;
+char 	secret_key[80];
 
 std::string send_https_request(std::string, std::string);
 void handle_connection(int,std::string,std::string);
@@ -46,10 +51,12 @@ int main(int argc, char *argv[]) {
 	int 	sockfd, newsockfd, portno,pid;
      	socklen_t clilen;
      	struct sockaddr_in serv_addr, cli_addr;
-     	if (argc < 4) {
-        	fprintf(stderr,"Usage: tcp_port HTTP_server_name url_path\n");
+     	if (argc < 5) {
+        	fprintf(stderr,"Usage: tcp_port HTTP_server_name url_path secret_key\n");
          	exit(1);
      	}
+		strncpy(secret_key,argv[4],80);
+		secret_key[79]='\0';
      	portno = atoi(argv[1]);
      	std::string httpserver(argv[2]);
      	std::string urlpath(argv[3]);
@@ -110,6 +117,8 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
    	tv.tv_usec = 0;
    	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 //
+	char closecmd[80];
+	sprintf(closecmd,"close %s",secret_key);
    	while(waittime < close_timeout && !isExit) {
      		bzero(buffer,BUFSIZE);
      		n = read(sock,buffer,BUFSIZE);
@@ -121,6 +130,7 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		if(n==0) break;	// assume closed connection
      		waittime=0;
      		printf("Incoming message: %s\n",buffer);
+			if(strcmp(buffer,closecmd)) {isExit=true; break;}	// exit server 
      		if(GetQueryString(buffer,response,query,BUFSIZE)) {
 			if(strlen(query)>0) {
 				url += "?";
