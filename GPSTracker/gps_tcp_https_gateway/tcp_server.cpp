@@ -28,7 +28,7 @@
 
 #define	tcp_timeout	10
 
-
+pid_t 	pid;
 bool	isExit;
 char 	secret_key[80];
 
@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
         	fprintf(stderr,"Usage: tcp_port HTTP_server_name url_path secret_key\n");
          	exit(1);
      	}
+		pid = getpid();
 		strncpy(secret_key,argv[4],80);
 		secret_key[79]='\0';
      	portno = atoi(argv[1]);
@@ -90,7 +91,7 @@ int main(int argc, char *argv[]) {
          	if (pid == 0) {
              		close(sockfd);
              		handle_connection(newsockfd,httpserver,urlpath);
-					if(isExit) printf("Server should shutdown\n");
+					if(isExit) kill(pid, SIGINT);;
              		exit(0);
          	}
          	else close(newsockfd);
