@@ -117,9 +117,11 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
    	tv.tv_usec = 0;
    	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 //
-	char closecmd[80];
+	char closecmd[80], statuscmd[80];
 	sprintf(closecmd,"close %s",secret_key);
-   	while(waittime < close_timeout && !isExit) {
+	sprintf(statuscmd,"status %s",secret_key);
+	bool isClose=false;
+   	while(waittime < close_timeout && !isClose && !isExit) {
      		bzero(buffer,BUFSIZE);
      		n = read(sock,buffer,BUFSIZE);
      		if (n < 0) {
@@ -130,20 +132,24 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		if(n==0) break;	// assume closed connection
      		waittime=0;
      		printf("Incoming message: %s\n",buffer);
-			if(strcmp(buffer,closecmd)) {isExit=true; break;}	// exit server 
-     		if(GetQueryString(buffer,response,query,BUFSIZE)) {
-			if(strlen(query)>0) {
-				url += "?";
-				url += query;
-				std::string response = send_https_request(httpserver,url);
+			response[0]='\0';
+			isClose = strcmp(buffer,statuscmd)== 0;	// status requested -> close after response
+			isExit  = strcmp(buffer,closecmd) ==0;	// exit of server requested -> set Exit flag
+			if(isExit || isClose) 
+				sprintf(response,"OK");	// status response
+     		else if(GetQueryString(buffer,response,query,BUFSIZE)) {
+				if(strlen(query)>0) {
+					url += "?";
+					url += query;
+					std::string response = send_https_request(httpserver,url);
         			std::cout << "Response received: '" << response << "'\n";
-				analyze_HTTPresponse(response);
- 			}
+					analyze_HTTPresponse(response);
+				}
+			}
 			if(strlen(response)>0) {
 				n = write(sock,response,strlen(response));
 				if (n < 0) error("ERROR writing to socket");
 			}
-		}
 	}
 	close(sock);
 }

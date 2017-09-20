@@ -229,15 +229,26 @@ function val_exists_db($table,$col,$val,$excl="",$isCase=true) {
 	if(!$isCase) $query .= " COLLATE NOCASE";
 	$cnt=$db->query($query);
 	if($cnt === false) return false;
-        $cnt=$cnt->fetchArray();
+    $cnt=$cnt->fetchArray();
+	return $cnt['count(*)']>0;
+}
+
+
+function imei_exists_db() {
+	global $db;
+	if(!check_db("")) return false;
+	$query='SELECT count(*) FROM "'.$devicelist_tbl.'" WHERE imei!=""';
+	$cnt=$db->query($query);
+	if($cnt === false) return false;
+    $cnt=$cnt->fetchArray();
 	return $cnt['count(*)']>0;
 }
 
 function get_devname_db($devno) {
-        if(($dev = retrieve_device_db("devno",$devno))===false || !isset($dev["name"]) ) return array(false,false);
-        $name = $dev["name"];
-        $namenb = preg_replace('/\s+/u', '_', $name);
-        $namenb = repl_special($namenb);
+    if(($dev = retrieve_device_db("devno",$devno))===false || !isset($dev["name"]) ) return array(false,false);
+    $name = $dev["name"];
+    $namenb = preg_replace('/\s+/u', '_', $name);
+    $namenb = repl_special($namenb);
 	return array($name,$namenb);
 }
 
@@ -246,7 +257,7 @@ function table_exists($tab) {
 	if(!check_db("")) return false;	
 	$cnt = $db->query("SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = ".'"'.$tab.'"');
 	if($cnt === false) return false;
-        $cnt=$cnt->fetchArray();
+    $cnt=$cnt->fetchArray();
 	return $cnt['count(*)']>0;
 }
 
