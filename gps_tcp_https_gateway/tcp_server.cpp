@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
      	clilen = sizeof(cli_addr);
 		time_t now;
 		time ( &now );
-		printf("%s: %s starting. PID = %d \n",ctime(&noew),argv[0]);
+		printf("%s: %s starting. PID = %d \n",ctime(&noew),argv[0],(unsigned int)pid);
      	while (!isExit) {
 			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
          	if (newsockfd < 0) continue;	// non-blocking -> loop and wait for connection
