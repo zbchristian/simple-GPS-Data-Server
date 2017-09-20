@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
      	}
      	close(sockfd);
 		time ( &now );
-printf("%s      %s shutdown\n",ctime(&now),argv[0});
+		printf("%s      %s shutdown\n",ctime(&now),argv[0]);
      	return 0;
 }
 
