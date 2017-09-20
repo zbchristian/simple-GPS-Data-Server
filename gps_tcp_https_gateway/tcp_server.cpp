@@ -83,14 +83,14 @@ int main(int argc, char *argv[]) {
      	listen(sockfd,5);
      	clilen = sizeof(cli_addr);
      	while (!isExit) {
-		if(!isExit) printf("Port still open\n");
-		newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
+			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
          	if (newsockfd < 0) continue;	// non-blocking -> loop and wait for connection
          	pid = fork();
          	if (pid < 0) error("ERROR on fork");
          	if (pid == 0) {
              		close(sockfd);
              		handle_connection(newsockfd,httpserver,urlpath);
+					if(isExit) printf("Server should shutdown\n");
              		exit(0);
          	}
          	else close(newsockfd);
