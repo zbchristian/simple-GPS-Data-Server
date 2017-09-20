@@ -26,7 +26,7 @@ $urlpath="/gpstracker/index.php";
 
 // some initializations
 $error="";
-$relpath=".";
+if(!isset($relpath)) $relpath=".";
 
 setlocale(LC_ALL,"en_US.UTF-8");
 ?>
