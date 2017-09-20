@@ -20,7 +20,7 @@ $tmp="temp";	// temp directory to store gpx files
 
 // parameters for TCP-HTTPS-Bridge. 
 // Needed for tracking devices connecting by TCP/IP
-$TCPBridge="/gpstracker/gps_tcp_https_gateway/tcp_http_bridge"	// path to TCP-HTTP-Bridge serverprogram to start 
+$TCPBridge="../exe/tcp_http_bridge"	// path to TCP-HTTP-Bridge serverprogram to start (wrt admin script)
 $HTTPSserver="localhost";
 $TCPport=20200;
 $urlpath="/gpstracker/index.php";
