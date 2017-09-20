@@ -83,6 +83,9 @@ int main(int argc, char *argv[]) {
               	error("ERROR on binding");
      	listen(sockfd,5);
      	clilen = sizeof(cli_addr);
+		time_t now;
+		time ( &now );
+		printf("%s: %s starting. PID = %d \n",ctime(&noew),argv[0]);
      	while (!isExit) {
 			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
          	if (newsockfd < 0) continue;	// non-blocking -> loop and wait for connection
@@ -96,7 +99,6 @@ int main(int argc, char *argv[]) {
          	}
          	else close(newsockfd);
      	}
-		printf("Close server\n");
      	close(sockfd);
      	return 0;
 }
@@ -156,7 +158,6 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
 				if (n < 0) error("ERROR writing to socket");
 			}
 	}
-	printf("Close connection\n");
 	close(sock);
 }
 
