@@ -83,7 +83,8 @@ int main(int argc, char *argv[]) {
      	listen(sockfd,5);
      	clilen = sizeof(cli_addr);
      	while (!isExit) {
-        	newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
+		if(!isExit) printf("Port still open\n");
+		newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
          	if (newsockfd < 0) continue;	// non-blocking -> loop and wait for connection
          	pid = fork();
          	if (pid < 0) error("ERROR on fork");
