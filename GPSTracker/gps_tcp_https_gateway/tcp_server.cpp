@@ -38,7 +38,6 @@ bool GetQueryString(char * , char *, char *, int);
 void analyze_HTTPresponse(std::string);
 
 void signalHandler(int signo) {
-	printf("Signal captured ... exit\n");
 	isExit = true;
 }
 
@@ -85,7 +84,7 @@ int main(int argc, char *argv[]) {
      	clilen = sizeof(cli_addr);
 		time_t now;
 		time ( &now );
-		printf("%s: %s starting. PID = %d \n",ctime(&now),argv[0],(unsigned int)pid);
+		printf("%s      %s starting. PID = %d \n",ctime(&now),argv[0],(unsigned int)pid);
      	while (!isExit) {
 			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
          	if (newsockfd < 0) continue;	// non-blocking -> loop and wait for connection
@@ -100,6 +99,8 @@ int main(int argc, char *argv[]) {
          	else close(newsockfd);
      	}
      	close(sockfd);
+		time ( &now );
+		printf("%s      %s shutdown PID = %d \n",ctime(&now),argv[0],(unsigned int)pid);
      	return 0;
 }
 
