@@ -132,12 +132,12 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		n = read(sock,buffer,BUFSIZE);
      		if (n < 0) {
        			waittime += tcp_timeout;
-       			printf(" Waited for %d sec\n",waittime);
+  //     			printf(" Waited for %d sec\n",waittime);
        			continue;
      		}
      		if(n==0) break;	// assume closed connection
      		waittime=0;
-//     		printf("Incoming message: %s\n",buffer);
+     		printf("Incoming message: %s\n",buffer);
 			response[0]='\0';
 			isClose = strstr(buffer,statuscmd);	// status requested -> close after response
 			isExit  = strstr(buffer,closecmd);	// exit of server requested -> set Exit flag
@@ -150,7 +150,7 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
 					url += "?";
 					url += query;
 					std::string response = send_https_request(httpserver,url);
-        			std::cout << "Response received: '" << response << "'\n";
+//        			std::cout << "Response received: '" << response << "'\n";
 					analyze_HTTPresponse(response);
 				}
 			}
