@@ -85,10 +85,6 @@ bool createGPRMCRecord(gps_struct *gps, char *req) {
 	return true;
 }
 
-bool match_devid(char *devid) {
-	return strcmp(devid,"355488020824039")==0;	// hard coded  IMEI
-}
-
 // match message to regular expression and copy matched strings to return array
 // needs BOOST library
 
@@ -144,11 +140,6 @@ bool filter_gps_device(char *msg, gps_struct *gps) {
 	}
 	gps->name[0]='\0';
 	if(nmatch==0) return false;
-
-//	printf("Found match id %d\n",id);
-//	for(int i=0;i<nmatch;++i)
-//		printf("Sub %d : %s\n",i,subStr[i]);
-
 	strncpy(gps->name,devs[id].device,std::min(STRLEN-1,(int)strlen(devs[id].device)));
 	char *resp=NULL;
 	if(isLogin) resp = (char *)devs[id].login.resp;
@@ -227,7 +218,7 @@ bool filter_gps_device(char *msg, gps_struct *gps) {
 				break;
 		}
 	}
-	return match_devid(gps->devid);
+	return true;
 }
 
 
