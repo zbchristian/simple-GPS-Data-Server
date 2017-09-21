@@ -9,7 +9,7 @@
 //
 
 function display_admin($devlist,$vals) {
-	global $prog,$relpath,$error;
+	global $prog,$relpath,$error,$TCPport;
 	$isError = !empty($error);
         $fhtml=$relpath."/html/admin_html.template";
         if(!file_exists($fhtml)) die("<h2>HTML template missing</h2>");
@@ -46,6 +46,7 @@ function display_admin($devlist,$vals) {
 	$html = str_replace("%NAME%",$name,$html);
 	$html = str_replace("%ID%",$id,$html);
 	$html = str_replace("%IMEI%",$imei,$html);
+	$html = str_replace("%TCPPORT%",$TCPport,$html);
 	$html = str_replace("%DESC%",$desc,$html);
 	$html = str_replace("%HISTORY%",$hist,$html);
 	$newtitle = !$isError ? "New device" : $error;
