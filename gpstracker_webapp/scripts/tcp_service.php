@@ -19,7 +19,7 @@ function controlTCPService($action) {
 	global	$TCPBridge, $TCPport, $HTTPSserver, $secretkey, $urlpath;
 	if($action === "START") {
 		$logfile=dirname($TCPBridge)."/log.txt";
-		exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey >> $logfile 2>&1 &");
+		exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey &>> $logfile 2>&1 &");
 //		if(!is_array($out) || (int)$out[0] <= 0) return "Failed to start TCP service";	// check if PID > 0 
 		sleep(2);	// wait for service to start
 		$action = "STATUS";	// check status after start
