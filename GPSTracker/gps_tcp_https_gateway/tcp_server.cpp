@@ -137,6 +137,7 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		}
      		if(n==0) break;	// assume closed connection
      		waittime=0;
+			for(int i=0; i<strlen(buffer);++i) buffer[i] = buffer[i]=='\n' || buffer[i]=='\r' ? '\0' : buffer[i]; 
      		printf("Incoming message: %s\n",buffer);
 			response[0]='\0';
 			isClose = strstr(buffer,statuscmd);	// status requested -> close after response
