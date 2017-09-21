@@ -1,4 +1,4 @@
-v#define 	STRLEN	256
+#define 	STRLEN	256
  
 typedef struct { const char *msg,*resp; } ReqRespPat;
 
