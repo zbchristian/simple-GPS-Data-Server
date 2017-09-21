@@ -28,7 +28,7 @@ dev_pattern devs[NO_DEVS]={
 	 .login 	= {.msg=NULL, .resp=NULL},
 //      example heartbeat: *HQ,355488020824039,XT,V,0,0#
 //                               IMEI
-	 .heartbeat 	= {.msg="^\\*\\w{2},(\\d{15}),XT,[V|A]*,0,0#.*$", .resp=NULL},
+	 .heartbeat 	= {.msg="^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#.*$", .resp=NULL},
 //      example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
 //                        imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
 	 .gps_data	= {.msg="^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),([\\w0-9]+)#.*$", .resp=NULL},
