@@ -16,10 +16,10 @@ bool createGPRMCRecord(gps_struct *, char *);
 int regexp_match_copy(char *, char *, char *, int );
 
 void analyze_HTTPresponse(std::string response) {
-	char subStr[3][STRLEN];
+	char subStr[4][STRLEN];
 	char expr[]="^HTTP/[0-9.]{3}\\s+(\\d+).+[\\r\\n|\\n|\\r]+([0-9a-zA-Z]+)\\s+([OK|REJECTED|FAILED]).*$";    // check for return code and message in body
 	if(regexp_match_copy(expr, (char*)response.c_str(), (char*)subStr, 3)==3 && atoi(subStr[0]) == 200) { 
-		printf("Code %d imei %s response %s\n",atoi(subStr[0]),subStr[1],subStr[2]);
+		printf("Code %d device no %s - %s\n",atoi(subStr[0]),subStr[1],subStr[2]);
 		if(strcmp(subStr[2],"REJECTED")==0) printf("Device has been rejected\n"); 
 		else printf("Device has been accepted\n"); 
 	}
@@ -104,8 +104,7 @@ int regexp_match_copy(char * devexpr, char *msg, char *cpyStr, int nsubs) {
 	boost::cmatch m_parms;
 	int n=0;
 
-        if (boost::regex_match(s.c_str(), m_parms, expr))
-        {
+    if (boost::regex_match(s.c_str(), m_parms, expr)) {
 		for(int i=1; i< m_parms.size() && i<=nsubs; ++i) {
 			std::string sm(m_parms[i].first,m_parms[i].second);
 			int num = std::min(STRLEN-1,(int)sm.size());
