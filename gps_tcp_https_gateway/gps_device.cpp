@@ -17,7 +17,7 @@ int regexp_match_copy(char *, char *, char *, int );
 
 void analyze_HTTPresponse(std::string response) {
 	char subStr[4][STRLEN];
-	char expr[]="^HTTP/[0-9.]{3}\\s+(\\d+).+[\\r\\n|\\n|\\r]+([0-9a-zA-Z]+)\\s+([OK|REJECTED|FAILED]).*$";    // check for return code and message in body
+	char expr[]="^HTTP/[0-9.]{3}\\s+(\\d+).+[\\r\\n|\\n|\\r]+([0-9a-zA-Z]+)\\s+(OK|REJECTED|FAILED).*$";    // check for return code and message in body
 	if(regexp_match_copy(expr, (char*)response.c_str(), (char*)subStr, 3)==3 && atoi(subStr[0]) == 200) { 
 		printf("Code %d device no %s - %s\n",atoi(subStr[0]),subStr[1],subStr[2]);
 		if(strcmp(subStr[2],"REJECTED")==0) printf("Device has been rejected\n"); 
