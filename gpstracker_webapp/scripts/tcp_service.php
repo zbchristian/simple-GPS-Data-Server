@@ -16,25 +16,24 @@ function checkTCPService() {
 
 // possible actions: "START", "STOP", "STATUS"
 function controlTCPService($action) {
-	global	$TCPBridge, $TCPport, $secretkey;
+	global	$TCPBridge, $TCPport, $HTTPSserver, $secretkey, $urlpath;
 	if($action === "START") {
 		$logfile=dirname($TCPBridge)."/log.txt";
-		exec("nohup $TCPBridge >> $logfile 2>&1 &",$out);
-		if(!is_array($out) || (int)$out[0] <= 0) return "Failed to start TCP service";	// check if PID > 0 
+		exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey >> $logfile 2>&1 &");
+//		if(!is_array($out) || (int)$out[0] <= 0) return "Failed to start TCP service";	// check if PID > 0 
 		sleep(2);	// wait for service to start
 		$action = "STATUS";	// check status after start
 	}
 	// create socket and connect to localhost
-	if(($socket=socket_create(AF_INET, SOCK_STREAM, SOL_TCP))=== false || 
-	    socket_set_option($socket,SOL_SOCKET, SO_RCVTIMEO, array("sec"=>2, "usec"=>0)) ||
-	   ($isConnected = socket_connect($socket, "localhost", $TCPport)) === false && $action==="STATUS") 
+	if(($socket=@socket_create(AF_INET, SOCK_STREAM, SOL_TCP))=== false || 
+	    @socket_set_option($socket,SOL_SOCKET, SO_RCVTIMEO, array("sec"=>2, "usec"=>0)) === false ||
+	   ($isConnected = @socket_connect($socket, "localhost", $TCPport)) === false && $action==="STATUS") 
 			return "TCP service not running/not started";
 	if($isConnected === false && $action === "STOP") return true;
-	socket_set_option($socket,SOL_SOCKET, SO_RCVTIMEO, array("sec"=>2, "usec"=>0));	// set timeout for read
 	$cmd= $action === "STATUS" ? "status ".$secretkey : "close ".$secretkey;
-	socket_write($socket, $cmd, strlen($cmd));
-	$response = socket_read($socket,10);
-	socket_close($socket);
+	@socket_write($socket, $cmd, strlen($cmd));
+	$response = @socket_read($socket,10);
+	@socket_close($socket);
 	return $response === "OK";
 }
 

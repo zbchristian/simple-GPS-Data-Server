@@ -173,6 +173,7 @@ function handle_device_db($devinfo,$mode) {
 		if(val_exists_db($devicelist_tbl,"name",$name)) return "Device with name $name already existing";
 		if(val_exists_db($devicelist_tbl,"id",$id)) return "Device with ID $id already existing";
 		if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei)) return "Device with IMEI $imei already existing";
+		if(!empty($imei) && strlen($imei)!=15) return "Provided IMEI $imei does not have 15 digits";
 		$db->exec('INSERT INTO "'.$devicelist_tbl.'" (tstamp,name,desc,id,imei,history) VALUES
 			("'.$tstamp.'","'.$name.'","'.$desc.'","'.$id.'","'.$imei.'",'.$hist.')' );
 		if(($id=$db->lastInsertRowid()) == 0) return false;
@@ -182,13 +183,14 @@ function handle_device_db($devinfo,$mode) {
 		if(($curr = retrieve_device_db("devno",$devno) === false)) return "Change of device failed";
 		if(val_exists_db($devicelist_tbl,"name",$name,"devno=".$devno)) return "New device name $name already exists";
 		if(val_exists_db($devicelist_tbl,"id",$id,"devno=".$devno)) return "New device ID $id already exists";
-		if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei)) return "New device IMEI $imei already exists";
+		if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei,"devno=".$devno)) return "New device IMEI $imei already exists";
+		if(!empty($imei) && strlen($imei)!=15) return "Provided IMEI $imei does not have 15 digits";
 		$db->exec('UPDATE "'.$devicelist_tbl.'" SET tstamp="'.$tstamp.'",name="'.$name.'",desc="'.$desc.'",id="'.$id.'",imei="'.$imei.'",history='.$hist.' WHERE devno='.$devno);
 //		echo "<h2>Device $name with ID $id has been modified</h2>";
 	}
 	else if (in_array($mode, array("clear","delete")) ) {
 		$gpstbl = gps_tablename($devno);
-		$db->exec('DROP TABLE '.$gpstbl);
+		if(table_exists($gpstbl)) $db->exec('DROP TABLE '.$gpstbl);
 		if($mode=="delete" && $db->exec('DELETE FROM '.$devicelist_tbl.' WHERE devno='.$devno) === false) return "Delete of device failed";
 	}
 	return true;
@@ -235,7 +237,7 @@ function val_exists_db($table,$col,$val,$excl="",$isCase=true) {
 
 
 function imei_exists_db() {
-	global $db;
+	global $db, $devicelist_tbl;
 	if(!check_db("")) return false;
 	$query='SELECT count(*) FROM "'.$devicelist_tbl.'" WHERE imei!=""';
 	$cnt=$db->query($query);

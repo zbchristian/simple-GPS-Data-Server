@@ -10,12 +10,13 @@ include "$relpath/scripts/config.php";
 include "$relpath/scripts/webpages.php";
 include "$relpath/scripts/utils.php";
 include "$relpath/scripts/db.php";
+include "$relpath/scripts/tcp_service.php";
 
 $inputs=filter_GET_inputs();
 if(isset($inputs["devno"])) $inputs["devno"] = filter_devno($inputs["devno"]);
 if(isset($inputs["id"])) $inputs["id"] = filter_ident($inputs["id"]);
 if(isset($inputs["imei"]) && !empty($inputs["imei"])) {
-	$imei = filter_ident($inputs["imei"]);
+	$imei = filter_imei($inputs["imei"]);
 	$inputs["imei"] = $imei !== false ? $imei : "";
 }
 // var_dump($inputs);
