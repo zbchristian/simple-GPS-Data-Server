@@ -11,8 +11,7 @@ function filter_ident($id) {
 
 // IMEI has to be 15 digits long
 function filter_imei($imei) {	
-	$imei = preg_replace("/[^0-9]/u", '', $imei);
-	return strlen($imei) === 15 ? $imei : false;
+	return preg_replace("/[^0-9]/u", '', $imei);
 }
 
 function filter_devno($n) {
