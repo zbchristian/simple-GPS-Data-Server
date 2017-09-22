@@ -54,7 +54,7 @@ bool writelog(char *text) {
 	while((logfd = fopen(logname,"w")) == NULL && ++n<10) usleep(100);
 	if(logfd == NULL) return false;
 	logfd = fopen(logname,"a");
-	fprintf("%s - %s\n",ctime(&now),text);
+	fprintf(logfd,"%s - %s\n",ctime(&now),text);
 	fclose(logfd);
 	return true;
 }
@@ -73,12 +73,12 @@ int main(int argc, char *argv[]) {
          	exit(1);
      	}
 		pid = getpid();
-		strncpy(logname,dirname(argv[0],256));
+		strncpy(logname,dirname(argv[0])256);
 		strncat(logname,logfile,256-strlen(logname));
 		logname[255]='\0';
 		logfd=fopen(logname,"w");	// clear old data in logfile 
 		if(logfd == NULL) { fprintf(stderr,"Can not open logfile ... exit"); exit(1); }
-		close(logfd);
+		fclose(logfd);
 		strncpy(secret_key,argv[4],80);
 		secret_key[79]='\0';
      	portno = atoi(argv[1]);
