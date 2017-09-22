@@ -14,35 +14,37 @@
 bool filter_gps_device(char *, gps_struct *);
 bool createGPRMCRecord(gps_struct *, char *);
 int regexp_match_copy(char *, char *, char *, int );
+bool writelog(char *);
 
 void analyze_HTTPresponse(std::string response) {
+	char logstr[512];
 	char subStr[4][STRLEN];
 	char expr[]="^HTTP/[0-9.]{3}\\s+(\\d+).+[\\r\\n|\\n|\\r]+([0-9a-zA-Z]+)\\s+(OK|REJECTED|FAILED).*$";    // check for return code and message in body
 	if(regexp_match_copy(expr, (char*)response.c_str(), (char*)subStr, 3)==3 && atoi(subStr[0]) == 200) { 
-		printf("Code %d device no %s - %s\n",atoi(subStr[0]),subStr[1],subStr[2]);
-		if(strcmp(subStr[2],"REJECTED")==0) printf("Device has been rejected\n"); 
-		else printf("Device has been accepted\n"); 
+		snprintf(logstr,512,"Code %d device imei/no %s - %s\n",atoi(subStr[0]),subStr[1],subStr[2]);
+		writelog(logstr);
 	}
-	else printf("FAILED\n");
 }
 
 
 bool GetQueryString(char * msg, char *response, char *query, int n) {
+	char logstr[512];
 	gps_struct   gps_data;
 	char reqString[STRLEN] = {'\0'};
 	response[0]='\0';
 	query[0]='\0';
 	if(filter_gps_device(msg,&gps_data)) {
-		printf("\nFound device %s lat=%f active=%d\n",gps_data.name,gps_data.lat,(int)gps_data.active);
-       		if(gps_data.lat > -91 && gps_data.active) {
-         		if(!createGPRMCRecord(&gps_data,query)) query[0]='\0'; 
-		     	if(strlen(gps_data.response) > 0) {
+		snprintf(logstr,512,"\nFound device %s lat=%f active=%d\n",gps_data.name,gps_data.lat,(int)gps_data.active);
+       	if(gps_data.lat > -91 && gps_data.active) {
+        	if(!createGPRMCRecord(&gps_data,query)) query[0]='\0'; 
+		   	if(strlen(gps_data.response) > 0) {
 				strncpy(response,gps_data.response,std::min((int)strlen(gps_data.response),n-1));
 				response[n]='\0';
 			}
-       		}
+       	}
 	}
-     	else printf("Unkown device\n");
+    else snprintf(logstr,512,"Unkown device\n");
+	writelog(logstr);
 	return strlen(response)>0 || strlen(query)>0;
 }
 
