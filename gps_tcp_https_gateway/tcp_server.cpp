@@ -84,7 +84,9 @@ int main(int argc, char *argv[]) {
          	exit(1);
      	}
 		pid = getpid();
-		strncpy(logname,dirname(argv[0]),256);
+		char prog[256];
+		strncpy(prog,argv[0],256);
+		strncpy(logname,dirname(prog),256);
 		strncat(logname,logfile,256-strlen(logname));
 		logname[255]='\0';
 		logfd=fopen(logname,"w");	// clear old data in logfile 
