@@ -48,13 +48,24 @@ void signalHandler(int signo) {
 	isExit = true;
 }
 
+// write a single line into log file given by logname
+// trims the string and removes all line feeds
 bool writelog(char *text) {
-	time (&now);		
+	time (&now);
+	char Date[80];
+	snprintf(Date,80,"%s",ctime(&now));
+	Date[strlen(Date)-1]='\0';	// remove trailing line feed of ctime
 	int n=0;
-	while((logfd = fopen(logname,"w")) == NULL && ++n<10) usleep(100);
+	int i=0;
+	char *loc = text;
+	// trim string and remove all line feeds - > single line log entry
+	for(i=0;i<strlen(text);++i) if(text[i]=='\n' || text[i]=='\r') text[i]=' ';
+	while((i++)<strlen(text)-1 && isspace(*loc)) ++loc;
+	i = strlen(text)-1;
+	while(i>=0 &&  isspace(text[i])) text[i--]='\0';
+	while((logfd = fopen(logname,"a")) == NULL && ++n<10) usleep(100);
 	if(logfd == NULL) return false;
-	logfd = fopen(logname,"a");
-	fprintf(logfd,"%s - %s\n",ctime(&now),text);
+	fprintf(logfd,"%s - %s\n",Date,text);
 	fclose(logfd);
 	return true;
 }
@@ -106,8 +117,8 @@ int main(int argc, char *argv[]) {
               	error("ERROR on binding");
      	listen(sockfd,5);
      	clilen = sizeof(cli_addr);
-		time (&now);		
-		snprintf(logstr,512,"%s starting. PID = %d \n",argv[0],(unsigned int)pid);
+		time (&now);
+		snprintf(logstr,512,"%s starting - PID = %d",argv[0],(unsigned int)pid);
 		writelog(logstr);
      	while (!isExit) {
 			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
@@ -161,7 +172,6 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		}
      		if(n==0) break;	// assume closed connection
      		waittime=0;
-			for(int i=0; i<strlen(buffer);++i) buffer[i] = buffer[i]=='\n' || buffer[i]=='\r' ? '\0' : buffer[i]; 
      		snprintf(logstr,512,"Incoming message: %s\n",buffer);
 			writelog(logstr);
 			response[0]='\0';
