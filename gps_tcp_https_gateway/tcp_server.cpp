@@ -65,7 +65,7 @@ bool writelog(char *text) {
 	while(i>=0 &&  isspace(text[i])) text[i--]='\0';
 	while((logfd = fopen(logname,"a")) == NULL && ++n<10) usleep(100);
 	if(logfd == NULL) return false;
-	fprintf(logfd,"%s - %s\n",Date,text);
+	fprintf(logfd,"%s - %s\n",Date,loc);
 	fclose(logfd);
 	return true;
 }
