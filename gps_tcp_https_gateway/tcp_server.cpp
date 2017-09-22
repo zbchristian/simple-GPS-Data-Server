@@ -35,7 +35,7 @@ pid_t 	pid;
 bool	isExit;
 char 	secret_key[80];
 time_t	now;
-char 	*logname[256];
+char 	logname[256];
 FILE	*logfd;
 char 	logstr[512];
 
