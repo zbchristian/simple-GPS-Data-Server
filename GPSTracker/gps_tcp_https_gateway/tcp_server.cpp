@@ -25,7 +25,7 @@
 #include <boost/regex.hpp>
 #include <libgen.h>
 
-#define logfile	"log.txt"
+#define logfile	"/log.txt"
 
 //using namespace std;
 
@@ -36,6 +36,8 @@ bool	isExit;
 char 	secret_key[80];
 time_t	now;
 char 	*logname[256];
+FILE	*logfd;
+char 	logstr[512];
 
 std::string send_https_request(std::string, std::string);
 void handle_connection(int,std::string,std::string);
@@ -44,6 +46,17 @@ void analyze_HTTPresponse(std::string);
 
 void signalHandler(int signo) {
 	isExit = true;
+}
+
+bool writelog(char *text) {
+	time (&now);		
+	int n=0;
+	while((logfd = fopen(logname,"w")) == NULL && ++n<10) usleep(100);
+	if(logfd == NULL) return false;
+	logfd = fopen(logname,"a");
+	fprintf("%s - %s\n",ctime(&now),text);
+	fclose(logfd);
+	return true;
 }
 
 void error(const char *msg) {
@@ -59,10 +72,13 @@ int main(int argc, char *argv[]) {
         	fprintf(stderr,"Usage: tcp_port HTTP_server_name url_path secret_key\n");
          	exit(1);
      	}
-		strncpy(logname,dirname(argv[0],256);
+		pid = getpid();
+		strncpy(logname,dirname(argv[0],256));
 		strncat(logname,logfile,256-strlen(logname));
 		logname[255]='\0';
-		pid = getpid();
+		logfd=fopen(logname,"w");	// clear old data in logfile 
+		if(logfd == NULL) { fprintf(stderr,"Can not open logfile ... exit"); exit(1); }
+		close(logfd);
 		strncpy(secret_key,argv[4],80);
 		secret_key[79]='\0';
      	portno = atoi(argv[1]);
@@ -90,8 +106,9 @@ int main(int argc, char *argv[]) {
               	error("ERROR on binding");
      	listen(sockfd,5);
      	clilen = sizeof(cli_addr);
-		time (&now);
-		printf("%s      %s starting. PID = %d \n",ctime(&now),argv[0],(unsigned int)pid);
+		time (&now);		
+		snprintf(logstr,512,"%s starting. PID = %d \n",argv[0],(unsigned int)pid);
+		writelog(logstr);
      	while (!isExit) {
 			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
          	if (newsockfd < 0) {usleep(100); continue;}	// non-blocking -> loop and wait for connection
@@ -106,8 +123,8 @@ int main(int argc, char *argv[]) {
          	else close(newsockfd);
      	}
      	close(sockfd);
-		time ( &now );
-		printf("%s      %s shutdown\n",ctime(&now),argv[0]);
+		snprintf(logstr,512,"%s shutdown\n",argv[0]);
+		writelog(logstr);
      	return 0;
 }
 
@@ -145,7 +162,8 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
      		if(n==0) break;	// assume closed connection
      		waittime=0;
 			for(int i=0; i<strlen(buffer);++i) buffer[i] = buffer[i]=='\n' || buffer[i]=='\r' ? '\0' : buffer[i]; 
-     		printf("Incoming message: %s\n",buffer);
+     		snprintf(logstr,512,"Incoming message: %s\n",buffer);
+			writelog(logstr);
 			response[0]='\0';
 			isClose = strstr(buffer,statuscmd);	// status requested -> close after response
 			isExit  = strstr(buffer,closecmd);	// exit of server requested -> set Exit flag
