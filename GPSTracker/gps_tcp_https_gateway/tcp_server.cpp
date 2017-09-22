@@ -23,6 +23,9 @@
 #include <signal.h>
 #include <algorithm>
 #include <boost/regex.hpp>
+#include <libgen.h>
+
+#define logfile	"log.txt"
 
 //using namespace std;
 
@@ -31,6 +34,8 @@
 pid_t 	pid;
 bool	isExit;
 char 	secret_key[80];
+time_t	now;
+char 	*logname[256];
 
 std::string send_https_request(std::string, std::string);
 void handle_connection(int,std::string,std::string);
@@ -54,6 +59,9 @@ int main(int argc, char *argv[]) {
         	fprintf(stderr,"Usage: tcp_port HTTP_server_name url_path secret_key\n");
          	exit(1);
      	}
+		strncpy(logname,dirname(argv[0],256);
+		strncat(logname,logfile,256-strlen(logname));
+		logname[255]='\0';
 		pid = getpid();
 		strncpy(secret_key,argv[4],80);
 		secret_key[79]='\0';
@@ -61,7 +69,7 @@ int main(int argc, char *argv[]) {
      	std::string httpserver(argv[2]);
      	std::string urlpath(argv[3]);
      	isExit = false;
-// avoid zombies -> ignore signals from childs
+		// avoid zombies -> ignore signals from childs
      	struct sigaction sigchld_action ;
      	sigchld_action.sa_handler = SIG_DFL;
      	sigchld_action.sa_flags = SA_NOCLDWAIT;
@@ -82,12 +90,11 @@ int main(int argc, char *argv[]) {
               	error("ERROR on binding");
      	listen(sockfd,5);
      	clilen = sizeof(cli_addr);
-		time_t now;
-		time ( &now );
+		time (&now);
 		printf("%s      %s starting. PID = %d \n",ctime(&now),argv[0],(unsigned int)pid);
      	while (!isExit) {
 			newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
-         	if (newsockfd < 0) continue;	// non-blocking -> loop and wait for connection
+         	if (newsockfd < 0) {usleep(100); continue;}	// non-blocking -> loop and wait for connection
          	pid = fork();
          	if (pid < 0) error("ERROR on fork");
          	if (pid == 0) {
