@@ -44,7 +44,7 @@ bool GetQueryString(char * msg, char *response, char *query, int n) {
 	}
     else snprintf(logstr,512,"Unkown device\n");
 	writelog(logstr);
-	if(strlen(query)>0) writelog(query);
+	if(gps_data.active && strlen(query)>0) writelog(query);
 	return strlen(response)>0 || strlen(query)>0;
 }
 
