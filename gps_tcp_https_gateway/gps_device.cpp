@@ -84,10 +84,11 @@ bool createGPRMCRecord(gps_struct *gps, char *req,int nc) {
 	snprintf(cstr,STRLEN,"%02d",(int)cs);
 	gprmc+=cstr;
 	snprintf(req+strlen(req),nc-strlen(req),"&gprmc=%s",gprmc.c_str());
-	std::string logentry("createGPRMC : ");
+/*	std::string logentry("createGPRMC : ");
 	logentry +=req;
-	writelog(logentry);
+	writelog(logentry.c_str());
 	return true;
+*/
 }
 
 // match message to regular expression and copy matched strings to return array
