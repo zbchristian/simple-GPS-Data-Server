@@ -221,6 +221,14 @@ bool filter_gps_device(char *msg, gps_struct *gps) {
 				break;
 		}
 	}
+	std::string vals("GPS data : );
+	vals += "imei = ";
+	vals += gps->devid;
+	vals += "lat = ";
+	vals += gps->lat;
+	vals += "time = ";
+	vals += gps->time;
+	
 	return true;
 }
 
