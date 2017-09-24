@@ -4,23 +4,37 @@ import (
     "fmt"
     "net"
     "os"
+	"flag"
+	"strconv"
 )
 
-const (
-    CONN_PORT = "3333"
-    CONN_TYPE = "tcp"
-)
+
+// Argruments:
+// -host -port -urlpath -key
+
+var Host string
+var Port int
+var UrlPath string
+var SecretKey string
 
 func main() {
-    // Listen for incoming connections.
-    l, err := net.Listen(CONN_TYPE, ":"+CONN_PORT)
+// get the arguments to run the server
+	flag.StringVar(&Host,"host","localhost","hostname")
+	flag.IntVar(&Port,"port",20202,"port number")
+	flag.StringVar(&UrlPath,"urlpath","index.php","relative url path")
+	flag.StringVar(&SecretKey,"key","123456","secret key to terminate program via TCP port")
+	flag.Parse()
+	
+	fmt.Println("Host:"+Host+" Port:"+strconv.Itoa(Port)+" Key:"+SecretKey)
+// Listen for incoming connections.
+    l, err := net.Listen("tcp", ":"+strconv.Itoa(Port))
     if err != nil {
         fmt.Println("Error listening:", err.Error())
         os.Exit(1)
     }
     // Close the listener when the application closes.
     defer l.Close()
-    fmt.Println("Listening on port " + CONN_PORT)
+    fmt.Println("Listening on port " + strconv.Itoa(Port))
     for {
         // Listen for an incoming connection.
         conn, err := l.Accept()
@@ -43,7 +57,7 @@ func handleRequest(conn net.Conn) {
     fmt.Println("Error reading:", err.Error())
   } else {
 	fmt.Println("Incoming message : " + string(buf[:reqLen]))
-	sendHTTPrequest(string(buf[:reqLen]))
+	sendHTTPrequest(Host,UrlPath,string(buf[:reqLen]))
   }
   // Send a response back to person contacting us.
   conn.Write([]byte("Message received."))
