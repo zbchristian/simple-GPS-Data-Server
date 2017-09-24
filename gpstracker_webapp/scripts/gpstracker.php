@@ -44,8 +44,9 @@ if(isset($inputs["lat"]) ) {
 	foreach($parnames as $par) if(array_key_exists($par,$inputs)) 	$gps[$par]=$inputs[$par];
 	$gps["devno"]=$devno;
 	$gps["tstored"]=date("Y-m-d H:i:s");
+	if(isset($inputs["imei"])) $devno = $inputs["imei"];
 	if(insert_gps_db($gps)) echo "$devno OK";
-	else					echo "$devno FAILED";
+	else			echo "$devno FAILED";
 	cleanup_GPS_data();
 }
 else { // display/retrieve GPX file for given device and time range
