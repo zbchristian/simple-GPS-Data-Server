@@ -146,8 +146,8 @@ int main(int argc, char *argv[]) {
 // send corresponding response or close directly
 void handle_connection(int sock,std::string httpserver,std::string url) {
 
-	#define close_timeout	1000	// close socket after n seconds w/o activity
-	#define BUFSIZE		4096
+	#define close_timeout		1000	// close socket after n seconds w/o activity
+	#define BUFSIZE				4096
 
    	int 	n;
    	char 	buffer[BUFSIZE],response[BUFSIZE],query[BUFSIZE];

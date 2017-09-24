@@ -4,15 +4,18 @@
 #include <iostream>
 #include <string>
 
+bool writelog(char *);
+
 std::string send_https_request(std::string server, std::string reqString) {
 	boost::system::error_code ec;
     	using boost::asio::ip::tcp;
     	namespace ssl = boost::asio::ssl;
     	typedef ssl::stream<tcp::socket> ssl_socket;
 
+		writelog("HTTPS-Client called");
     	if(reqString.length() == 0) return 0;
 
-	bool isLocalhost = (server=="localhost" || server=="127.0.0.1");
+		bool isLocalhost = (server=="localhost" || server=="127.0.0.1");
 
     	reqString  = "GET "+reqString+" HTTP/1.1\r\n";
     	reqString += "Host: "+server+"\r\n";
@@ -34,7 +37,7 @@ std::string send_https_request(std::string server, std::string reqString) {
 	}
 	else
     		ssock.lowest_layer().connect({ {}, 443 }); // connect to localhost
-    	ssock.lowest_layer().set_option(tcp::no_delay(true));
+    ssock.lowest_layer().set_option(tcp::no_delay(true));
 
 // Perform SSL handshake and verify (except for localhost) the remote host's certificate
 	if(!isLocalhost) { 
@@ -45,6 +48,7 @@ std::string send_https_request(std::string server, std::string reqString) {
 
 // send request
     	std::string request(reqString);
+		writelog(reqString.c_str());
     	boost::asio::write(ssock, boost::asio::buffer(request));
 
 // read response
