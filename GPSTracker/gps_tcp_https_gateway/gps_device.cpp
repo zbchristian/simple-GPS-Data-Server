@@ -12,7 +12,7 @@
 #include "gps_protocol.hpp"
 
 bool filter_gps_device(char *, gps_struct *);
-bool createGPRMCRecord(gps_struct *, char *);
+bool createGPRMCRecord(gps_struct *, char *,int);
 int regexp_match_copy(char *, char *, char *, int );
 bool writelog(const char *);
 
@@ -30,31 +30,30 @@ void analyze_HTTPresponse(std::string response) {
 bool GetQueryString(char * msg, char *response, char *query, int n) {
 	char logstr[512];
 	gps_struct   gps_data;
-	char reqString[STRLEN] = {'\0'};
 	response[0]='\0';
 	query[0]='\0';
 	if(filter_gps_device(msg,&gps_data)) {
 		snprintf(logstr,512,"\nFound device %s - active=%d\n",gps_data.name,(int)gps_data.active);
-       	if(gps_data.lat > -91 && gps_data.active) {
-        	if(!createGPRMCRecord(&gps_data,query)) query[0]='\0'; 
+       	if(gps_data.lat > -91.0 && gps_data.active) {
+        	createGPRMCRecord(&gps_data,query,n); 
 		   	if(strlen(gps_data.response) > 0) {
 				strncpy(response,gps_data.response,std::min((int)strlen(gps_data.response),n-1));
-				response[n]='\0';
+				response[n-1]='\0';
 			}
        	}
 	}
     else snprintf(logstr,512,"Unkown device\n");
 	writelog(logstr);
-	writelog(query);
+	if(strlen(query>0)) writelog(query);
 	return strlen(response)>0 || strlen(query)>0;
 }
 
 
-bool createGPRMCRecord(gps_struct *gps, char *req) {
-	snprintf(req+strlen(req),STRLEN-strlen(req),"imei=%s",gps->devid);
+bool createGPRMCRecord(gps_struct *gps, char *req,int nc) {
+	snprintf(req+strlen(req),nc-strlen(req),"imei=%s",gps->devid);
 // altitude and accuracy are not part of the GPRMC record -> add if available 
-	if(gps->elevation > -9999) snprintf(req+strlen(req),STRLEN-strlen(req),"&alt=%.0f",gps->elevation);
-	if(gps->precision > 0) snprintf(req+strlen(req),STRLEN-strlen(req),"&acc=%.0f",gps->precision);
+	if(gps->elevation > -9999) snprintf(req+strlen(req),nc-strlen(req),"&alt=%.0f",gps->elevation);
+	if(gps->precision > 0) snprintf(req+strlen(req),nc-strlen(req),"&acc=%.0f",gps->precision);
 // build GPRMC record
 	std::string gprmc("$GPRMC,");
 	gprmc+=gps->time;
@@ -79,12 +78,15 @@ bool createGPRMCRecord(gps_struct *gps, char *req) {
 	gprmc+=cstr;
 	gprmc+=gps->date;
 	gprmc+=",0.0,E,A*";
+	// calculate GPRMC checksum
 	char cs=0;
 	for(char c : gprmc) if(c!='$' && c!='*') cs ^= c;
 	snprintf(cstr,STRLEN,"%02d",(int)cs);
 	gprmc+=cstr;
-	snprintf(req+strlen(req),STRLEN-strlen(req),"&gprmc=%s",gprmc.c_str());
-//	printf("Request : %s\n",req);
+	snprintf(req+strlen(req),nc-strlen(req),"&gprmc=%s",gprmc.c_str());
+	std::string logentry("createGPRMC : ");
+	logentry +=req;
+	writelog(logentry);
 	return true;
 }
 
@@ -149,12 +151,13 @@ bool filter_gps_device(char *msg, gps_struct *gps) {
 	if(isHeart) resp = (char *)devs[id].heartbeat.resp;
 	if(isData)  resp = (char *)devs[id].gps_data.resp;
 	if(resp != NULL) strncpy(gps->response,resp,std::min(STRLEN-1,(int)strlen(resp)));
-        gps->devid[0]='\0';
-        gps->active=false;
-        gps->date[0]='\0';
-        gps->time[0]='\0';
-        gps->NS='\0';
-        gps->EW='\0';
+	else gps->response[0]='\0';
+    gps->devid[0]='\0';
+    gps->active=false;
+    gps->date[0]='\0';
+    gps->time[0]='\0';
+    gps->NS='\0';
+    gps->EW='\0';
 	gps->lat=-9999;
 	gps->lon=-9999;
 	gps->speed = -1;
@@ -221,14 +224,14 @@ bool filter_gps_device(char *msg, gps_struct *gps) {
 				break;
 		}
 	}
-	std::string vals("GPS data : );
+/*	std::string vals("GPS data : ");
 	vals += "imei = ";
 	vals += gps->devid;
 	vals += "lat = ";
-	vals += gps->lat;
+	vals += std::to_string(gps->lat);
 	vals += "time = ";
 	vals += gps->time;
-	
+*/	
 	return true;
 }
 
