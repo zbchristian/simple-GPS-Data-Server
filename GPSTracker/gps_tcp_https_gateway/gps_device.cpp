@@ -45,6 +45,7 @@ bool GetQueryString(char * msg, char *response, char *query, int n) {
 	}
     else snprintf(logstr,512,"Unkown device\n");
 	writelog(logstr);
+	writelog(query);
 	return strlen(response)>0 || strlen(query)>0;
 }
 
