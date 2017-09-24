@@ -187,7 +187,7 @@ void handle_connection(int sock,std::string httpserver,std::string urlpath) {
 			}
 			else if(GetQueryString(buffer,response,query,BUFSIZE)) {
 				if(strlen(query)>0) {
-					string url(urlpath);
+					std::string url(urlpath);
 					url += "?";
 					url += query;
 					std::string response = send_https_request(httpserver,url);
