@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 // handle a single connection
 // filter the message and determine the GPS device type
 // send corresponding response or close directly
-void handle_connection(int sock,std::string httpserver,std::string url) {
+void handle_connection(int sock,std::string httpserver,std::string urlpath) {
 
 	#define close_timeout		1000	// close socket after n seconds w/o activity
 	#define BUFSIZE				4096
@@ -187,6 +187,7 @@ void handle_connection(int sock,std::string httpserver,std::string url) {
 			}
 			else if(GetQueryString(buffer,response,query,BUFSIZE)) {
 				if(strlen(query)>0) {
+					string url(urlpath);
 					url += "?";
 					url += query;
 					std::string response = send_https_request(httpserver,url);
