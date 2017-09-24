@@ -50,7 +50,9 @@ void signalHandler(int signo) {
 
 // write a single line into log file given by logname
 // trims the string and removes all line feeds
-bool writelog(char *text) {
+bool writelog(const char *intext) {
+	char *text = new char[strlen(intext)+1];
+	strcpy(text,intext);
 	time (&now);
 	char Date[80];
 	snprintf(Date,80,"%s",ctime(&now));

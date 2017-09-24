@@ -14,7 +14,7 @@
 bool filter_gps_device(char *, gps_struct *);
 bool createGPRMCRecord(gps_struct *, char *);
 int regexp_match_copy(char *, char *, char *, int );
-bool writelog(char *);
+bool writelog(const char *);
 
 void analyze_HTTPresponse(std::string response) {
 	char logstr[512];
