@@ -146,9 +146,9 @@ bool filter_gps_device(char *msg, gps_struct *gps) {
 	}
 	gps->name[0]='\0';
 	if(nmatch==0) return false;
-	if(isLogin) strncpy(gps->name,STRLEN-1,"Login - ");
-	if(isHeart) strncpy(gps->name,STRLEN-1,"Heartbeat - ");
-	if(isData) strncpy(gps->name,STRLEN-1,"GPS-data - ");
+	if(isLogin) strncpy(gps->name,"Login - ",STRLEN-1);
+	if(isHeart) strncpy(gps->name,"Heartbeat - ",STRLEN-1);
+	if(isData) strncpy(gps->name,"GPS-data - ",STRLEN-1);
 	strncat(gps->name,devs[id].device,std::min(STRLEN-(int)strlen(gps->name)-1,(int)strlen(devs[id].device)));
 	char *resp=NULL;
 	if(isLogin) resp = (char *)devs[id].login.resp;
