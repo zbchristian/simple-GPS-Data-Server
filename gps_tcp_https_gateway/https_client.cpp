@@ -12,8 +12,8 @@ std::string send_https_request(std::string server, std::string reqString) {
     	namespace ssl = boost::asio::ssl;
     	typedef ssl::stream<tcp::socket> ssl_socket;
 
-		std::string logentry("HTTPS-Client called : "+reqString);
-		writelog(logentry.c_str());
+//		std::string logentry("HTTPS-Client called : "+reqString);
+//		writelog(logentry.c_str());
     	if(reqString.length() == 0) return 0;
 
 		bool isLocalhost = (server=="localhost" || server=="127.0.0.1");
@@ -49,7 +49,6 @@ std::string send_https_request(std::string server, std::string reqString) {
 
 // send request
     	std::string request(reqString);
-		writelog(reqString.c_str());
     	boost::asio::write(ssock, boost::asio::buffer(request));
 
 // read response
