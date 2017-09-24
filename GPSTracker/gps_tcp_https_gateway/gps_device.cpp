@@ -33,7 +33,7 @@ bool GetQueryString(char * msg, char *response, char *query, int n) {
 	response[0]='\0';
 	query[0]='\0';
 	if(filter_gps_device(msg,&gps_data)) {
-		snprintf(logstr,512,"Device %s - active=%d\n",gps_data.name,(int)gps_data.active);
+		snprintf(logstr,512,"Device %s - %s\n",gps_data.name,gps_data.active?"active" : "inactive");
        	if(gps_data.lat > -91.0 && gps_data.active) {
         	createGPRMCRecord(&gps_data,query,n); 
 		   	if(strlen(gps_data.response) > 0) {
