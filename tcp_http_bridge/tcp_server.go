@@ -6,7 +6,6 @@
 package main
 
 import (
-    "fmt"
     "net"
     "os"
 	"flag"
@@ -14,6 +13,7 @@ import (
 	"strings"
 	"time"
 	"regexp"
+	"log"
 )
 
 const (
@@ -31,26 +31,28 @@ var SecretKey string
 
 var isExit bool
 
+var logger = log.New(os.Stdout, "GPS-TCP-HTTP-Bridge - ", log.Ldate|log.Ltime)
+
+
 func main() {
 // get the arguments to run the server
-	flag.StringVar(&Host,"host",DEFAULT_HOST,"hostname")
+	flag.StringVar(&Host,"httpserver",DEFAULT_HOST,"name of HTTP server")
 	flag.IntVar(&Port,"port",DEFAULT_PORT,"port number")
 	flag.StringVar(&UrlPath,"urlpath",DEFAULT_URLPATH,"relative url path")
 	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP port")
 	flag.Parse()
-	
-	fmt.Println("Host:"+Host+" Port:"+strconv.Itoa(Port)+" Key:"+SecretKey)
+	logger.Print("Starting with TCP-port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
 // Listen for incoming connections.
     // l, err := net.Listen("tcp", ":"+strconv.Itoa(Port))
 	l, err := net.ListenTCP("tcp4", &net.TCPAddr{IP:nil,Port:Port,})
 	
     if err != nil {
-        fmt.Println("Error listening:", err.Error())
+        logger.Print("Error listening:", err.Error())
         os.Exit(1)
     }
     // Close the listener when the application closes.
     defer l.Close()
-    fmt.Println("Listening on port " + strconv.Itoa(Port))
+    logger.Print("Listening on port " + strconv.Itoa(Port))
 	isExit = false
     for !isExit {
         // Listen for an incoming connection.
@@ -58,13 +60,13 @@ func main() {
 		conn, err := l.Accept()
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {	continue }
-			fmt.Println("Error accepting: ", err.Error())
+			logger.Print("Error accepting: ", err.Error())
             os.Exit(1)
         }
         // Handle connections in a new goroutine.
         go handleRequest(conn)
     }
-	fmt.Println("Exit server ...")
+	logger.Print("Exit server ...")
 }
 
 // Handles incoming requests.
@@ -99,7 +101,7 @@ func handleRequest(conn net.Conn) {
 				if isClose || isExit { break }
 			}
 
-			fmt.Println("Incoming message :" + msg)
+			logger.Print("Incoming message :" + strings.TrimSpace(msg))
 			
 			// check if incoming message matches a known device 
 			response, query, err = filter_gps_device(msg)
@@ -108,9 +110,14 @@ func handleRequest(conn net.Conn) {
 			if err == nil { response,err = sendHTTPrequest(Host,UrlPath,query) }
 
 			// Send the response
-			if err == nil && len(response)>0 { conn.Write([]byte(response)) }
+			if err == nil && len(response)>0 {
+				n := len(response)
+				if n>80 { n=80 }
+				logger.Print("Response - "+response[:n])
+				conn.Write([]byte(response)) 
+			}
 		}
 	}
 	// Close the connection when you're done with it.
-	fmt.Println("Close connection ...")
+	logger.Print("Close connection ...")
 }

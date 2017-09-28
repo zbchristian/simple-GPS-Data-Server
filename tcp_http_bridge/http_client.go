@@ -8,7 +8,6 @@
 package main
 
 import (
-        "fmt"
         "io/ioutil"
         "net/http"
 		"strings"
@@ -22,7 +21,7 @@ func sendHTTPrequest(host string, urlpath string, query string) (string, error) 
 	if !ishttp { Url = "https://"+Url }
 	query = strings.TrimSpace(query)
 	Url += "/" + urlpath + "?" + query
-	fmt.Println("url : " + Url)
+	logger.Print("url : " + Url)
 	timeout := time.Duration(5 * time.Second)
 	client := http.Client{Timeout: timeout,}
 	strBody := ""
@@ -30,7 +29,7 @@ func sendHTTPrequest(host string, urlpath string, query string) (string, error) 
 	if err == nil { 
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
-		if err == nil {strBody = string(body)}
+		if err == nil {strBody = strings.TrimSpace(string(body))}
 	}
 	return strBody,err
 }
