@@ -74,6 +74,7 @@ func handleRequest(conn net.Conn) {
 	var isClose bool = false
 	defer conn.Close()
 	var response string = ""
+	var responseHTTP string = ""
 	var query string = ""
 
 	// regexp to recognize close and exit command
@@ -107,8 +108,12 @@ func handleRequest(conn net.Conn) {
 			response, query, err = filter_gps_device(msg)
 			
 			// send HTTPS request to server
-			if err == nil { response,err = sendHTTPrequest(Host,UrlPath,query) }
+			responseHTTP = ""
+			if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
 
+			ans := analyseHTTPResponse(responseHTTP)
+			logger.Print(ans)
+			
 			// Send the response
 			if err == nil && len(response)>0 {
 				n := len(response)
