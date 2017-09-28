@@ -81,7 +81,7 @@ bool createGPRMCRecord(gps_struct *gps, char *req,int nc) {
 	// calculate GPRMC checksum
 	char cs=0;
 	for(char c : gprmc) if(c!='$' && c!='*') cs ^= c;
-	snprintf(cstr,STRLEN,"%02d",(int)cs);
+	snprintf(cstr,STRLEN,"%02X",(int)cs);
 	gprmc+=cstr;
 	snprintf(req+strlen(req),nc-strlen(req),"&gprmc=%s",gprmc.c_str());
 /*	std::string logentry("createGPRMC : ");
