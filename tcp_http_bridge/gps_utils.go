@@ -242,14 +242,14 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 }
 
 
-var regexpHTTPResponse = regexp.MustCompile("^[0-9]+\\s+(OK|REJECT)")
+var regexpHTTPResponse = regexp.MustCompile("^\\s*[0-9]+\\s+(OK|REJECTED)")
 
 func analyseHTTPResponse(response string) (ans string) {
 	ans = "no valid response - check connection to HTTP server"
 logger.Print("response - "+response)
 	if response != "" {
 		matchedStrings := regexpHTTPResponse.FindStringSubmatch(response)
-		if nmatch:=len(matchedStrings); nmatch <= 1 {
+		if nmatch:=len(matchedStrings); nmatch > 1 {
 			ans = "device "+matchedStrings[1]
 		} 
 	}
