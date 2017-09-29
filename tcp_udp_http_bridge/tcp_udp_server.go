@@ -14,6 +14,7 @@ import (
 	"time"
 	"regexp"
 	"log"
+	"sync"
 )
 
 const (
@@ -33,6 +34,7 @@ var isExit bool
 
 var logger = log.New(os.Stdout, "GPS-TCP-HTTP-Bridge - ", log.Ldate|log.Ltime)
 
+var wg sync.WaitGroup // create wait group 
 
 func main() {
 // get the arguments to run the server
@@ -41,10 +43,10 @@ func main() {
 	flag.StringVar(&UrlPath,"urlpath",DEFAULT_URLPATH,"relative url path")
 	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP port")
 	flag.Parse()
-	logger.Print("Starting with TCP-port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
+	logger.Print("Starting server on Port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
 // Listen for incoming connections.
     // l, err := net.Listen("tcp", ":"+strconv.Itoa(Port))
-	l, err := net.ListenTCP("tcp4", &net.TCPAddr{IP:nil,Port:Port,})
+	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP:nil,Port:Port,})
 	
     if err != nil {
         logger.Print("Error listening:", err.Error())
@@ -52,7 +54,10 @@ func main() {
     }
     // Close the listener when the application closes.
     defer l.Close()
-    logger.Print("Listening on port " + strconv.Itoa(Port))
+	// start UDP server
+	go UDPServer()
+	wg.Add(1)
+    logger.Print("Listening on TCP-port " + strconv.Itoa(Port))
 	isExit = false
     for !isExit {
         // Listen for an incoming connection.
@@ -61,21 +66,50 @@ func main() {
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {	continue }
 			logger.Print("Error accepting: ", err.Error())
-            os.Exit(1)
+            break
         }
         // Handle connections in a new goroutine.
+		wg.Add(1)
         go handleRequest(conn)
     }
-	logger.Print("Exit server ...")
+	logger.Print("Exit TCP server ...")
+	wg.Wait()	// wait for other processes to finish
 }
+
+func UDPServer() {
+	defer wg.Done()
+    addr, err := net.ResolveUDPAddr("udp",":"+strconv.Itoa(Port))
+    l, err := net.ListenUDP("udp", addr)
+    defer l.Close()
+    if err != nil {
+        logger.Print("Error listening UDP:", err.Error())
+        return
+	}
+    // Close the listener when the application closes.
+    defer l.Close()
+    logger.Print("Listening on UDP-port " + strconv.Itoa(Port))
+    buf := make([]byte, 1024)
+    for !isExit {
+        // Listen for an incoming connection.
+		l.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
+        n,_,err := l.ReadFromUDP(buf)
+		if err != nil {
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {	continue }
+			logger.Print("Error accepting UDP: ", err.Error())
+            break
+        }
+		handleMessage(string(buf[:n-1]),"UDP")
+    }
+	logger.Print("Exit UDP-server ...")
+}
+
 
 // Handles incoming requests.
 func handleRequest(conn net.Conn) {
+	defer wg.Done()
 	var isClose bool = false
 	defer conn.Close()
 	var response string = ""
-	var responseHTTP string = ""
-	var query string = ""
 
 	// regexp to recognize close and exit command
 	regex := regexp.MustCompile("^(close|exit)\\s+("+SecretKey+")\\s*$")
@@ -101,19 +135,7 @@ func handleRequest(conn net.Conn) {
 				isExit  = strMatched[1] == "exit"
 				if isClose || isExit { break }
 			}
-
-			logger.Print("Incoming message :" + strings.TrimSpace(msg))
-			
-			// check if incoming message matches a known device 
-			response, query, err = filter_gps_device(msg)
-			
-			// send HTTPS request to server
-			responseHTTP = ""
-			if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
-
-			ans := analyseHTTPResponse(responseHTTP)
-			logger.Print(ans)
-			
+			response, err = handleMessage(msg,"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
 				n := len(response)
@@ -124,5 +146,21 @@ func handleRequest(conn net.Conn) {
 		}
 	}
 	// Close the connection when you're done with it.
-	logger.Print("Close connection ...")
+	logger.Print("Close TCP connection ...")
+}
+
+func handleMessage(msg string, connType string) (response string, err error) {
+	msg = strings.TrimSpace(msg)
+	logger.Print("Incoming message via "+connType+":" + msg)
+	response = ""
+	query := ""
+	// check if incoming message matches a known device 
+	response, query, err = filter_gps_device(msg)
+		
+	// send HTTPS request to server
+	responseHTTP := ""
+	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
+	ans := analyseHTTPResponse(responseHTTP)
+	logger.Print(ans)
+	return
 }
