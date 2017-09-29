@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"log"
 	"sync"
+	"errors"
 )
 
 const (
@@ -30,35 +31,37 @@ var Port int
 var UrlPath string
 var SecretKey string
 
-var isExit bool
+var isExit 	bool
+var isClose bool
 
-var logger = log.New(os.Stdout, "GPS-TCP-HTTP-Bridge - ", log.Ldate|log.Ltime)
-
-var wg sync.WaitGroup // create wait group 
+var logger = log.New(os.Stdout, "GPS-TCP/UDP-HTTP-Bridge - ", log.Ldate|log.Ltime)
+var regexExit *regexp.Regexp
+var wg sync.WaitGroup // create wait group to sync exit of all processes 
 
 func main() {
 // get the arguments to run the server
 	flag.StringVar(&Host,"httpserver",DEFAULT_HOST,"name of HTTP server")
 	flag.IntVar(&Port,"port",DEFAULT_PORT,"port number")
 	flag.StringVar(&UrlPath,"urlpath",DEFAULT_URLPATH,"relative url path")
-	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP port")
+	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP/UDP port")
 	flag.Parse()
-	logger.Print("Starting server on Port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
+// fill regexp for close/exit message
+	regexExit = regexp.MustCompile("^(close|exit)\\s+("+SecretKey+")\\s*$")
+
+	logger.Print("Starting servers on Port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
 // Listen for incoming connections.
-    // l, err := net.Listen("tcp", ":"+strconv.Itoa(Port))
-	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP:nil,Port:Port,})
-	
+	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP:nil,Port:Port,})	
     if err != nil {
         logger.Print("Error listening:", err.Error())
         os.Exit(1)
     }
-    // Close the listener when the application closes.
     defer l.Close()
-	// start UDP server
+// start UDP server
 	go UDPServer()
 	wg.Add(1)
     logger.Print("Listening on TCP-port " + strconv.Itoa(Port))
 	isExit = false
+
     for !isExit {
         // Listen for an incoming connection.
 		l.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
@@ -107,13 +110,9 @@ func UDPServer() {
 // Handles incoming requests.
 func handleRequest(conn net.Conn) {
 	defer wg.Done()
-	var isClose bool = false
 	defer conn.Close()
+	isClose= false
 	var response string = ""
-
-	// regexp to recognize close and exit command
-	regex := regexp.MustCompile("^(close|exit)\\s+("+SecretKey+")\\s*$")
-
 	// Make a buffer to hold incoming data.
 	buf := make([]byte, 1024)
 
@@ -126,16 +125,7 @@ func handleRequest(conn net.Conn) {
 			break; 
 		}
 		if nb > 0 {
-			msg := strings.TrimSpace(string(buf[:nb]))
-
-			// check for close | exit
-			strMatched := regex.FindStringSubmatch(msg)
-			if len(strMatched) > 2 {
-				isClose = strMatched[1] == "close"
-				isExit  = strMatched[1] == "exit"
-				if isClose || isExit { break }
-			}
-			response, err = handleMessage(msg,"TCP")
+			response, err = handleMessage(string(buf[:nb-1]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
 				n := len(response)
@@ -154,6 +144,18 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	logger.Print("Incoming message via "+connType+":" + msg)
 	response = ""
 	query := ""
+	err = nil
+	// check for close | exit
+	strMatched := regexExit.FindStringSubmatch(msg)
+	if len(strMatched) > 2 {
+		isClose = strMatched[1] == "close"
+		isExit  = strMatched[1] == "exit"
+		if isClose || isExit { 
+			logger.Print("close/exit message received")
+			err = errors.New("Close connection")
+			return 
+		}
+	}
 	// check if incoming message matches a known device 
 	response, query, err = filter_gps_device(msg)
 		
