@@ -210,9 +210,9 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 			case SPEED:	// get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
 				v,err:=strconv.ParseFloat(val,32)
 				if err != nil {break}
-				if dev.units[i] == KMPERH 	{ v /= 3.6 }	// get m/s   1000m/3600s = 1/3.6
-				if dev.units[i] == MPERS 	{}
-				if dev.units[i] == KNOTS 	{ v *= 0.514 }	// get m/s   1852m/3600s = 0.514
+				if dev.units[i] == KMPERH 	{ v /= 1.852 }		// calc knots
+				if dev.units[i] == MPERS 	{ v *= 3.6/1.852 }	// calc knots
+				if dev.units[i] == KNOTS 	{ }					// nothing to do	
 				val = fmt.Sprintf("%.1f",v)
 			default:
 		}
