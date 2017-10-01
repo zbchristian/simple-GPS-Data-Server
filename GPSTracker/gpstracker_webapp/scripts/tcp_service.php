@@ -5,6 +5,8 @@
 // Author: C.Zeitnitz 2017
 //
 
+define("USE_GO_SERVER",true)
+
 function checkTCPService() {
 	// check if service is needed and start/stop if neede (only if devices with IMEI exist) 
 	$needService = imei_exists_db();
@@ -19,7 +21,8 @@ function controlTCPService($action) {
 	global	$TCPBridge, $TCPport, $HTTPSserver, $secretkey, $urlpath;
 	if($action === "START") {
 		$logfile=dirname($TCPBridge)."/log.txt";
-		exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey &>> $logfile 2>&1 &");
+		if(USE_GO_SERVER) 	exec("nohup $TCPBridge -port $TCPport -httpserver $HTTPSserver -urlpath $urlpath -key $secretkey &> $logfile 2>&1 &");
+		else 				exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey &>> $logfile 2>&1 &");
 //		if(!is_array($out) || (int)$out[0] <= 0) return "Failed to start TCP service";	// check if PID > 0 
 		sleep(2);	// wait for service to start
 		$action = "STATUS";	// check status after start

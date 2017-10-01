@@ -45,8 +45,8 @@ func main() {
 	flag.StringVar(&UrlPath,"urlpath",DEFAULT_URLPATH,"relative url path")
 	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP/UDP port")
 	flag.Parse()
-// fill regexp for close/exit message
-	regexExit = regexp.MustCompile("^(close|exit)\\s+("+SecretKey+")\\s*$")
+	
+	if Host == "localhost" { Host = "127.0.0.1" }
 
 	logger.Print("Starting servers on Port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
 // Listen for incoming connections.
@@ -141,6 +141,9 @@ func handleRequest(conn net.Conn) {
 
 func handleMessage(msg string, connType string) (response string, err error) {
 	msg = strings.TrimSpace(msg)
+// fill regexp for close/exit message
+	if regexExit == nil {regexExit = regexp.MustCompile("^(close|exit|status)\\s+("+SecretKey+")\\s*$") }
+
 	logger.Print("Incoming message via "+connType+":" + msg)
 	response = ""
 	query := ""
@@ -153,6 +156,9 @@ func handleMessage(msg string, connType string) (response string, err error) {
 		if isClose || isExit { 
 			logger.Print("close/exit message received")
 			err = errors.New("Close connection")
+			return 
+		} else {
+			response = "OK"
 			return 
 		}
 	}
