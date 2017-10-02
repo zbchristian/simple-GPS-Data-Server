@@ -152,7 +152,7 @@ func filter_gps_device(msg string) (response string, query string, err error) {
 	}
 //	fmt.Println(matchedStrings)
 	if isLogin || isHeart || isData {
-		logger.Print("Matched device - "+devs[id].device) 
+		logger.Print("Matched device: "+devs[id].device) 
 		if isData { query,err = createGPRMCQuery(devs[id],matchedStrings) }
 	} else { 
 		err = errors.New("Unknown device")
