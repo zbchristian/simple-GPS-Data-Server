@@ -45,6 +45,7 @@ if(isset($inputs["lat"]) ) {
 	$gps["devno"]=$devno;
 	$gps["tstored"]=date("Y-m-d H:i:s");
 	if(isset($inputs["imei"])) $devno = $inputs["imei"];
+	if(isset($inputs["id"])) $devno = $inputs["id"];
 	if(insert_gps_db($gps)) echo "$devno OK";
 	else			echo "$devno FAILED";
 	cleanup_GPS_data();

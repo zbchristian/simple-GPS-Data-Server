@@ -256,6 +256,9 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 				}				
 			case ACTIVE:
 				val = "A"
+			case DEVIMEI:	fallthrough
+			case DEVID:
+				val = ""
 			default:
 				val = "0.0"	// default for non-existing keys
 		}
@@ -264,7 +267,7 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 }
 
 
-var regexpHTTPResponse = regexp.MustCompile("^\\s*[0-9]+\\s+(OK|REJECTED)\\s*")
+var regexpHTTPResponse = regexp.MustCompile("^\\s*[0-9A-Za-z]+\\s+(OK|REJECTED)\\s*")
 
 func analyseHTTPResponse(response string) (ans string, isOk bool) {
 	ans = "no valid response - check connection to HTTP server"
