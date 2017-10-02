@@ -95,14 +95,20 @@ func UDPServer() {
     for !isExit {
         // Listen for an incoming connection.
 		l.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
-        n,_,err := l.ReadFromUDP(buf)
+        n,destSrv,err := l.ReadFromUDP(buf)
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {	continue }
 			logger.Print("Error accepting UDP: ", err.Error())
             break
         }
-		handleMessage(string(buf[:n-1]),"UDP")
-    }
+		response, err := handleMessage(string(buf[:n-1]),"UDP")
+		if err == nil && len(response)>0 {
+			logger.Print("Response - "+response)
+			l.WriteToUDP([]byte(response),destSrv) 
+		} else if err != nil {
+			logger.Print(err.Error())
+		}
+	}
 	logger.Print("Exit UDP-server ...")
 }
 
@@ -128,10 +134,11 @@ func handleRequest(conn net.Conn) {
 			response, err = handleMessage(string(buf[:nb-1]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
-				n := len(response)
-				if n>80 { n=80 }
-				logger.Print("Response - "+response[:n])
+				logger.Print("Response - "+response)
 				conn.Write([]byte(response)) 
+			} else if err != nil {
+				logger.Print(err.Error())
+				break
 			}
 		}
 	}
@@ -151,14 +158,14 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	// check for close | exit
 	strMatched := regexExit.FindStringSubmatch(msg)
 	if len(strMatched) > 2 {
-		isClose = strMatched[1] == "close"
+		isClose = strMatched[1] == "close" && connType == "TCP"
 		isExit  = strMatched[1] == "exit"
 		if isClose || isExit { 
 			logger.Print("close/exit message received")
 			err = errors.New("Close connection")
 			return 
 		} else {
-			response = "OK"
+			if strMatched[1] == "status" { response = "OK" }
 			return 
 		}
 	}
@@ -168,7 +175,8 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	// send HTTPS request to server
 	responseHTTP := ""
 	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
-	ans := analyseHTTPResponse(responseHTTP)
+	ans, isOK := analyseHTTPResponse(responseHTTP)
 	logger.Print(ans)
+	if !isOK { err = errors.New("device rejected or invalid response") }
 	return
 }
