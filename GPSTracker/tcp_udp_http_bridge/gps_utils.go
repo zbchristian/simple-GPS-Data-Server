@@ -25,6 +25,7 @@ const (
 const (	
 	NONE 	int = iota
 	DEVID	int = iota
+	DEVIMEI	int = iota
 	GPRMC 	int = iota	
 	TIME	int = iota
 	ACTIVE	int = iota
@@ -75,7 +76,7 @@ var devs = []devPattern {
 			//example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
 			//                  imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
 			gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),([\\w0-9]+)#.*$", resp:""},
-			order: []int{DEVID,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
+			order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
 			units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
 		},
 // ------------ GPS-logger via UDP
@@ -194,7 +195,8 @@ func createGPRMCQuery(dev devPattern, matches []string) (query string, err error
 	}
 	if len(query)>0 {
 		query = "gprmc="+query
-		if val,_=getGPSValue(dev,matches,DEVID); len(val)>0 	{ query = "imei="+url.QueryEscape(val)+"&"+query }
+		if val,_=getGPSValue(dev,matches,DEVID); len(val)>0 	{ query = "id="+url.QueryEscape(val)+"&"+query }
+		if val,_=getGPSValue(dev,matches,DEVIMEI); len(val)>0 	{ query = "imei="+url.QueryEscape(val)+"&"+query }
 		if val,_=getGPSValue(dev,matches,  ALT); len(val)>0 	{ query = "alt="+url.QueryEscape(val)+"&"+query }
 		if val,_=getGPSValue(dev,matches,  ACC); len(val)>0 	{ query = "acc="+url.QueryEscape(val)+"&"+query }		
 	}
