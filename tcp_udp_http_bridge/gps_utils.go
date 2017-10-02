@@ -17,6 +17,7 @@ import (
 type devtype int
 const (
 	TK103B_CZ 	devtype = iota
+	GPSLOGGER	devtype = iota
 	TK103 		devtype = iota
 	GL103 		devtype = iota
 )
@@ -24,6 +25,7 @@ const (
 const (	
 	NONE 	int = iota
 	DEVID	int = iota
+	GPRMC 	int = iota	
 	TIME	int = iota
 	ACTIVE	int = iota
 	LAT		int = iota
@@ -75,6 +77,16 @@ var devs = []devPattern {
 			gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),([\\w0-9]+)#.*$", resp:""},
 			order: []int{DEVID,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
 			units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
+		},
+// ------------ GPS-logger via UDP
+		devPattern {device:"GPS Logger (UDP)", Type:GPSLOGGER,
+			login: ReqRespPat{msg:"", resp:"",msgRegexp:nil},
+			heartbeat: ReqRespPat{msg:"", resp:""},
+			//example data: s08754/s08754/$GPRMC,180725,A,5337.37477,N,1010.26495,E,0.000000,0.000000,021017,,*20
+			//              devid  user       GPRMC record    
+			gps_data: ReqRespPat{msg:"^(\\w+)\\/\\w+\\/(\\$GPRMC,.+\\*\\w{2})\\s*$", resp:""},
+			order: []int{DEVID,GPRMC},
+			units: []int{NONE,NONE},
 		},
 	}
 // ------------ TK103
@@ -156,24 +168,32 @@ func createGPRMCQuery(dev devPattern, matches []string) (query string, err error
 	query = ""
 	val := ""
 	if len(matches) < 2 { return }
-	for i:=0; i<len(gprmcOrder);i++ {
-		switch gprmcOrder[i] {
-				case HEAD:
-					query +="$GPRMC"
-				case MAGN:	// add dummy magnetic deviation
-					query +=",0.0";					
-				default:
-					query += ","
-					if val,_=getGPSValue(dev,matches,gprmcOrder[i]); len(val)>0 { query += url.QueryEscape(val) }
+	// check, if GPRMC record already included in data string
+	isGPRMC := false
+	for i:=0; !isGPRMC && i<len(dev.order); i++ { isGPRMC=dev.order[i]==GPRMC }
+	if isGPRMC {
+		if val,_=getGPSValue(dev,matches,GPRMC); len(val)>0 { query += val }
+	} else {
+		for i:=0; i<len(gprmcOrder);i++ {
+			switch gprmcOrder[i] {
+					case HEAD:
+						query +="$GPRMC"
+					case MAGN:	// add dummy magnetic deviation
+						query +=",0.0";					
+					default:
+						query += ","
+						if val,_=getGPSValue(dev,matches,gprmcOrder[i]); len(val)>0 { query += url.QueryEscape(val) }
+			}
 		}
-	}
-	if len(query)>0 {
 		// add trailing ACTIVE
 		query += ",A*"
 		// calculate single byte GPRMC checksum between $ and *
 		var cs byte=0
 		for _,c := range []byte(strconv.QuoteToASCII(query)) { if c!='$' && c!='*' { cs ^= c }}
-		query = "gprmc="+query+fmt.Sprintf("%02X",cs)
+		query = query+fmt.Sprintf("%02X",cs)
+	}
+	if len(query)>0 {
+		query = "gprmc="+query
 		if val,_=getGPSValue(dev,matches,DEVID); len(val)>0 	{ query = "imei="+url.QueryEscape(val)+"&"+query }
 		if val,_=getGPSValue(dev,matches,  ALT); len(val)>0 	{ query = "alt="+url.QueryEscape(val)+"&"+query }
 		if val,_=getGPSValue(dev,matches,  ACC); len(val)>0 	{ query = "acc="+url.QueryEscape(val)+"&"+query }		
