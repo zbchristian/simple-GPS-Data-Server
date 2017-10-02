@@ -175,9 +175,9 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	// send HTTPS request to server
 	responseHTTP := ""
 	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
-//	n := len(responseHTTP)
-//	if n>80 { n=80 }
-//	logger.Print("HTTP response - "+responseHTTP[:n])
+	n := len(responseHTTP)
+	if n>80 { n=80 }
+	logger.Print("HTTP response - "+responseHTTP[:n])
 	ans, isOK := analyseHTTPResponse(responseHTTP)
 	logger.Print(ans)
 	if !isOK { err = errors.New("device rejected or invalid response") }
