@@ -134,7 +134,7 @@ func handleRequest(conn net.Conn) {
 			response, err = handleMessage(string(buf[:nb]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
-				logger.Print("Response - "+response)
+				logger.Print("Response: "+response)
 				conn.Write([]byte(response)) 
 			} else if err != nil {
 				logger.Print(err.Error())
@@ -151,7 +151,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 // fill regexp for close/exit message
 	if regexExit == nil {regexExit = regexp.MustCompile("^(close|exit|status)\\s+("+SecretKey+")\\s*$") }
 
-	logger.Print("Incoming message via "+connType+":" + msg)
+	logger.Print("Incoming message via "+connType+": " + msg)
 	response = ""
 	query := ""
 	err = nil
@@ -177,7 +177,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
 	n := len(responseHTTP)
 	if n>80 { n=80 }
-	logger.Print("HTTP response - "+responseHTTP[:n])
+	logger.Print("HTTP response: "+responseHTTP[:n])
 	ans, isOK := analyseHTTPResponse(responseHTTP)
 	logger.Print(ans)
 	if !isOK { err = errors.New("device rejected or invalid response") }

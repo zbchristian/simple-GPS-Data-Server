@@ -21,7 +21,7 @@ func sendHTTPrequest(host string, urlpath string, query string) (string, error) 
 	if !ishttp { Url = "https://"+Url }
 	query = strings.TrimSpace(query)
 	Url += "/" + urlpath + "?" + query
-	logger.Print("url : " + Url)
+	logger.Print("URL: " + Url)
 	timeout := time.Duration(5 * time.Second)
 	client := http.Client{Timeout: timeout,}
 	strBody := ""
