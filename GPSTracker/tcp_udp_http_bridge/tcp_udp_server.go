@@ -101,7 +101,7 @@ func UDPServer() {
 			logger.Print("Error accepting UDP: ", err.Error())
             break
         }
-		response, err := handleMessage(string(buf[:n-1]),"UDP")
+		response, err := handleMessage(string(buf[:n]),"UDP")
 		if err == nil && len(response)>0 {
 			logger.Print("Response - "+response)
 			l.WriteToUDP([]byte(response),destSrv) 
@@ -131,7 +131,7 @@ func handleRequest(conn net.Conn) {
 			break; 
 		}
 		if nb > 0 {
-			response, err = handleMessage(string(buf[:nb-1]),"TCP")
+			response, err = handleMessage(string(buf[:nb]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
 				logger.Print("Response - "+response)

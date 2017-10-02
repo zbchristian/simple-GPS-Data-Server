@@ -5,7 +5,7 @@
 // Author: C.Zeitnitz 2017
 //
 
-define("USE_GO_SERVER",true)
+define("USE_GO_SERVER",true);
 
 function checkTCPService() {
 	// check if service is needed and start/stop if neede (only if devices with IMEI exist) 
