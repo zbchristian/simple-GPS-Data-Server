@@ -8,6 +8,7 @@
 define("USE_GO_SERVER",true);
 
 function checkTCP_UDP_Service() {
+	global $startTCPUDPserver;
 	$isRunning = controlTCPService("STATUS") === true;
 	if($startTCPUDPserver && !$isRunning) return controlTCPService("START");
 	if(!$startTCPUDPserver && $isRunning) return controlTCPService("STOP");
@@ -30,7 +31,7 @@ function controlTCPService($action) {
 	   ($isConnected = @socket_connect($socket, "localhost", $TCPport)) === false && $action==="STATUS") 
 			return "TCP service not running/not started";
 	if($isConnected === false && $action === "STOP") return true;
-	$cmd= $action === "STATUS" ? "status ".$secretkey." " : "close ".$secretkey." ";
+	$cmd= $action === "STATUS" ? "status ".$secretkey." " : "exit ".$secretkey." ";
 	@socket_write($socket, $cmd);
 	$response = @socket_read($socket,20);
 	@socket_close($socket);

@@ -1,4 +1,5 @@
 <?php
+if(!isset($relpath)) $relpath=".";	// DO NOT CHANGE
 
 //timezone
 $timezone="Europe/Berlin";
@@ -21,7 +22,7 @@ $tmp="temp";	// temp directory to store gpx files
 // parameters for TCP-HTTPS-Bridge. 
 // Needed for tracking devices connecting by TCP/IP
 $startTCPUDPserver=true;
-$TCPBridge="../exe/tcp_udp_http_bridge";	// path to TCP-HTTP-Bridge serverprogram to start (wrt admin script)
+$TCPBridge="$relpath/exe/tcp_udp_http_bridge";	// path to TCP-HTTP-Bridge serverprogram to start (wrt admin script)
 $HTTPSserver="localhost";
 $TCPport=20202;
 $urlpath="/gpstracker/index.php";
@@ -29,7 +30,6 @@ $secretkey="12aBfgRt90kkLLpY";	// CHANGE THIS VALUE !!!!
 
 // some initializations
 $error="";
-if(!isset($relpath)) $relpath=".";
 
 setlocale(LC_ALL,"en_US.UTF-8");
 ?>
