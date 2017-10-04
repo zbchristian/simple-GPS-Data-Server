@@ -84,8 +84,8 @@ var devs = []devPattern {
 			login: ReqRespPat{msg:"", resp:"",msgRegexp:nil},
 			heartbeat: ReqRespPat{msg:"", resp:""},
 			//example data: s08754/s08754/$GPRMC,180725,A,5337.37477,N,1010.26495,E,0.000000,0.000000,021017,,*20
-			//              devid  user       GPRMC record    
-			gps_data: ReqRespPat{msg:"^(\\w+)\\/\\w+\\/(\\$GPRMC,.+\\*\\w{2})\\s*$", resp:""},
+			//              user   devid       GPRMC record    
+			gps_data: ReqRespPat{msg:"^\\w+\\/(\\w+)\\/(\\$GPRMC,.+\\*\\w{2})\\s*$", resp:""},
 			order: []int{DEVID,GPRMC},
 			units: []int{NONE,NONE},
 		},
