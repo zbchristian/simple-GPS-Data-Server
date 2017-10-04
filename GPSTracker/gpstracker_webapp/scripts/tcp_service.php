@@ -7,16 +7,14 @@
 
 define("USE_GO_SERVER",true);
 
-function checkTCPService() {
-	// check if service is needed and start/stop if neede (only if devices with IMEI exist) 
-	$needService = imei_exists_db();
+function checkTCP_UDP_Service() {
 	$isRunning = controlTCPService("STATUS") === true;
-	if($needService && !$isRunning) return controlTCPService("START");
-	if(!$needService && $isRunning) return controlTCPService("STOP");
+	if($startTCPUDPserver && !$isRunning) return controlTCPService("START");
+	if(!$startTCPUDPserver && $isRunning) return controlTCPService("STOP");
 	return true;
 }
 
-// possible actions: "START", "STOP", "STATUS"
+// possible actions: "START", "STOP", "STATUS" of server
 function controlTCPService($action) {
 	global	$TCPBridge, $TCPport, $HTTPSserver, $secretkey, $urlpath;
 	if($action === "START") {
