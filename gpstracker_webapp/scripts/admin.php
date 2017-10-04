@@ -30,10 +30,11 @@ if(isset($inputs["admin_device"]) ) {
 		$dev["history"] = isset($inputs["history"]) ?  $inputs["history"] : -1;
 		if(in_array($inputs["admin_device"],array("clear","delete")) && !isset($inputs["confirmed"]) )
 			display_confirm($dev,$inputs["admin_device"]);
-		else if(($err=handle_device_db($dev,$inputs["admin_device"])) !== true || ($err=checkTCPService()) !== true)
+		else if(($err=handle_device_db($dev,$inputs["admin_device"])) !== true)
 			$error = "<h2>$err</h2>";
 	}
 }
 $devlist=retrieve_devicelist_db();
 display_admin($devlist,$inputs);
+checkTCP_UDP_Service();
 ?>

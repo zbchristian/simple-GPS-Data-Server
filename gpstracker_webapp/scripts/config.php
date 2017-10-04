@@ -20,6 +20,7 @@ $tmp="temp";	// temp directory to store gpx files
 
 // parameters for TCP-HTTPS-Bridge. 
 // Needed for tracking devices connecting by TCP/IP
+$startTCPUDPserver=true;
 $TCPBridge="../exe/tcp_udp_http_bridge";	// path to TCP-HTTP-Bridge serverprogram to start (wrt admin script)
 $HTTPSserver="localhost";
 $TCPport=20202;

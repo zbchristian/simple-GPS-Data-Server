@@ -49,6 +49,7 @@ if(isset($inputs["lat"]) ) {
 	if(insert_gps_db($gps)) echo "$devno OK";
 	else			echo "$devno FAILED";
 	cleanup_GPS_data();
+	checkTCP_UDP_Service();
 }
 else { // display/retrieve GPX file for given device and time range
 	cleanup_GPS_data();
@@ -67,5 +68,6 @@ else { // display/retrieve GPX file for given device and time range
 	if(($gpx = create_gpx_data($devno,$gps)) === false) die("<h2>Error creating GPX</h2>");
 	if(isset($inputs["gpx"])) download_gpx($devno,$gpx);
 	else display_gpx($devno,$gpx,$gps);
+	checkTCP_UDP_Service();
 }
 ?>
