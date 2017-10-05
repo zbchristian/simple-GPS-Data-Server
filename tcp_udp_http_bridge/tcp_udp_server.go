@@ -18,7 +18,6 @@ import (
 	"errors"
 )
 
-const (VERBOSE = false )
 
 const (
 	DEFAULT_HOST = "localhost"
@@ -35,6 +34,7 @@ var SecretKey string
 
 var isExit 	bool
 var isClose bool
+var isVerbose bool
 
 var logger = log.New(os.Stdout, "GPS-TCP/UDP-HTTP-Bridge - ", log.Ldate|log.Ltime)
 var regexExit *regexp.Regexp
@@ -46,6 +46,7 @@ func main() {
 	flag.IntVar(&Port,"port",DEFAULT_PORT,"port number")
 	flag.StringVar(&UrlPath,"urlpath",DEFAULT_URLPATH,"relative url path")
 	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP/UDP port")
+	flag.BoolVar(&isVerbose,"verbose",false,"enable verbose logging output")
 	flag.Parse()
 	
 	if Host == "localhost" { Host = "127.0.0.1" }
@@ -105,7 +106,7 @@ func UDPServer() {
         }
 		response, err := handleMessage(string(buf[:n]),"UDP")
 		if err == nil && len(response)>0 {
-			if VERBOSE  { logger.Print("Response - "+response) }
+			if isVerbose  { logger.Print("Response - "+response) }
 			l.WriteToUDP([]byte(response),destSrv) 
 		} else if err != nil {
 			logger.Print(err.Error())
@@ -115,7 +116,7 @@ func UDPServer() {
 }
 
 
-// Handles incoming requests.
+// Handles incoming TCP requests
 func handleRequest(conn net.Conn) {
 	defer wg.Done()
 	defer conn.Close()
@@ -136,7 +137,7 @@ func handleRequest(conn net.Conn) {
 			response, err = handleMessage(string(buf[:nb]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
-				if VERBOSE { logger.Print("Response: "+response) }
+				if isVerbose { logger.Print("Response: "+response) }
 				conn.Write([]byte(response)) 
 			} else if err != nil {
 				logger.Print(err.Error())
@@ -144,8 +145,7 @@ func handleRequest(conn net.Conn) {
 			}
 		}
 	}
-	// Close the connection when you're done with it.
-	if VERBOSE {logger.Print("Close TCP connection ...") }
+	if isVerbose {logger.Print("Close TCP connection ...") }
 }
 
 func handleMessage(msg string, connType string) (response string, err error) {
@@ -163,7 +163,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 		isClose = strMatched[1] == "close" && connType == "TCP"
 		isExit  = strMatched[1] == "exit"
 		if isClose || isExit { 
-			if VERBOSE { logger.Print("close/exit message received") }
+			if isVerbose { logger.Print("close/exit message received") }
 			err = errors.New("Close connection")
 			return 
 		} else {
@@ -179,9 +179,9 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
 	n := len(responseHTTP)
 	if n>80 { n=80 }
-	if VERBOSE { logger.Print("HTTP response: "+responseHTTP[:n]) }
+	if isVerbose { logger.Print("HTTP response: "+responseHTTP[:n]) }
 	ans, isOK := analyseHTTPResponse(responseHTTP)
-	if VERBOSE { logger.Print(ans) }
-	if !isOK && VERBOSE { err = errors.New("device rejected or invalid response") }
+	if isVerbose { logger.Print(ans) }
+	if !isOK && isVerbose { err = errors.New("device rejected or invalid response") }
 	return
 }
