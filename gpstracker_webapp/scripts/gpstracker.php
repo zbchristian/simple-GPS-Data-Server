@@ -14,6 +14,7 @@ include "scripts/config.php";
 include "scripts/webpages.php";
 include "scripts/utils.php";
 include "scripts/db.php";
+include "scripts/tcp_service.php";
 
 //var_dump($_GET);
 $inputs = filter_GET_inputs(); // filter all quotes and some characters from keys and values
