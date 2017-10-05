@@ -18,6 +18,8 @@ import (
 	"errors"
 )
 
+const (VERBOSE = false )
+
 const (
 	DEFAULT_HOST = "localhost"
 	DEFAULT_PORT = 20202
@@ -103,7 +105,7 @@ func UDPServer() {
         }
 		response, err := handleMessage(string(buf[:n]),"UDP")
 		if err == nil && len(response)>0 {
-			logger.Print("Response - "+response)
+			if VERBOSE  { logger.Print("Response - "+response) }
 			l.WriteToUDP([]byte(response),destSrv) 
 		} else if err != nil {
 			logger.Print(err.Error())
@@ -134,7 +136,7 @@ func handleRequest(conn net.Conn) {
 			response, err = handleMessage(string(buf[:nb]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
-				logger.Print("Response: "+response)
+				if VERBOSE { logger.Print("Response: "+response) }
 				conn.Write([]byte(response)) 
 			} else if err != nil {
 				logger.Print(err.Error())
@@ -143,7 +145,7 @@ func handleRequest(conn net.Conn) {
 		}
 	}
 	// Close the connection when you're done with it.
-	logger.Print("Close TCP connection ...")
+	if VERBOSE {logger.Print("Close TCP connection ...") }
 }
 
 func handleMessage(msg string, connType string) (response string, err error) {
@@ -151,7 +153,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 // fill regexp for close/exit message
 	if regexExit == nil {regexExit = regexp.MustCompile("^(close|exit|status)\\s+("+SecretKey+")\\s*$") }
 
-	logger.Print("Incoming message via "+connType+": " + msg)
+	logger.Print("Message via "+connType+": " + msg)
 	response = ""
 	query := ""
 	err = nil
@@ -161,7 +163,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 		isClose = strMatched[1] == "close" && connType == "TCP"
 		isExit  = strMatched[1] == "exit"
 		if isClose || isExit { 
-			logger.Print("close/exit message received")
+			if VERBOSE { logger.Print("close/exit message received") }
 			err = errors.New("Close connection")
 			return 
 		} else {
@@ -177,9 +179,9 @@ func handleMessage(msg string, connType string) (response string, err error) {
 	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
 	n := len(responseHTTP)
 	if n>80 { n=80 }
-	logger.Print("HTTP response: "+responseHTTP[:n])
+	if VERBOSE { logger.Print("HTTP response: "+responseHTTP[:n]) }
 	ans, isOK := analyseHTTPResponse(responseHTTP)
-	logger.Print(ans)
-	if !isOK { err = errors.New("device rejected or invalid response") }
+	if VERBOSE { logger.Print(ans) }
+	if !isOK && VERBOSE { err = errors.New("device rejected or invalid response") }
 	return
 }
