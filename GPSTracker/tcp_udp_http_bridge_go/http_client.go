@@ -18,6 +18,7 @@ import (
 
 func sendHTTPrequest(host string, urlpath string, query string) (string, error) {
 	host = strings.TrimSpace(host)
+	urlpath = strings.TrimSpace(urlpath)
 	skipVerify := false
 	// disable certificate verify for access to localhost
 	if host == "localhost" || host == "127.0.0.1" { skipVerify = true } 	
@@ -25,6 +26,7 @@ func sendHTTPrequest(host string, urlpath string, query string) (string, error) 
 	ishttp, err := regexp.MatchString("^(http|https)://.+$", Url)
 	if !ishttp { Url = "https://"+Url }
 	query = strings.TrimSpace(query)
+	urlpath = strings.Trim(urlpath,"/") 
 	Url += "/" + urlpath + "?" + query
 	if isVerbose { logger.Print("URL: " + Url) }
 	timeout := time.Duration(5 * time.Second)
