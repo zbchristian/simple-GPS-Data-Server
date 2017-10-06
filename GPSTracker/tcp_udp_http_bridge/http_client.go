@@ -13,18 +13,24 @@ import (
 		"strings"
 		"regexp"
 		"time"
+		"crypto/tls"
 )
 
 func sendHTTPrequest(host string, urlpath string, query string) (string, error) {
-	Url := strings.TrimSpace(host)
+	host = strings.TrimSpace(host)
+	skipVerify := false
+	// disable certificate verify for access to localhost
+	if host == "localhost" || host == "127.0.0.1" { skipVerify = true } 	
+	Url := host
 	ishttp, err := regexp.MatchString("^(http|https)://.+$", Url)
 	if !ishttp { Url = "https://"+Url }
 	query = strings.TrimSpace(query)
 	Url += "/" + urlpath + "?" + query
 	if isVerbose { logger.Print("URL: " + Url) }
 	timeout := time.Duration(5 * time.Second)
-	client := http.Client{Timeout: timeout,}
-	strBody := ""
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: skipVerify},} 
+	client := http.Client{Timeout: timeout,Transport: tr,}
+ 	strBody := ""
 	resp,err := client.Get(Url)
 	if err == nil { 
 		defer resp.Body.Close()
