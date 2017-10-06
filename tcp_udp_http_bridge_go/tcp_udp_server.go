@@ -49,8 +49,6 @@ func main() {
 	flag.BoolVar(&isVerbose,"verbose",false,"enable verbose logging output")
 	flag.Parse()
 	
-	if Host == "localhost" { Host = "127.0.0.1" }
-
 	logger.Print("Starting servers on Port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
 // Listen for incoming connections.
 	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP:nil,Port:Port,})	
