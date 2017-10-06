@@ -174,7 +174,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 		
 	// send HTTPS request to server
 	responseHTTP := ""
-	if err == nil { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
+	if err == nil && len(query)>0 { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
 	n := len(responseHTTP)
 	if n>80 { n=80 }
 	if isVerbose { logger.Print("HTTP response: "+responseHTTP[:n]) }
