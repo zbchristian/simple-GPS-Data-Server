@@ -1,4 +1,4 @@
-Howto - GPS-Tracker
+﻿Howto - GPS-Tracker
 ===================
 Requirements: 
 - PHP w/ SQLITE3 installed 
@@ -9,7 +9,7 @@ Installation:
 - create corresponding entry in webserver config to allow web access and php to run
 - adjust main .htaccess file (rewrite rules)
 - access control for admin interface
-	o create .passwd file in auth directory and/or adjust path in admin/.htaccess 
+	o create .htpasswd file in auth directory and/or adjust path in admin/.htaccess 
 - edit scripts/config.php: adjust settings
 - TCP/UDP-HTTP-Bridge 
 	o enable/disable in scripts/config.php
