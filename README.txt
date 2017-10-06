@@ -21,6 +21,10 @@ Installation:
 Enter tracking devices
 - open page https://servername/gpstracker/admin and fill out the form
 
+View data
+- open page https://servername/gpstracker?id=<ID of device>
+	o optional parameter dt=<time span> in min(m), hours(h), days(d) or years(y), e.g. "10d" for 10 days 
+
 Tracking devices
 - GPS Logger for Android
 	o Öffne Einstellungen -> Logging Details
