@@ -145,7 +145,7 @@ JB.GPX2GM.strings.de = {
 }
 JB.GPX2GM.strings.en = {
 	lenght: "Length",
-	way: "Way",
+	way: "Distance",
 	duration: "Duration",
 	tstart: "Start time",
 	time: "Time",

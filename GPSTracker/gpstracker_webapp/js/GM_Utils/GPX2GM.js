@@ -1826,7 +1826,7 @@ JB.lpgpx = function(fns,id,callback) {
 						var tpause = 0;
 						daten[0].twob = daten[0].t;
 						for(var i=0;i<daten.length-1;i++) {
-							if(daten[i].v < 1) tpause += daten[i+1].t-daten[i].t ;
+							if(daten[i].v < 0.1) tpause += daten[i+1].t-daten[i].t ;
 							daten[i+1].twob = daten[i+1].t - tpause;
 						}
 						tracki.vmittwob = tracklen/(daten[daten.length-1].t-daten[0].t-tpause)
