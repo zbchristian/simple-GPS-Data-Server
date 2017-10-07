@@ -25,7 +25,7 @@ const (
 	DEFAULT_KEY  = "12345"
 	DEFAULT_URLPATH = "index.php"
 	TIMEOUT = 2
-	MAXTCPCONN = 5*60	// after this number of minutes the TCP is disconnected
+	MAXTCPCONN = 2*60	// after this number of minutes the TCP is disconnected
 )
 
 var Host string
