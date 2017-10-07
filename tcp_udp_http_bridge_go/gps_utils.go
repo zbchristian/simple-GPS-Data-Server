@@ -16,7 +16,7 @@ import (
 
 type devtype int
 const (
-	TK103B_CZ 	devtype = iota
+	TK103B_H02 	devtype = iota
 	GPSLOGGER	devtype = iota
 	TK103 		devtype = iota
 	GL103 		devtype = iota
@@ -68,7 +68,7 @@ type devPattern struct {
 
 var devs = []devPattern {
 // ------------  TK103_CZ
-		devPattern {device:"TK103B - NOT typical for TK103", Type:TK103B_CZ,
+		devPattern {device:"TK103B - H02", Type:TK103B_H02,
 			login: ReqRespPat{msg:"", resp:"",msgRegexp:nil},
 			//example heartbeat: *HQ,355488020824039,XT,V,0,0#
 			//                               IMEI
@@ -93,17 +93,17 @@ var devs = []devPattern {
 // ------------ TK103
 //	{.device="TK103-untested and incomplete", .type=TK103,
 //	 .login 	= {.msg="^\\((\\d{12})(BP05)([A-Z0-9.]*)\\).*$", .resp="%DATE%%TIME%AP05HSO"},
-//	 .heartbeat 	= {.msg=NULL, .resp=NULL},
+//	 .heartbeat = {.msg=NULL, .resp=NULL},
 //	 .gps_data	= {.msg="^\\((\\d{12})(B[A-Z]\\d{2})([A-Z0-9.]*)\\).*$", .resp=NULL},
-//	 .order         = {DEVID},
+//	 .order		= {DEVID},
 //	 .units		= {NONE}},
 
 // ----------- GL103
 //	{.device="GL103-untested and incomplete", .type=GL103,
 //	 .login 	= {.msg="^##,imei:(\\d+),A;.*$", .resp="LOAD"},
-//	 .heartbeat 	= {.msg="^imei:(\\d+);.*$", .resp="ON"},
+//	 .heartbeat = {.msg="^imei:(\\d+);.*$", .resp="ON"},
 //	 .gps_data	= {.msg="^imei:(\\d+),(\\d+|A),?(\\d*),?(\\d+),?([a-z0-9,%.]+);.*$", .resp=NULL},
-//	 .order         = {DEVID},
+//	 .order     = {DEVID},
 //	 .units		= {NONE}}
 //};
 
