@@ -25,6 +25,7 @@ const (
 	DEFAULT_KEY  = "12345"
 	DEFAULT_URLPATH = "index.php"
 	TIMEOUT = 2
+	MAXTCPCONN = 5*60	// after this number of minutes the TCP is disconnected
 )
 
 var Host string
@@ -123,7 +124,8 @@ func handleRequest(conn net.Conn) {
 	// Make a buffer to hold incoming data.
 	buf := make([]byte, 1024)
 
-	for !isClose && !isExit {
+	startTime := time.Now()
+	for !isClose && !isExit && time.Since(startTime).Minutes() < MAXTCPCONN {	// keep connection open max 6 hours
 		conn.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
 		// Read the incoming connection into the buffer.
 		nb, err := conn.Read(buf)
