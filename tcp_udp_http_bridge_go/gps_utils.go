@@ -65,19 +65,40 @@ type devPattern struct {
 } 
 
 // 
+// regular expression for GPRMC record w/o header, magnetic deviation and checksum 
+const (
+	REGEXP_GPRMC = "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
+//                    time  active/void  lat          lon          speed   angle    date
+)
 
+// how to define device patterns:
+// - regexp pattern required for login, heartbeat and actual data message
+// - for each case a response can be defined. Currently NO dynamic response possible
+// - in each case the device has to be identified by the IMEI or a deviceid
+// - for data message
+// 	o if device sends a GPRMC record, use the predefined constant (see above)
+// 	o assign to each matched pattern (in parentheses) a key word (DEVIMEI, DEVID, ACTIVE, LAT, LON, NS, EW, SPEED, ANGLE, DATE)
+// 	o for unit conversion give for each matched pattern (LAT, LON, SPEED, ANGLE) the unit 
+
+//example heartbeat: *HQ,355488020824039,XT,V,0,0#
+//                               IMEI
+// heartbeat: ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", resp:""},
+
+//example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
+//                  imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
+// gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),(\\w+)#\\s*$", resp:""},
+// order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
+// units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
+
+ 
 var devs = []devPattern {
-// ------------  TK103_CZ
-		devPattern {device:"TK103B - H02", Type:TK103B_H02,
-			login: ReqRespPat{msg:"", resp:"",msgRegexp:nil},
-			//example heartbeat: *HQ,355488020824039,XT,V,0,0#
-			//                               IMEI
-			heartbeat: ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#.*$", resp:""},
-			//example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
-			//                  imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
-			gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),([\\w0-9]+)#.*$", resp:""},
-			order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
-			units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
+// ------------  TK103_H02
+		devPattern {device:"TK103B-H02", Type:TK103B_H02,
+			login: 		ReqRespPat{msg:"", resp:"",msgRegexp:nil},
+			heartbeat: 	ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", resp:""},
+			gps_data: 	ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,"+REGEXP_GPRMC+",.*$", resp:""},
+			order: []int{                         DEVIMEI,           GPRMC},
+			units: []int{NONE,NONE},
 		},
 // ------------ GPS-logger via UDP
 		devPattern {device:"GPS Logger (UDP)", Type:GPSLOGGER,
@@ -85,8 +106,8 @@ var devs = []devPattern {
 			heartbeat: ReqRespPat{msg:"", resp:""},
 			//example data: s08754/s08754/$GPRMC,180725,A,5337.37477,N,1010.26495,E,0.000000,0.000000,021017,,*20
 			//              user   devid       GPRMC record    
-			gps_data: ReqRespPat{msg:"^\\w+\\/(\\w+)\\/(\\$GPRMC,.+\\*\\w{2})\\s*$", resp:""},
-			order: []int{DEVID,GPRMC},
+			gps_data: ReqRespPat{msg:"^\\w+\\/(\\w+)\\/\\$GPRMC,"+REGEXP_GPRMC+",.*$", resp:""},
+			order: []int{					  DEVID,				GPRMC},
 			units: []int{NONE,NONE},
 		},
 	}
@@ -173,28 +194,28 @@ func createGPRMCQuery(dev devPattern, matches []string) (query string, err error
 	isGPRMC := false
 	for i:=0; !isGPRMC && i<len(dev.order); i++ { isGPRMC=dev.order[i]==GPRMC }
 	if isGPRMC {
-		if val,_=getGPSValue(dev,matches,GPRMC); len(val)>0 { query += val }
+		if val,_=getGPSValue(dev,matches,GPRMC); len(val)>0 { query += "$GPRMC,"+val+",0.0,W" }	// add header and dummy magn deviation
 	} else {
 		for i:=0; i<len(gprmcOrder);i++ {
 			switch gprmcOrder[i] {
 					case HEAD:
 						query +="$GPRMC"
 					case MAGN:	// add dummy magnetic deviation
-						query +=",0.0";					
+						query +=",0.0,W";					
 					default:
 						query += ","
 						if val,_=getGPSValue(dev,matches,gprmcOrder[i]); len(val)>0 { query += url.QueryEscape(val) }
 			}
 		}
-		// add trailing ACTIVE
+	}
+	if len(query)>0 {
+		// add trailing ACTIVE (NMEA 2.1)
 		query += ",A*"
 		// calculate single byte GPRMC checksum between $ and *
 		var cs byte=0
 		for _,c := range []byte(strconv.QuoteToASCII(query)) { if c!='$' && c!='*' { cs ^= c }}
 		query = query+fmt.Sprintf("%02X",cs)
-	}
-	if len(query)>0 {
-		query = "gprmc="+query
+		query = "gprmc="+query	// openGTS HTTP request
 		if val,_=getGPSValue(dev,matches,DEVID); len(val)>0 	{ query = "id="+url.QueryEscape(val)+"&"+query }
 		if val,_=getGPSValue(dev,matches,DEVIMEI); len(val)>0 	{ query = "imei="+url.QueryEscape(val)+"&"+query }
 		if val,_=getGPSValue(dev,matches,  ALT); len(val)>0 	{ query = "alt="+url.QueryEscape(val)+"&"+query }
