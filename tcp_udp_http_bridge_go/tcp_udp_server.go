@@ -156,13 +156,13 @@ func handleMessage(msg string, connType string) (response string, err error) {
 // fill regexp for close/exit message
 	if regexExit == nil {regexExit = regexp.MustCompile("^(close|exit|status)\\s+("+SecretKey+")\\s*$") }
 
-	logger.Print("Message via "+connType+": " + msg)
 	response = ""
 	query := ""
 	err = nil
 	// check for close | exit
 	strMatched := regexExit.FindStringSubmatch(msg)
 	if len(strMatched) > 2 {
+		if isVerbose { logger.Print("Command received via "+connType+": " + msg) }
 		isClose = strMatched[1] == "close" && connType == "TCP"
 		isExit  = strMatched[1] == "exit"
 		if isClose || isExit { 
@@ -174,6 +174,7 @@ func handleMessage(msg string, connType string) (response string, err error) {
 			return 
 		}
 	}
+	logger.Print("Message via "+connType+": " + msg) 
 	// check if incoming message matches a known device 
 	response, query, err = filter_gps_device(msg)
 		
