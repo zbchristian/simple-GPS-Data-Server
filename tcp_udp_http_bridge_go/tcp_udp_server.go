@@ -20,12 +20,13 @@ import (
 
 
 const (
-	DEFAULT_HOST = "localhost"
-	DEFAULT_PORT = 20202
-	DEFAULT_KEY  = "12345"
+	DEFAULT_HOST 	= "http://localhost"
+	DEFAULT_PORT 	= 20202
+	DEFAULT_KEY  	= "12345"
 	DEFAULT_URLPATH = "index.php"
-	TIMEOUT = 2
-	MAXTCPCONN = 2*60	// after this number of minutes the TCP is disconnected
+	TIMEOUT 		= 2
+	MAXTCPCONN 		= 2*60	// after this number of minutes the TCP connection is closed
+	MAXTCPINACTIVE 	= 300	// after this number of seconds w/o received data, the TCP connection is closed
 )
 
 var Host string
@@ -115,7 +116,7 @@ func UDPServer() {
 }
 
 
-// Handles incoming TCP requests
+// Handles a single TCP connection
 func handleRequest(conn net.Conn) {
 	defer wg.Done()
 	defer conn.Close()
@@ -125,15 +126,17 @@ func handleRequest(conn net.Conn) {
 	buf := make([]byte, 1024)
 
 	startTime := time.Now()
-	for !isClose && !isExit && time.Since(startTime).Minutes() < MAXTCPCONN {	// keep connection open max 6 hours
+	timeInactive := 0
+	for !isClose && !isExit && time.Since(startTime).Minutes() < MAXTCPCONN && timeInactive < MAXTCPINACTIVE {	
 		conn.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
 		// Read the incoming connection into the buffer.
 		nb, err := conn.Read(buf)
 		if err != nil { 
-			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {	continue }
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {	timeInactive+=TIMEOUT; continue }
 			break; 
 		}
 		if nb > 0 {
+			timeInactive = 0
 			response, err = handleMessage(string(buf[:nb]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
@@ -176,12 +179,12 @@ func handleMessage(msg string, connType string) (response string, err error) {
 		
 	// send HTTPS request to server
 	responseHTTP := ""
-	if err == nil && len(query)>0 { responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) }
-	n := len(responseHTTP)
-	if n>80 { n=80 }
-	if isVerbose { logger.Print("HTTP response: "+responseHTTP[:n]) }
-	ans, isOK := analyseHTTPResponse(responseHTTP)
-	if isVerbose { logger.Print(ans) }
-	if !isOK && isVerbose { err = errors.New("device rejected or invalid response") }
+	if err == nil && len(query)>0 { 
+		responseHTTP, err = sendHTTPrequest(Host,UrlPath,query) 
+		n := len(responseHTTP)
+		if n>80 { n=80 }
+		if isVerbose && err==nil { logger.Print("HTTP response: "+responseHTTP[:n]) }
+		_,err = analyseHTTPResponse(responseHTTP)
+	}
 	return
 }

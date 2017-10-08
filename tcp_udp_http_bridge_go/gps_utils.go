@@ -82,14 +82,13 @@ const (
 
 //example heartbeat: *HQ,355488020824039,XT,V,0,0#
 //                               IMEI
-// heartbeat: ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", resp:""},
+//heartbeat: ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", resp:""},
 
 //example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
 //                  imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
-// gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),(\\w+)#\\s*$", resp:""},
-// order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
-// units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
-
+//gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),(\\w+)#\\s*$", resp:""},
+//order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
+//units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
  
 var devs = []devPattern {
 // ------------  TK103_H02
@@ -294,15 +293,15 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 
 var regexpHTTPResponse = regexp.MustCompile("^\\s*[0-9A-Za-z]+\\s+(OK|REJECTED)\\s*")
 
-func analyseHTTPResponse(response string) (ans string, isOk bool) {
+func analyseHTTPResponse(response string) (ans string, err error) {
 	ans = "no valid response - check connection to HTTP server"
-	isOk = false
+	err = errors.New(ans)
 	if response != "" {
 		matchedStrings := regexpHTTPResponse.FindStringSubmatch(response)
 		if nmatch:=len(matchedStrings); nmatch > 1 {
 			ans = "device "+matchedStrings[1]
-			if matchedStrings[1] == "OK" { isOk = true } 
-
+			if isVerbose { logger.Print(ans) } 
+			if matchedStrings[1] == "OK" { err = nil } 
 		}
 	}
 	return
