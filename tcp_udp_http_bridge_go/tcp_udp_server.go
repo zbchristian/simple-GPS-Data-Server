@@ -16,6 +16,8 @@ import (
 	"log"
 	"sync"
 	"errors"
+	"runtime"
+
 )
 
 
@@ -25,6 +27,7 @@ const (
 	DEFAULT_KEY  	= "12345"
 	DEFAULT_URLPATH = "index.php"
 	TIMEOUT 		= 2
+	MAXCHILDS		= 20
 	MAXTCPCONN 		= 2*60	// after this number of minutes the TCP connection is closed
 	MAXTCPINACTIVE 	= 300	// after this number of seconds w/o received data, the TCP connection is closed
 )
@@ -35,7 +38,6 @@ var UrlPath string
 var SecretKey string
 
 var isExit 	bool
-var isClose bool
 var isVerbose bool
 
 var logger = log.New(os.Stdout, "GPS-TCP/UDP-HTTP-Bridge - ", log.Ldate|log.Ltime)
@@ -74,9 +76,14 @@ func main() {
 			logger.Print("Error accepting: ", err.Error())
             break
         }
-        // Handle connections in a new goroutine.
-		wg.Add(1)
-        go handleRequest(conn)
+		if runtime.NumGoroutine() < MAXCHILDS {
+			// Handle connections in a new goroutine.
+			wg.Add(1)
+			go handleRequest(conn)
+		} else { 	// too many childs running
+			conn.Close()
+			logger.Print("Reject connection - max number of connections exceeded")
+		}
     }
 	logger.Print("Exit TCP server ...")
 	wg.Wait()	// wait for other processes to finish
@@ -104,7 +111,7 @@ func UDPServer() {
 			logger.Print("Error accepting UDP: ", err.Error())
             break
         }
-		response, err := handleMessage(string(buf[:n]),"UDP")
+		response, _, err := handleMessage(string(buf[:n]),"UDP")
 		if err == nil && len(response)>0 {
 			if isVerbose  { logger.Print("Response - "+response) }
 			l.WriteToUDP([]byte(response),destSrv) 
@@ -120,7 +127,7 @@ func UDPServer() {
 func handleRequest(conn net.Conn) {
 	defer wg.Done()
 	defer conn.Close()
-	isClose= false
+	isClose:= false
 	var response string = ""
 	// Make a buffer to hold incoming data.
 	buf := make([]byte, 1024)
@@ -137,7 +144,7 @@ func handleRequest(conn net.Conn) {
 		}
 		if nb > 0 {
 			timeInactive = 0
-			response, err = handleMessage(string(buf[:nb]),"TCP")
+			response, isClose, err = handleMessage(string(buf[:nb]),"TCP")
 			// Send the response
 			if err == nil && len(response)>0 {
 				if isVerbose { logger.Print("Response: "+response) }
@@ -151,7 +158,7 @@ func handleRequest(conn net.Conn) {
 	if isVerbose {logger.Print("Close TCP connection ...") }
 }
 
-func handleMessage(msg string, connType string) (response string, err error) {
+func handleMessage(msg string, connType string) (response string, isClose bool, err error) {
 	msg = strings.TrimSpace(msg)
 // fill regexp for close/exit message
 	if regexExit == nil {regexExit = regexp.MustCompile("^(close|exit|status)\\s+("+SecretKey+")\\s*$") }
