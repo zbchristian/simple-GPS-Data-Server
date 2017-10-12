@@ -93,19 +93,19 @@ const (
 var devs = []devPattern {
 // ------------  TK103_H02
 		devPattern {device:"TK103B-H02", Type:TK103B_H02,
-			login: 		ReqRespPat{msg:"", resp:"",msgRegexp:nil},
-			heartbeat: 	ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", resp:""},
-			gps_data: 	ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,"+REGEXP_GPRMC+",.*$", resp:""},
+			login: 		ReqRespPat{msg:"", 															resp:"",msgRegexp:nil},
+			heartbeat: 	ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", 	resp:""},
+			gps_data: 	ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,"+REGEXP_GPRMC+",.*$", 			resp:""},
 			order: []int{                         DEVIMEI,           GPRMC},
 			units: []int{NONE,NONE},
 		},
 // ------------ GPS-logger via UDP
 		devPattern {device:"GPS Logger (UDP)", Type:GPSLOGGER,
-			login: ReqRespPat{msg:"", resp:"",msgRegexp:nil},
-			heartbeat: ReqRespPat{msg:"", resp:""},
+			login: ReqRespPat{msg:"", 																resp:"",msgRegexp:nil},
+			heartbeat: ReqRespPat{msg:"", 															resp:""},
 			//example data: s08754/s08754/$GPRMC,180725,A,5337.37477,N,1010.26495,E,0.000000,0.000000,021017,,*20
 			//              user   devid       GPRMC record    
-			gps_data: ReqRespPat{msg:"^\\w+\\/(\\w+)\\/\\$GPRMC,"+REGEXP_GPRMC+",.*$", resp:""},
+			gps_data: ReqRespPat{msg:"^\\w+\\/(\\w+)\\/\\$GPRMC,"+REGEXP_GPRMC+",.*$", 				resp:""},
 			order: []int{					  DEVID,				GPRMC},
 			units: []int{NONE,NONE},
 		},
@@ -290,7 +290,7 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 	return 
 }
 
-
+// expected response from web server: device-ID/IMEI OK|REJECTED
 var regexpHTTPResponse = regexp.MustCompile("^\\s*[0-9A-Za-z]+\\s+(OK|REJECTED)\\s*")
 
 func analyseHTTPResponse(response string) (ans string, err error) {
