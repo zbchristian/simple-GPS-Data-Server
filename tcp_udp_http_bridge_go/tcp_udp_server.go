@@ -1,7 +1,12 @@
+// TCP/UDP server for GPS devices - Bridge to HTTP(S) server (OpenGTS format) 
+// ==========================================================================
 // Command line Arguments: -host -port -urlpath -key
 //
-// Command to close connection: close <SecretKEy>
-// Command to exit server: exit <SecretKEy>
+// - listen on given TCP/UDP port
+// - send data via HTTP to HOST and provided URLPATH
+// - server recognizes commands: 
+// - Command (via TCP/UDP port) to close connection: close <SecretKEy>
+// - Command to exit server: exit <SecretKEy>
 
 package main
 
@@ -44,7 +49,8 @@ var logger = log.New(os.Stdout, "GPS-TCP/UDP-HTTP-Bridge - ", log.Ldate|log.Ltim
 var regexExit *regexp.Regexp
 var wg sync.WaitGroup // create wait group to sync exit of all processes 
 
-func main() {
+// initialize the server (command line arguments and list of known devices)
+func init() {
 // get the arguments to run the server
 	flag.StringVar(&Host,"httpserver",DEFAULT_HOST,"name of HTTP server")
 	flag.IntVar(&Port,"port",DEFAULT_PORT,"port number")
@@ -52,8 +58,12 @@ func main() {
 	flag.StringVar(&SecretKey,"key",DEFAULT_KEY,"secret key to terminate program via TCP/UDP port")
 	flag.BoolVar(&isVerbose,"verbose",false,"enable verbose logging output")
 	flag.Parse()
-	
 	logger.Print("Starting servers on Port:"+strconv.Itoa(Port)+" HTTP-server:"+Host+" urlpath:"+UrlPath+" Key:"+SecretKey)
+
+	readDeviceConfig("devices.config")	// read the device definitions
+}
+
+func main() {
 // Listen for incoming connections.
 	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP:nil,Port:Port,})	
     if err != nil {

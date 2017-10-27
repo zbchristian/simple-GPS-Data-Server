@@ -12,14 +12,10 @@ import (
 		"strconv"
 		"math"
 		"net/url"
-)
-
-type devtype int
-const (
-	TK103B_H02 	devtype = iota
-	GPSLOGGER	devtype = iota
-	TK103 		devtype = iota
-	GL103 		devtype = iota
+		"os"
+		"bufio"
+		"strings"
+		"encoding/json"
 )
 
 const (	
@@ -48,20 +44,50 @@ const (
 	MAGN 	int = iota
 )
 
+var keywords = map[string]int{
+    "NONE": 	NONE,
+    "DEVID":   	DEVID,
+	"DEVIMEI":	DEVIMEI,
+	"GPRMC": 	GPRMC,	
+	"TIME":		TIME,
+	"ACTIVE":	ACTIVE,
+	"LAT":		LAT,
+	"LON":		LON,
+	"NS":		NS,
+	"EW":		EW,
+	"SPEED":	SPEED,
+	"ANGLE":	ANGLE,
+	"DATE":		DATE,
+	"ALT":		ALT,
+	"ACC":		ACC,
+	"DEGMIN":	DEGMIN,
+	"KMPERH": 	KMPERH,
+	"MPERS": 	MPERS,
+	"KNOTS":	KNOTS,
+	"DEGREE": 	DEGREE,
+	"HEAD":		HEAD,
+	"CHECK": 	CHECK,
+	"MAGN": 	MAGN,
+}
+
+type keys struct {
+	key string
+	
+}
+
 type ReqRespPat struct { // regular expressions describing the message + response
-	msg 	string
-	resp 	string
-	msgRegexp *regexp.Regexp
+	Msg 	string
+	Resp 	string
+	MsgRegexp *regexp.Regexp
 }
 
 type devPattern struct {
-	device 		string		// device name/imei 
-	Type		devtype		// one of the DEVTYPE values
-	login 		ReqRespPat
-	heartbeat	ReqRespPat
-	gps_data	ReqRespPat 
-	order		[]int		// define the order of the incoming parameters. List in above GPSDATA enum
-	units		[]int		// for unit conversion provide unit of parameter (enum UNITS)
+	Device 		string		// device name/imei 
+	Login 		ReqRespPat
+	Heartbeat	ReqRespPat
+	Gps_data	ReqRespPat 
+	Order		[]int		// define the Order of the incoming parameters. List in above GPSDATA enum
+	Units		[]int		// for unit conversion provide unit of parameter (enum UNITS)
 } 
 
 // 
@@ -70,6 +96,8 @@ const (
 	REGEXP_GPRMC = "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
 //                    time  active/void  lat          lon          speed   angle    date
 )
+
+var devs []devPattern
 
 // how to define device patterns:
 // - regexp pattern required for login, heartbeat and actual data message
@@ -80,52 +108,101 @@ const (
 // 	o assign to each matched pattern (in parentheses) a key word (DEVIMEI, DEVID, ACTIVE, LAT, LON, NS, EW, SPEED, ANGLE, DATE)
 // 	o for unit conversion give for each matched pattern (LAT, LON, SPEED, ANGLE) the unit 
 
-//example heartbeat: *HQ,355488020824039,XT,V,0,0#
+//example Heartbeat: *HQ,355488020824039,XT,V,0,0#
 //                               IMEI
-//heartbeat: ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", resp:""},
+//Heartbeat: ReqRespPat{Msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", Resp:""},
 
 //example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
 //                  imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
-//gps_data: ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),(\\w+)#\\s*$", resp:""},
-//order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
-//units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
+//Gps_data: ReqRespPat{Msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),(\\w+)#\\s*$", Resp:""},
+//Order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
+//Units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
  
-var devs = []devPattern {
+var devices = []devPattern {
 // ------------  TK103_H02
-		devPattern {device:"TK103B-H02", Type:TK103B_H02,
-			login: 		ReqRespPat{msg:"", 															resp:"",msgRegexp:nil},
-			heartbeat: 	ReqRespPat{msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", 	resp:""},
-			gps_data: 	ReqRespPat{msg:"^\\*\\w{2},([0-9]{15}),V1,"+REGEXP_GPRMC+",.*$", 			resp:""},
-			order: []int{                         DEVIMEI,           GPRMC},
-			units: []int{NONE,NONE},
+		devPattern {Device:"TK103B-H02",
+			Login: 		ReqRespPat{Msg:"", 															Resp:"",MsgRegexp:nil},
+			Heartbeat: 	ReqRespPat{Msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", 	Resp:""},
+			Gps_data: 	ReqRespPat{Msg:"^\\*\\w{2},([0-9]{15}),V1,"+REGEXP_GPRMC+",.*$", 			Resp:""},
+			Order: []int{                         DEVIMEI,           GPRMC},
+			Units: []int{NONE,NONE},
 		},
 // ------------ GPS-logger via UDP
-		devPattern {device:"GPS Logger (UDP)", Type:GPSLOGGER,
-			login: ReqRespPat{msg:"", 																resp:"",msgRegexp:nil},
-			heartbeat: ReqRespPat{msg:"", 															resp:""},
+		devPattern {Device:"GPS Logger (UDP)",
+			Login: ReqRespPat{Msg:"", 																Resp:"",MsgRegexp:nil},
+			Heartbeat: ReqRespPat{Msg:"", 															Resp:""},
 			//example data: s08754/s08754/$GPRMC,180725,A,5337.37477,N,1010.26495,E,0.000000,0.000000,021017,,*20
 			//              user   devid       GPRMC record    
-			gps_data: ReqRespPat{msg:"^\\w+\\/(\\w+)\\/\\$GPRMC,"+REGEXP_GPRMC+",.*$", 				resp:""},
-			order: []int{					  DEVID,				GPRMC},
-			units: []int{NONE,NONE},
+			Gps_data: ReqRespPat{Msg:"^\\w+\\/(\\w+)\\/\\$GPRMC,"+REGEXP_GPRMC+",.*$", 				Resp:""},
+			Order: []int{					  DEVID,				GPRMC},
+			Units: []int{NONE,NONE},
 		},
 	}
 // ------------ TK103
-//	{.device="TK103-untested and incomplete", .type=TK103,
-//	 .login 	= {.msg="^\\((\\d{12})(BP05)([A-Z0-9.]*)\\).*$", .resp="%DATE%%TIME%AP05HSO"},
-//	 .heartbeat = {.msg=NULL, .resp=NULL},
-//	 .gps_data	= {.msg="^\\((\\d{12})(B[A-Z]\\d{2})([A-Z0-9.]*)\\).*$", .resp=NULL},
-//	 .order		= {DEVID},
-//	 .units		= {NONE}},
+//	{.Device="TK103-untested and incomplete", .type=TK103,
+//	 .Login 	= {.Msg="^\\((\\d{12})(BP05)([A-Z0-9.]*)\\).*$", .Resp="%DATE%%TIME%AP05HSO"},
+//	 .Heartbeat = {.Msg=NULL, .Resp=NULL},
+//	 .Gps_data	= {.Msg="^\\((\\d{12})(B[A-Z]\\d{2})([A-Z0-9.]*)\\).*$", .Resp=NULL},
+//	 .Order		= {DEVID},
+//	 .Units		= {NONE}},
 
 // ----------- GL103
-//	{.device="GL103-untested and incomplete", .type=GL103,
-//	 .login 	= {.msg="^##,imei:(\\d+),A;.*$", .resp="LOAD"},
-//	 .heartbeat = {.msg="^imei:(\\d+);.*$", .resp="ON"},
-//	 .gps_data	= {.msg="^imei:(\\d+),(\\d+|A),?(\\d*),?(\\d+),?([a-z0-9,%.]+);.*$", .resp=NULL},
-//	 .order     = {DEVID},
-//	 .units		= {NONE}}
+//	{.Device="GL103-untested and incomplete", .type=GL103,
+//	 .Login 	= {.Msg="^##,imei:(\\d+),A;.*$", .Resp="LOAD"},
+//	 .Heartbeat = {.Msg="^imei:(\\d+);.*$", .Resp="ON"},
+//	 .Gps_data	= {.Msg="^imei:(\\d+),(\\d+|A),?(\\d*),?(\\d+),?([a-z0-9,%.]+);.*$", .Resp=NULL},
+//	 .Order     = {DEVID},
+//	 .Units		= {NONE}}
 //};
+
+
+func readDeviceConfig(fileconf string) (err error) {
+	fconf, err := os.Open(fileconf)
+	if err != nil {return}
+	defer fconf.Close()
+    scanner := bufio.NewScanner(fconf)
+	jsonBlob := ""
+// remove comment lines
+    for scanner.Scan() {
+        line := strings.TrimSpace(scanner.Text())
+		if len(line)> 0 && line[:1] != "/" { jsonBlob += scanner.Text() }
+    }
+// replace keywords
+	jsonBlob = strings.Replace(jsonBlob,"%REGEXP_GPRMC%",REGEXP_GPRMC,-1)
+	for key, idx := range keywords {
+		jsonBlob = strings.Replace(jsonBlob,"%"+key+"%",strconv.Itoa(idx),-1)
+	}
+// find remaining keywords
+	re := regexp.MustCompile("\\%\\w+\\%")
+	byMatch := re.Find([]byte(jsonBlob))
+	if byMatch != nil { fmt.Printf("Unknown key %s found \n",string(byMatch)); return }
+//	fmt.Print(jsonBlob)
+	var Devices []devPattern
+	err = json.Unmarshal([]byte(jsonBlob),&Devices)
+	if err != nil {	fmt.Println(err.Error()); return }
+//	strjson,_ := json.Marshal(Devices)
+//	fmt.Println(string(strjson))
+// remove Dummy device at the end of the list
+	if Devices[len(Devices)-1].Device == "" { Devices = Devices[:len(Devices)-1] }  
+// list found devices and check regexp of msg
+	logger.Printf("Found %d device configurations",len(Devices))
+	for _,dev := range Devices {
+		if dev.Login.Msg != "" { 
+			dev.Login.MsgRegexp = regexp.MustCompile(dev.Login.Msg) 
+			if dev.Login.MsgRegexp == nil { fmt.Printf("error in regexp of Login: %s \n",dev.Login.Msg); return }
+		}
+		if dev.Heartbeat.Msg != "" { 
+			dev.Heartbeat.MsgRegexp = regexp.MustCompile(dev.Heartbeat.Msg) 
+			if dev.Heartbeat.MsgRegexp == nil { fmt.Printf("error in regexp of Heartbeat: %s \n",dev.Heartbeat.Msg); return }
+		}
+		if dev.Gps_data.Msg != "" { 
+			dev.Gps_data.MsgRegexp = regexp.MustCompile(dev.Gps_data.Msg) 
+			if dev.Gps_data.MsgRegexp == nil { fmt.Printf("error in regexp of Gps_data: %s \n",dev.Gps_data.Msg); return }
+		}
+		logger.Printf("Device %s - OK",dev.Device)
+	}
+	return
+}
 
 func filter_gps_device(msg string) (response string, query string, err error) {
 	response = ""
@@ -142,45 +219,45 @@ func filter_gps_device(msg string) (response string, query string, err error) {
 		dev := devs[i];
 		id = i;
 		nmatch := 0
-		if len(dev.login.msg)>0	{
-			if dev.login.msgRegexp == nil { dev.login.msgRegexp = regexp.MustCompile(dev.login.msg) }
-			matchedStrings = dev.login.msgRegexp.FindStringSubmatch(msg)
+		if len(dev.Login.Msg)>0	{
+			if dev.Login.MsgRegexp == nil { dev.Login.MsgRegexp = regexp.MustCompile(dev.Login.Msg) }
+			matchedStrings = dev.Login.MsgRegexp.FindStringSubmatch(msg)
 			if nmatch=len(matchedStrings); nmatch > 2 {
 				isLogin = true
-				response = dev.login.resp
+				response = dev.Login.Resp
 				break
 			}
 		}
-		if len(dev.heartbeat.msg)>0	{
-			if dev.heartbeat.msgRegexp == nil { dev.heartbeat.msgRegexp = regexp.MustCompile(dev.heartbeat.msg) }
-			matchedStrings = dev.heartbeat.msgRegexp.FindStringSubmatch(msg)
+		if len(dev.Heartbeat.Msg)>0	{
+			if dev.Heartbeat.MsgRegexp == nil { dev.Heartbeat.MsgRegexp = regexp.MustCompile(dev.Heartbeat.Msg) }
+			matchedStrings = dev.Heartbeat.MsgRegexp.FindStringSubmatch(msg)
 			if nmatch=len(matchedStrings); nmatch > 2 {
 				isHeart = true
-				response = dev.heartbeat.resp
+				response = dev.Heartbeat.Resp
 				break
 			}
 		}
-		if len(dev.gps_data.msg)>0	{
-			if dev.gps_data.msgRegexp == nil { dev.gps_data.msgRegexp = regexp.MustCompile(dev.gps_data.msg) }
-			matchedStrings = dev.gps_data.msgRegexp.FindStringSubmatch(msg)
+		if len(dev.Gps_data.Msg)>0	{
+			if dev.Gps_data.MsgRegexp == nil { dev.Gps_data.MsgRegexp = regexp.MustCompile(dev.Gps_data.Msg) }
+			matchedStrings = dev.Gps_data.MsgRegexp.FindStringSubmatch(msg)
 			if nmatch=len(matchedStrings); nmatch > 2 {
 				isData = true
-				response = dev.gps_data.resp
+				response = dev.Gps_data.Resp
 				break
 			}
 		}
 	}
 //	fmt.Println(matchedStrings)
 	if isLogin {
-		logger.Print("Login message of "+devs[id].device) 
+		logger.Print("Login message of "+devs[id].Device) 
 	} else if isHeart {
-		logger.Print("Heartbeat message of "+devs[id].device) 
+		logger.Print("Heartbeat message of "+devs[id].Device) 
 	} else if isData {
-		logger.Print("GPS-data of "+devs[id].device) 
+		logger.Print("GPS-data of "+devs[id].Device) 
 		if isData { query,err = createGPRMCQuery(devs[id],matchedStrings) }
 	} else { 
-		err = errors.New("Unknown device")
-		if isVerbose { logger.Print("Unknown device") } 
+		err = errors.New("Unknown Device")
+		if isVerbose { logger.Print("Unknown Device") } 
 	}
 	return
 } 
@@ -195,7 +272,7 @@ func createGPRMCQuery(dev devPattern, matches []string) (query string, err error
 	if len(matches) < 2 { return }
 	// check, if GPRMC record already included in data string
 	isGPRMC := false
-	for i:=0; !isGPRMC && i<len(dev.order); i++ { isGPRMC=dev.order[i]==GPRMC }
+	for i:=0; !isGPRMC && i<len(dev.Order); i++ { isGPRMC=dev.Order[i]==GPRMC }
 	if isGPRMC {
 		if val,_=getGPSValue(dev,matches,GPRMC); len(val)>0 { query += "$GPRMC,"+val+",0.0,W" }	// add header and dummy magn deviation
 	} else {
@@ -232,8 +309,8 @@ func createGPRMCQuery(dev devPattern, matches []string) (query string, err error
 func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int) {
 	i:=0
 	val = ""
-	for i=0; i<len(dev.order) && dev.order[i]!=key;i++ {}
-	if i<len(dev.order) && dev.order[i]==key && len(matches)>(i+1) { 
+	for i=0; i<len(dev.Order) && dev.Order[i]!=key;i++ {}
+	if i<len(dev.Order) && dev.Order[i]==key && len(matches)>(i+1) { 
 		val = matches[i+1] 
 		switch key {
 			case TIME:	fallthrough
@@ -243,10 +320,10 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 				
 			case LAT:	fallthrough
 			case LON:
-				if dev.units[i] == DEGMIN { break }	// correct unit for GPRMC -> do nothing
+				if dev.Units[i] == DEGMIN { break }	// correct unit for GPRMC -> do nothing
 				degval,err:=strconv.ParseFloat(val,32)
 				if err != nil {break}
-				if dev.units[i] == DEGREE {		// calculate degree*100 + minutes
+				if dev.Units[i] == DEGREE {		// calculate degree*100 + minutes
 					deg := float64(int(degval))		
 					min := (degval - deg)*60.0;
 					degfmt := "%02d%05.2f"
@@ -256,9 +333,9 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 			case SPEED:	// get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
 				v,err:=strconv.ParseFloat(val,32)
 				if err != nil {break}
-				if dev.units[i] == KMPERH 	{ v /= 1.852 }		// calc knots
-				if dev.units[i] == MPERS 	{ v *= 3.6/1.852 }	// calc knots
-				if dev.units[i] == KNOTS 	{ }					// nothing to do	
+				if dev.Units[i] == KMPERH 	{ v /= 1.852 }		// calc knots
+				if dev.Units[i] == MPERS 	{ v *= 3.6/1.852 }	// calc knots
+				if dev.Units[i] == KNOTS 	{ }					// nothing to do	
 				val = fmt.Sprintf("%.1f",v)
 			default:
 		}
