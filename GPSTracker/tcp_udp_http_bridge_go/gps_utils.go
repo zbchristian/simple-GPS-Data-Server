@@ -177,16 +177,15 @@ func readDeviceConfig(fileconf string) (err error) {
 	byMatch := re.Find([]byte(jsonBlob))
 	if byMatch != nil { fmt.Printf("Unknown key %s found \n",string(byMatch)); return }
 //	fmt.Print(jsonBlob)
-	var Devices []devPattern
-	err = json.Unmarshal([]byte(jsonBlob),&Devices)
+	err = json.Unmarshal([]byte(jsonBlob),&devs)
 	if err != nil {	fmt.Println(err.Error()); return }
-//	strjson,_ := json.Marshal(Devices)
+//	strjson,_ := json.Marshal(devs)
 //	fmt.Println(string(strjson))
 // remove Dummy device at the end of the list
-	if Devices[len(Devices)-1].Device == "" { Devices = Devices[:len(Devices)-1] }  
+	if devs[len(devs)-1].Device == "" { devs = devs[:len(devs)-1] }  
 // list found devices and check regexp of msg
-	logger.Printf("Found %d device configurations",len(Devices))
-	for _,dev := range Devices {
+	logger.Printf("Found %d device configurations",len(devs))
+	for _,dev := range devs {
 		if dev.Login.Msg != "" { 
 			dev.Login.MsgRegexp = regexp.MustCompile(dev.Login.Msg) 
 			if dev.Login.MsgRegexp == nil { fmt.Printf("error in regexp of Login: %s \n",dev.Login.Msg); return }
