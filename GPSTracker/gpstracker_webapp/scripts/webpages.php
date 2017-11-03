@@ -59,7 +59,7 @@ function display_admin($devlist,$vals) {
 		$buttons = '<a class="but" href="'.$url.'?admin_device=clear&devno='.$devno.'">clear data</a>&nbsp;&nbsp; <a class="but" href="'.$url.'?admin_device=delete&devno='.$devno.'">remove device</a>';
 	}
 	$html = str_replace("%ADMINBUTTONS%",$buttons,$html);
-	$devtable='<table><tr><th style="width:5%;"></th><th style="width:20%;">Name</th><th style="width:15%;">ID</th><th style="width:35%;">Description</th><th style="width:10%;">Days</th><th style="width:15%;">IMEI (TCP only)</th></tr>';
+	$devtable='<table><tr><th style="width:5%;"></th><th style="width:20%;">Name</th><th style="width:15%;">ID</th><th style="width:35%;">Description</th><th style="width:10%;">Days</th><th style="width:15%;">IMEI (TCP/UDP only)</th></tr>';
 	foreach($devlist as $dev) {
 		$devtable .='<tr>';
 //		$devtable .='<td><form action="'.$url.'"><input type="hidden" name="edit"><input type="hidden" name="id" value="'.$dev["id"].'"><input type="submit" value="edit"></form></td>';

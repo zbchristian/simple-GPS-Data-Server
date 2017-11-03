@@ -36,7 +36,7 @@
 <input id="hist" value="%HISTORY%" name="history" maxlength="3" size="4">
 </div>
 <div style="display:inline-block;margin-right:10px;">
-<label for"imei" style="display:block">IMEI (TCP/IP only)</label>
+<label for"imei" style="display:block">IMEI (TCP/UDP only)</label>
 <input id="imei" value="%IMEI%" name="imei" maxlength="15" size="20">
 </div>
 <button>%CHANGEBUTTONTXT%</button>
@@ -48,7 +48,7 @@
 <dt>Identification</dt><dd>unique identification of the device (use only letters and numbers, not case sensitive, min. length 5).<br> This has to be used by the device to deliver data and to select the device when viewing GPS data</dd>
 <dt>Description</dt> <dd>More detailed description of device. Will be shown as additional infomation when viewing GPS data</dd>
 <dt>Days</dt> <dd>Number of days to store the GPS data</dd>
-<dt>IMEI</dt> <dd>15 digit IMEI number of the device. This is only needed, if the device communicates via TCP/IP port %TCPPORT% instead of HTTPS</dd>
+<dt>IMEI</dt> <dd>15 digit IMEI number of the device. This is only needed, if the device communicates via TCP/UDP port %TCPPORT% instead of HTTPS</dd>
 </dl>
 </div>
 
