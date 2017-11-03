@@ -25,15 +25,15 @@ const (
 	GPRMC 	int = iota	
 	TIME	int = iota
 	ACTIVE	int = iota
-	LAT		int = iota
-	LON		int = iota
-	NS		int = iota
-	EW		int = iota
+	LAT	int = iota
+	LON	int = iota
+	NS	int = iota
+	EW	int = iota
 	SPEED	int = iota
 	ANGLE	int = iota
 	DATE	int = iota
-	ALT		int = iota
-	ACC		int = iota
+	ALT	int = iota
+	ACC	int = iota
 	DEGMIN	int = iota
 	KMPERH 	int = iota
 	MPERS 	int = iota
@@ -157,16 +157,17 @@ var devices = []devPattern {
 
 
 func readDeviceConfig(fileconf string) (err error) {
+	logger.Printf("Configuration file - %s",fileconf)
 	fconf, err := os.Open(fileconf)
 	if err != nil {return}
 	defer fconf.Close()
     scanner := bufio.NewScanner(fconf)
 	jsonBlob := ""
 // remove comment lines
-    for scanner.Scan() {
-        line := strings.TrimSpace(scanner.Text())
+	for scanner.Scan() {
+        	line := strings.TrimSpace(scanner.Text())
 		if len(line)> 0 && line[:1] != "/" { jsonBlob += scanner.Text() }
-    }
+	}
 // replace keywords
 	jsonBlob = strings.Replace(jsonBlob,"%REGEXP_GPRMC%",REGEXP_GPRMC,-1)
 	for key, idx := range keywords {
@@ -177,12 +178,13 @@ func readDeviceConfig(fileconf string) (err error) {
 	byMatch := re.Find([]byte(jsonBlob))
 	if byMatch != nil { fmt.Printf("Unknown key %s found \n",string(byMatch)); return }
 //	fmt.Print(jsonBlob)
+	devs = nil
 	err = json.Unmarshal([]byte(jsonBlob),&devs)
 	if err != nil {	fmt.Println(err.Error()); return }
 //	strjson,_ := json.Marshal(devs)
 //	fmt.Println(string(strjson))
 // remove Dummy device at the end of the list
-	if devs[len(devs)-1].Device == "" { devs = devs[:len(devs)-1] }  
+	if devs[len(devs)-1].Device == "" { devs = devs[:len(devs)-1] }
 // list found devices and check regexp of msg
 	logger.Printf("Found %d device configurations",len(devs))
 	for _,dev := range devs {
