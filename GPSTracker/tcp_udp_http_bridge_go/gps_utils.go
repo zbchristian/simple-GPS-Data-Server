@@ -100,6 +100,7 @@ const (
 var devs []devPattern
 
 // how to define device patterns:
+// - add new devices to devices.conf
 // - regexp pattern required for login, heartbeat and actual data message
 // - for each case a response can be defined. Currently NO dynamic response possible
 // - in each case the device has to be identified by the IMEI or a deviceid
@@ -107,54 +108,6 @@ var devs []devPattern
 // 	o if device sends a GPRMC record, use the predefined constant (see above)
 // 	o assign to each matched pattern (in parentheses) a key word (DEVIMEI, DEVID, ACTIVE, LAT, LON, NS, EW, SPEED, ANGLE, DATE)
 // 	o for unit conversion give for each matched pattern (LAT, LON, SPEED, ANGLE) the unit 
-
-//example Heartbeat: *HQ,355488020824039,XT,V,0,0#
-//                               IMEI
-//Heartbeat: ReqRespPat{Msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", Resp:""},
-
-//example data: *HQ,355488020824039,V1,114839,A,   5123.85516,N,  00703.64046,E,  0.03,  0,    010917,EFE7FBFF#
-//                  imei               time   A/V  lat        N/S long        E/W speed  angle date   Status bits
-//Gps_data: ReqRespPat{Msg:"^\\*\\w{2},([0-9]{15}),V1,([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}),(\\w+)#\\s*$", Resp:""},
-//Order: []int{DEVIMEI,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE},
-//Units: []int{NONE,NONE,NONE,DEGMIN,NONE,DEGMIN,NONE,KMPERH,DEGREE,NONE,NONE},
- 
-var devices = []devPattern {
-// ------------  TK103_H02
-		devPattern {Device:"TK103B-H02",
-			Login: 		ReqRespPat{Msg:"", 															Resp:"",MsgRegexp:nil},
-			Heartbeat: 	ReqRespPat{Msg:"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$", 	Resp:""},
-			Gps_data: 	ReqRespPat{Msg:"^\\*\\w{2},([0-9]{15}),V1,"+REGEXP_GPRMC+",.*$", 			Resp:""},
-			Order: []int{                         DEVIMEI,           GPRMC},
-			Units: []int{NONE,NONE},
-		},
-// ------------ GPS-logger via UDP
-		devPattern {Device:"GPS Logger (UDP)",
-			Login: ReqRespPat{Msg:"", 																Resp:"",MsgRegexp:nil},
-			Heartbeat: ReqRespPat{Msg:"", 															Resp:""},
-			//example data: s08754/s08754/$GPRMC,180725,A,5337.37477,N,1010.26495,E,0.000000,0.000000,021017,,*20
-			//              user   devid       GPRMC record    
-			Gps_data: ReqRespPat{Msg:"^\\w+\\/(\\w+)\\/\\$GPRMC,"+REGEXP_GPRMC+",.*$", 				Resp:""},
-			Order: []int{					  DEVID,				GPRMC},
-			Units: []int{NONE,NONE},
-		},
-	}
-// ------------ TK103
-//	{.Device="TK103-untested and incomplete", .type=TK103,
-//	 .Login 	= {.Msg="^\\((\\d{12})(BP05)([A-Z0-9.]*)\\).*$", .Resp="%DATE%%TIME%AP05HSO"},
-//	 .Heartbeat = {.Msg=NULL, .Resp=NULL},
-//	 .Gps_data	= {.Msg="^\\((\\d{12})(B[A-Z]\\d{2})([A-Z0-9.]*)\\).*$", .Resp=NULL},
-//	 .Order		= {DEVID},
-//	 .Units		= {NONE}},
-
-// ----------- GL103
-//	{.Device="GL103-untested and incomplete", .type=GL103,
-//	 .Login 	= {.Msg="^##,imei:(\\d+),A;.*$", .Resp="LOAD"},
-//	 .Heartbeat = {.Msg="^imei:(\\d+);.*$", .Resp="ON"},
-//	 .Gps_data	= {.Msg="^imei:(\\d+),(\\d+|A),?(\\d*),?(\\d+),?([a-z0-9,%.]+);.*$", .Resp=NULL},
-//	 .Order     = {DEVID},
-//	 .Units		= {NONE}}
-//};
-
 
 func readDeviceConfig(fileconf string) (err error) {
 	logger.Printf("Configuration file - %s",fileconf)
