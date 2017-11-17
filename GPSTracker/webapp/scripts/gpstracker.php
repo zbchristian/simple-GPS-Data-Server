@@ -6,7 +6,6 @@
 // Retrieve locations as GPX file: ?id=DEVICE_IDENTIFICATION&dt=TIMEINTHEPAST&DATE=ENDDATETIME
 // DEVICEID (defines in config.php) relates to the device name
 //
-//
 // Author: C.Zeitnitz 2017
 //
 
