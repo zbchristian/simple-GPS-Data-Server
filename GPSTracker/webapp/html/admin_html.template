@@ -57,7 +57,7 @@
 <h2>List of registered devices</h2>
 %DEVICELIST%
 </div>
-<hr>
+%AUTHORS%
 </div>
 </body>
 </html>

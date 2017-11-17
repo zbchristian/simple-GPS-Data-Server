@@ -9,9 +9,9 @@
 //
 
 function getAuthors() {
-	$html  = "<hr><p>Author Christian Zeitnitz 2017<br>"
-	$html .= "GPXViewer Script: 23. 5. 2017 <a href="https://www.j-berkemeier.de/GPXViewer/">GPX-Viewer</a></p>"
-	return $html
+	$html  = "<hr><p>&copy; Christian Zeitnitz 2017<br>";
+	$html .= 'GPXViewer Script: 23.05.2017 <a href="https://www.j-berkemeier.de/GPXViewer/">GPX-Viewer</a></p>';
+	return $html;
 }
 
 function display_admin($devlist,$vals) {
@@ -78,7 +78,7 @@ function display_admin($devlist,$vals) {
 	}
 	$devtable .="</table>\n";
 	$html  = str_replace("%DEVICELIST%",$devtable,$html);
-	$html .= getAuthors()
+	$html  = str_replace("%AUTHORS%",getAuthors(),$html);
 	echo $html;
 }
 
@@ -159,7 +159,7 @@ function display_gpx($devno,$gpx, $gps) {
 	if($isError) $html = str_replace("%ERROR%","<h2>$error</h2>",$html);
 	else $html = str_replace("%ERROR%","",$html);
 	$html  = str_replace("%MAPSTYLE%",$mapstyle,$html);
-	$html .= getAuthors()
+	$html  = str_replace("%AUTHORS%",getAuthors(),$html);
 	echo $html;
 }
 
