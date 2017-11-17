@@ -157,7 +157,7 @@ function filter_GET_inputs() {
 }
 
 function check_ascii($str) {
-        $pat='/^([a-z0-9\:\;\_\.\,\-\#\$\*\&\/ ÄÖÜäöüß]+)$/i';  //only these ascii characters allowed
+        $pat='/^([a-z0-9\:\;\_\.\,\-\#\$\*\&\/ ÄÖÜäöüß\(\)]+)$/i';  //only these ascii characters allowed
         $ret = true;
         if(is_array($str))      foreach($str as $i => $s) $ret &=  empty($s)||preg_match($pat,$s);
         else                            $ret = empty($str)||preg_match($pat,$str);
