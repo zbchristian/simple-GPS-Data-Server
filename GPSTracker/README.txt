@@ -8,7 +8,7 @@ Requirements
 
 Installation
 ------------
-- copy all files in gpstracker_webapp folder to web space folder (e.g. gpstracker)
+- copy all files in webapp folder to web space folder (for example gpstracker)
 - create corresponding entry in webserver config to allow web access and php to run
 - adjust main .htaccess file (rewrite rules)
 - access control for admin interface
@@ -16,7 +16,7 @@ Installation
 - edit scripts/config.php: adjust settings
 - TCP/UDP-HTTP-Bridge 
 	o enable/disable in scripts/config.php
-	o compile code with GO in tcp_udp_http_bridge_go (go build)
+	o compile code with GO in tcp_udp_http_bridge (go build)
 	o copy executable to exe directory on webspace
 	o adjust config.php accordingly (name and path of/to executable)
 - database file will be created automatically
@@ -48,8 +48,13 @@ Tracking devices
 		o GPS zwischen Fixes aktiviert lassen: sinnvoll bei kurzen Abständen. Kostet Akku
 		o Distanz zwischen Punkten: nur neue Daten schicken, wenn z.B. mindestens 10m zurückgelegt worden sind
 		o Aufzeichnung pausieren, wenn keine Bewegung: aktivieren
-- commercial devices like TK103
-	o set TCP/IP server and port -> requires server to run
+- commercial devices
+	o set TCP/IP server and port in config.php 
+	o server has to be compiled and placed in exe directory
+	o server is automatically started, when the admin interface is opened
+		- copy devices.config to exe directory
+	o supported devices: TK103B
+		- device configurations in devices.config
 
 Configuration of the map
 ------------------------
