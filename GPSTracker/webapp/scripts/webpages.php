@@ -25,7 +25,7 @@ function display_admin($devlist,$vals) {
 	}
 	$isEditRetry = $isError && $isEdit;
         $html=file_get_contents($fhtml);
-        $html = str_replace("%PAGETITLE%","$prog",$html);
+        $html = str_replace("%PAGETITLE%","$prog"." - Administration",$html);
 	$url=parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 	$urlid=preg_replace('/admin/','',$url);
 	$urlid=preg_replace('/admin/','',$url);
@@ -130,7 +130,7 @@ function display_gpx($devno,$gpx, $gps) {
         $tstart = !$isError ? date($date_fmt,strtotime($gps[0]["startdate"])) : date($date_fmt,strtotime($gps[0]["query_startdate"]));
         $tend = !$isError ? date($date_fmt,strtotime($gps[0]["enddate"])) : date($date_fmt,strtotime($gps[0]["query_enddate"]));
 	$html=file_get_contents($fhtml);
-	$html = str_replace("%PAGETITLE%","$prog",$html);
+	$html = str_replace("%PAGETITLE%","$prog"." - ".$name,$html);
 	$html = str_replace("%DEVICE%","$name",$html);
 	$html = str_replace("%DEVICEDESC%","<p>Details of device: $desc</p>",$html);
 	$html = str_replace("%STARTDATE%","$tstart",$html);
