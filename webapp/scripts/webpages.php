@@ -21,7 +21,10 @@ function display_admin($devlist,$vals) {
         $html=file_get_contents($fhtml);
         $html = str_replace("%PAGETITLE%","$prog",$html);
 	$url=parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+	$urlid=preg_replace('/admin/','',$url);
+	$urlid=preg_replace('/admin/','',$url);
 	$url=preg_replace('/\/+/','/',$url);
+	$urlid=preg_replace('/\/+/','/',$urlid);
 	$html = str_replace("%URL%","$url",$html);
 	$devno=0;
 	$mode = $isEdit ? "change" : "add";
@@ -59,13 +62,12 @@ function display_admin($devlist,$vals) {
 		$buttons = '<a class="but" href="'.$url.'?admin_device=clear&devno='.$devno.'">clear data</a>&nbsp;&nbsp; <a class="but" href="'.$url.'?admin_device=delete&devno='.$devno.'">remove device</a>';
 	}
 	$html = str_replace("%ADMINBUTTONS%",$buttons,$html);
-	$devtable='<table><tr><th style="width:5%;"></th><th style="width:5%;"></th><th style="width:15%;">Name</th><th style="width:15%;">ID</th><th style="width:30%;">Description</th><th style="width:10%;">Days</th><th style="width:15%;">IMEI (TCP/UDP only)</th></tr>';
+	$devtable='<table><tr><th style="width:5%;"></th><th style="width:15%;">Name</th><th style="width:10%;">ID</th><th style="width:35%;">Description</th><th style="width:5%;">Days</th><th style="width:15%;">IMEI</th><th style="width:10%;"></th></tr>';
 	foreach($devlist as $dev) {
 		$devtable .='<tr>';
-//		$devtable .='<td><form action="'.$url.'"><input type="hidden" name="edit"><input type="hidden" name="id" value="'.$dev["id"].'"><input type="submit" value="edit"></form></td>';
 		$devtable .='<td><a class="but" href="'.$url.'?admin_device=edit&devno='.$dev["devno"].'">edit</a></td>';
-		$devtable .='<td><a class="but" href="'.$url.'?id='.$dev["id"].'">view data</a></td>';
 		$devtable .='<td>'.$dev["name"].'</td><td>'.$dev["id"].'</td><td>'.$dev["desc"].'</td><td>'.$dev["history"].'</td><td>'.$dev["imei"].'</td>';
+		$devtable .='<td><a class="but" href="'.$urlid.'?id='.$dev["id"].'">view data</a></td>';
 		$devtable .='</tr>';
 	}
 	$devtable .="</table>\n";
