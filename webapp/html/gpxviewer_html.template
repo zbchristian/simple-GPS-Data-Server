@@ -25,8 +25,11 @@
 
 <form action="%URL%">
 <input value="%DEVID%" name="id" type="hidden">
-<input value="%TRANGE%" name="dt" type="hidden">
 <button>update (time=now)</button>
+<div style="display:inline-block;margin-right:10px;">
+<label for"dt" style="display:block">time period</label>
+<input id="dt" value="%TRANGE%" name="dt" maxlength="10" size="5">
+</div>
 </form>
 
 <div>%ERROR%</div>
