@@ -1,3 +1,4 @@
+//
 // TCP/UDP server for GPS devices - Bridge to HTTP(S) server (OpenGTS format) 
 // ==========================================================================
 // Command line Arguments: -host -port -urlpath -key
@@ -7,6 +8,9 @@
 // - server recognizes commands: 
 // - Command (via TCP/UDP port) to close connection: close <SecretKEy>
 // - Command to exit server: exit <SecretKEy>
+//
+// Author: Christian Zeitnitz 2017
+//
 
 package main
 

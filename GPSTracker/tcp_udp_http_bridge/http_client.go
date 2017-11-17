@@ -4,6 +4,8 @@
 // query string is trimmed to a single line and url-escaped
 // returns the body of the response
 //
+// Author: Christian Zeitnitz 2017
+//
 
 package main
 
