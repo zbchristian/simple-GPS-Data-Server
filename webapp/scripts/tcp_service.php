@@ -20,11 +20,14 @@ function controlTCPService($action) {
 	global	$TCPBridge, $TCPport, $HTTPSserver, $secretkey, $urlpath;
 	if($action === "START") {
 		$logfile=dirname($TCPBridge)."/log.txt";
+		if (file_exists($logfile)) {
+			rename($logfile, $logfile.".last");
+		}
 		if(USE_GO_SERVER) 	exec("nohup $TCPBridge -port $TCPport -httpserver $HTTPSserver -urlpath $urlpath -key $secretkey > $logfile &");
 		else 				exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey &> $logfile 2>&1 &");
 		sleep(2);	// wait for service to start
 		$action = "STATUS";	// check status after start
-	}	
+	}
 	// create socket and connect to localhost
 	if(($socket=@socket_create(AF_INET, SOCK_STREAM, SOL_TCP))=== false || 
 	    @socket_set_option($socket,SOL_SOCKET, SO_RCVTIMEO, array("sec"=>2, "usec"=>0)) === false ||
