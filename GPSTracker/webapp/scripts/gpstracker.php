@@ -3,6 +3,7 @@
 // ============================
 // Format of URL
 // Store GPS location: ?time=%UTC&lat=LATTITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID
+// or                  ?id=DEVICEID&gprmc=<GPRMC-RECORD>
 // Retrieve locations as GPX file: ?id=DEVICE_IDENTIFICATION&dt=TIMEINTHEPAST&DATE=ENDDATETIME
 // DEVICEID (defines in config.php) relates to the device name
 //
@@ -17,6 +18,10 @@ include "scripts/tcp_service.php";
 
 //var_dump($_GET);
 $inputs = filter_GET_inputs(); // filter all quotes and some characters from keys and values
+if(isset($inputs["checkserver"]) && $inputs["checkserver"]==$secretkey ) {
+	checkTCP_UDP_Service();
+	exit();
+}
 if(isset($inputs["gprmc"])) $inputs=convert_GPRMC_data($inputs);
 // var_dump($inputs);
 

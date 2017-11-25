@@ -19,6 +19,10 @@ Installation
 	o compile code with GO in tcp_udp_http_bridge (go build)
 	o copy executable to exe directory on webspace
 	o adjust config.php accordingly (name and path of/to executable)
+	o call admin interface to start server
+	o add crontab entry to check once per hour, if the server is running (requires "wget")
+		1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://<WEBSERVER>/<PATH>?checkserver=<SECRETKEY> >/dev/null 2>&1
+	 	 
 - database file will be created automatically
 	
 Enter tracking devices
