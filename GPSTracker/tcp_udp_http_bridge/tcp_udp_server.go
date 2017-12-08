@@ -17,6 +17,8 @@ package main
 import (
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"flag"
 	"strconv"
 	"strings"
@@ -91,6 +93,15 @@ func initConf() {
 }
 
 func main() {
+// catch interrupt, stop and kill 
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM,syscall.SIGQUIT,syscall.SIGHUP)
+	go func() {
+//		sig := <-sigs
+		logger.Print("EXIT Signal received")
+		isExit = true
+	}()    
+
 // Listen for incoming connections.
 	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP:nil,Port:Port,})	
 	if err != nil {
