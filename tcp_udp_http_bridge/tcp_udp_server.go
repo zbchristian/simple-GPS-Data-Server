@@ -97,7 +97,7 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM,syscall.SIGQUIT,syscall.SIGHUP)
 	go func() {
-//		sig := <-sigs
+		<-sigs
 		logger.Print("EXIT Signal received")
 		isExit = true
 	}()    
