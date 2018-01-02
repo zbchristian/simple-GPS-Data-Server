@@ -39,7 +39,7 @@ JB.plot = function(feld,xstr,ystr) {
 	var gr = null;
 	var marker;
 
-	// Zu den Werten in daten xmin, xmax, ymin und ymax ermiteln
+	// Zu den Werten in daten xmin, xmax, ymin und ymax ermitteln
 	this.scale = function(daten) {
 		if(xmin==xmax) { // Startwerte beim ersten Datensatz
 			xmax = xmin = daten[0][xobj];

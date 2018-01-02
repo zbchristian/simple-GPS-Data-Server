@@ -1,16 +1,17 @@
 // gmutils.js
-// Version 2.0.1
-// 29. 5. 2017
+// Version 2.1
+// 29. 12. 2017
 // www.j-berkemeier.de
 
 "use strict";
 
 window.JB = window.JB || {};
 
-JB.Map = function(mapcanvas,id) {
-	JB.Debug_Info("","gmutils.js Version 2.0.1 vom 29. 5. 2017",false);
-	if(!JB.debuginfo && typeof(console) != "undefined" && typeof(console.log) == "function" )
-		console.log("gmutils.js Version 2.0.1 vom 29. 5. 2017");
+JB.Debug_Info("","gmutils.js Version 2.1 vom 29. 12. 2017",false);
+if(!JB.debuginfo && typeof(console) != "undefined" && typeof(console.log) == "function" )
+	console.log("gmutils.js Version 2.1 vom 29. 12. 2017");
+
+	JB.Map = function(mapcanvas,id) {
 	var dieses = this;
 	dieses.id = id;
 	dieses.mapcanvas = mapcanvas;
@@ -28,7 +29,7 @@ JB.Map = function(mapcanvas,id) {
 		mapTypeControlOptions: {
 			style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 			position: google.maps.ControlPosition.TOP_RIGHT,
-			mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN, 'osm','osmde','cycle','landscape','nomap']
+			mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN, 'osm','osmde','opentopo','cycle','landscape','nomap']
 		},
 		scaleControl: large,
 		streetViewControl: large,
@@ -50,24 +51,49 @@ JB.Map = function(mapcanvas,id) {
 	};
 
 	// Weitere Karten
+	var mapinfo = {};
 	var osmmap = this.defineMap("https://tile.openstreetmap.org/",19,"OSM","Open Streetmap","");
 	this.maptypes.OSM = "osm";
 	this.map.mapTypes.set('osm', osmmap);
+	mapinfo.osm = {
+		copyright: 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
+		maxzoom: 19
+	}
 	
 	var osmmapde = this.defineMap("https://c.tile.openstreetmap.de/tiles/osmde/",19,"OSM DE","Open Streetmap German Style","");
 	this.maptypes.OSMDE = "osmde";
 	this.map.mapTypes.set('osmde', osmmapde);
+	mapinfo.osmde = {
+		copyright: 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
+		maxzoom: 19
+	}
+	
+	var osmotp = this.defineMap("https://c.tile.opentopomap.org/",19,"Open Topo","Open Topo Map","");
+	this.maptypes.OPENTOPO = "opentopo";
+	this.map.mapTypes.set('opentopo', osmotp);
+	mapinfo.opentopo = {
+		copyright: 'Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)',
+		maxzoom: 19
+	}
 	
 	if(JB.GPX2GM.OSM_Cycle_Api_Key && JB.GPX2GM.OSM_Cycle_Api_Key.length>0) {
 		var osmcycle = this.defineMap("https://a.tile.thunderforest.com/cycle/",18,"OSM Cycle","Open Streetmap Cycle",JB.GPX2GM.OSM_Cycle_Api_Key);
 		this.maptypes.OSM_Cycle = "cycle";
 		this.map.mapTypes.set('cycle', osmcycle);
+		mapinfo.cycle = {
+			copyright: 'Map data &copy; <a href="https://www.thunderforest.com/" target="_blank">OpenCycleMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
+			maxzoom: 18
+		}
 	}
 	
 	if(JB.GPX2GM.OSM_Landscape_Api_Key && JB.GPX2GM.OSM_Landscape_Api_Key.length>0) {
 		var osmlandscape = this.defineMap("https://b.tile.thunderforest.com/landscape/",18,"OSM\u00A0Landscape","Open Streetmap Landscape",JB.GPX2GM.OSM_Landscape_Api_Key);
 		this.maptypes.OSM_Landscape = "landscape";
 		this.map.mapTypes.set('landscape', osmlandscape);
+		mapinfo.landscape = {
+			copyright: 'Map data &copy; <a href="https://www.thunderforest.com/" target="_blank">OpenLandscapeMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
+			maxzoom: 18
+		}
 	}
 	
   var grau = new google.maps.ImageMapType({
@@ -95,34 +121,14 @@ JB.Map = function(mapcanvas,id) {
 	osmcopyright.style.backgroundColor = "rgba(255,255,255,0.5)";
 	this.map.controls[google.maps.ControlPosition.BOTTOM_RIGHT].push(osmcopyright);
 	dieses.maxzoom = 19;
-/*	dieses.watch("maxzoom",function(id,oldval,newval) { // ------------------------------------------------- watch -----------------
-		console.error(id,oldval+" -> "+newval);
-		return newval;
-	});*/
 	google.maps.event.addListener(this.map, "maptypeid_changed", function() {
 		var maptype = dieses.map.getMapTypeId();
-		if (dieses.map.getMapTypeId() == 'osm') {
-			osmcopyright.innerHTML = 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>';
-			dieses.maxzoom = 19;
-		} 
-		else if (dieses.map.getMapTypeId() == 'osmde') {
-			osmcopyright.innerHTML = 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>';
-			dieses.maxzoom = 19;
-		} 
-		else if (dieses.map.getMapTypeId() == 'cycle') {
-			osmcopyright.innerHTML = 'Map data &copy; <a href="https://www.thunderforest.com/" target="_blank">OpenCycleMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>';
-			dieses.maxzoom = 18;
-		} 
-		else if (dieses.map.getMapTypeId() == 'landscape') {
-			osmcopyright.innerHTML = 'Map data &copy; <a href="https://www.thunderforest.com/" target="_blank">OpenLandscapeMap</a> and contributors <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>';
-			dieses.maxzoom = 18;
-		} 
+		if(maptype in mapinfo) {
+			dieses.maxzoom = mapinfo[maptype].maxzoom;
+			osmcopyright.innerHTML = mapinfo[maptype].copyright;
+		}
 		else if(maptype == 'satellite' || maptype == "hybrid") {
 			dieses.maxzoom = 19;
-/*			var pos = new google.maps.LatLng(0.0,0.0);
-			if(dieses.map.getCenter()) pos = dieses.map.getCenter();
-			var mzs = new google.maps.MaxZoomService();
-			mzs.getMaxZoomAtLatLng(pos, function(MZR) { if(MZR.status=="OK") dieses.maxzoom = MZR.zoom; }); */
 		}
 		else {
 			osmcopyright.innerHTML = '';
@@ -355,7 +361,7 @@ JB.Map = function(mapcanvas,id) {
 		large = h>190 && w>200;
 		myOptions = {
 			panControl: large,
-			zoomControl: large,
+			//zoomControl: large,
 			mapTypeControl: large,
 			scaleControl: large,
 			streetViewControl: large,
@@ -538,10 +544,13 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols) {
 			latlng_s.push(new google.maps.LatLng(lat/ct,lon/ct));
 		}
 		latlng_s.push(new google.maps.LatLng(coords[npt-1].lat,coords[npt-1].lon));
+		var arr_col = controls.col;
+		if(route_oder_track == "Track" && JB.gc.arrowtrackcol.length>0) arr_col = JB.gc.arrowtrackcol;
+		if(route_oder_track == "Route" && JB.gc.arrowroutecol.length>0) arr_col = JB.gc.arrowroutecol;
 		var lineSymbol = {
 			path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
 			scale: 3,
-			strokeColor: controls.col,
+			strokeColor: arr_col,
 			strokeOpacity: controls.opac
 		};
 		options.icons = [{
@@ -892,4 +901,3 @@ JB.Infofenster = function(map) {
 }// JB.Infofenster
 
 // Ende gmutils.js
-
