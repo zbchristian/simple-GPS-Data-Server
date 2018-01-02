@@ -1,5 +1,5 @@
 // Platz für weitere Definitionen
-// 29. 5. 2017
+// 29. 12. 2017
 
 "use strict";
 
@@ -7,7 +7,7 @@ window.JB = window.JB || {};
 window.JB.GPX2GM = window.JB.GPX2GM || {};
 
 // Google Maps API Key
-// JB.GPX2GM.GM_Api_key = "<GOOGLE KEY>";
+// JB.GPX2GM.GM_Api_key = "GM_API_Key";
 // Key für OSM Cycle
 // JB.GPX2GM.OSM_Cycle_Api_Key = "OSM_Key";
 // Key für OSM Landscape
@@ -78,6 +78,19 @@ JB.Icons = function(baseurl) {
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
 	this["boat ramp"]   = { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/boat.png" },
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
+	this.circle_red 		= { icon:   { anchor: {x:8,y:6}, url: baseurl+"Icons/circle_red.svg", 
+											scaledSize: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" },
+											size: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" } } };
+	this.circle_green		= { icon:   { anchor: {x:8,y:8}, url: baseurl+"Icons/circle_green.svg", 
+											scaledSize: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" },
+											size: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" } } };
+	this.square_red 		= { icon:   { anchor: {x:8,y:8}, url: baseurl+"Icons/square_red.svg", 
+											scaledSize: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" },
+											size: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" } } };
+	this.square_green		= { icon:   { anchor: {x:8,y:8}, url: baseurl+"Icons/square_green.svg", 
+											scaledSize: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" },
+											size: { width: 15, height: 15, widthUnit: "px", heightUnit: "px" } } };
+
 	//this.myicon       = { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/myicon.png" },
 	//                    shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
 	// Most Icons from https://mapicons.mapsmarker.com/
@@ -145,7 +158,7 @@ JB.GPX2GM.strings.de = {
 }
 JB.GPX2GM.strings.en = {
 	lenght: "Length",
-	way: "Distance",
+	way: "Way",
 	duration: "Duration",
 	tstart: "Start time",
 	time: "Time",

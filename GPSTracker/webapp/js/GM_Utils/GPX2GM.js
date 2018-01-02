@@ -1,15 +1,15 @@
 // GPX2GM.js
 // Darstellung von GPS-Daten aus einer GPX-Datei in Google Maps
-// Version 5.19.1
-// 29. 5. 2017 Jürgen Berkemeier
+// Version 5.20
+// 29. 12. 2017 Jürgen Berkemeier
 // www.j-berkemeier.de
 
 "use strict";
 
 window.JB = window.JB || {};
 window.JB.GPX2GM = window.JB.GPX2GM || {};
-JB.GPX2GM.ver = "5.19.1";
-JB.GPX2GM.dat = "29. 5. 2017";
+JB.GPX2GM.ver = "5.20";
+JB.GPX2GM.dat = "29. 12. 2017";
 JB.GPX2GM.fname = "GPX2GM.js";
 
 if(typeof(GPXVIEW_Debuginfo)=="undefined") 
@@ -47,6 +47,7 @@ JB.setgc = function() {
 	JB.gc.showmaptypecontroll = (typeof(Showmaptypecontroll)!="undefined") ? Showmaptypecontroll : true;
 	JB.gc.scrollwheelzoom = (typeof(Scrollwheelzoom)!="undefined") ? Scrollwheelzoom : true;
 	JB.gc.fullscreenbutton = (typeof(Fullscreenbutton)!="undefined") ? Fullscreenbutton : false;
+	JB.gc.currentlocationbutton = (typeof(Currentlocationbutton)!="undefined") ? Currentlocationbutton : false;
 	JB.gc.trafficbutton = (typeof(Trafficbutton)!="undefined") ? Trafficbutton : false;
 	JB.gc.trafficonload = (typeof(Trafficonload)!="undefined") ? Trafficonload : true;
 	JB.gc.legende = (typeof(Legende)!="undefined") ? Legende : true;
@@ -55,12 +56,13 @@ JB.setgc = function() {
 	JB.gc.legende_trk = (typeof(Legende_trk)!="undefined") ? Legende_trk : true;
 	JB.gc.legende_rte = (typeof(Legende_rte)!="undefined") ? Legende_rte : true;
 	JB.gc.legende_wpt = (typeof(Legende_wpt)!="undefined") ? Legende_wpt : true;
-	JB.gc.gpxtracks = (typeof(Gpxtracks)!="undefined") ? Gpxtracks : true;
-	JB.gc.gpxrouten = (typeof(Gpxrouten)!="undefined") ? Gpxrouten : true;
+	JB.gc.gpxtracks = (typeof(Gpxtracks)!="undefined") ? Gpxtracks : true; 
+	JB.gc.gpxrouten = (typeof(Gpxrouten)!="undefined") ? Gpxrouten : true; 
 	JB.gc.gpxwegpunkte = (typeof(Gpxwegpunkte)!="undefined") ? Gpxwegpunkte : true;
 	JB.gc.tracks_verbinden = (typeof(Tracks_verbinden)!="undefined") ? Tracks_verbinden : false;    
 	JB.gc.tracks_dateiuebergreifend_verbinden = (typeof(Tracks_dateiuebergreifend_verbinden)!="undefined") ? Tracks_dateiuebergreifend_verbinden : false;
 	if(JB.gc.tracks_dateiuebergreifend_verbinden) JB.gc.tracks_verbinden = true;
+	JB.gc.tracksort = (typeof(Tracksort)!="undefined") ? Tracksort : true;
 	JB.gc.dateitrenner = (typeof(Dateitrenner)!="undefined") ? Dateitrenner : ",";
 	JB.gc.readspeed = (typeof(Readspeed)!="undefined") ? Readspeed : true;
 	JB.gc.speedfaktor = (typeof(Speedfaktor)!="undefined") ? Speedfaktor : 1; // 3.6 bei m/s, 1,609344 bei mph
@@ -96,7 +98,9 @@ JB.setgc = function() {
 	JB.gc.shtrvmittwob = (typeof(Shtrvmittwob)!="undefined") ? Shtrvmittwob : false;
 	JB.gc.shtrvmittpace = (typeof(Shtrvmittpace)!="undefined") ? Shtrvmittpace : false;
 	JB.gc.shtrvmittpacewob = (typeof(Shtrvmittpacewob)!="undefined") ? Shtrvmittpacewob : false;
+	JB.gc.movevmin = (typeof(Movevmin)!="undefined") ? Movevmin : 1;
 	JB.gc.arrowtrack = (typeof(Arrowtrack)!="undefined") ? Arrowtrack : false;
+	JB.gc.arrowtrackcol = (typeof(Arrowtrackcol)!="undefined") ? Arrowtrackcol : "";
 	JB.gc.shrtcmt = (typeof(Shrtcmt)!="undefined") ? Shrtcmt : false;
 	JB.gc.shrtdesc = (typeof(Shrtdesc)!="undefined") ? Shrtdesc : false;
 	JB.gc.shtrstart = (typeof(Shtrstart)!="undefined") ? Shtrstart : false;
@@ -104,6 +108,7 @@ JB.setgc = function() {
 	JB.gc.shrtstart = (typeof(Shrtstart)!="undefined") ? Shrtstart : false;
 	JB.gc.shrtziel = (typeof(Shrtziel)!="undefined") ? Shrtziel : false;
 	JB.gc.arrowroute = (typeof(Arrowroute)!="undefined") ? Arrowroute : false
+	JB.gc.arrowroutecol = (typeof(Arrowroutecol)!="undefined") ? Arrowroutecol : "";
 	JB.gc.groesseminibild	= (typeof(Groesseminibild)!="undefined") ? Groesseminibild : 60; // in Pixel, max. 149
 	JB.gc.displaycolor = (typeof(Displaycolor)!="undefined") ? Displaycolor : false;
 	JB.gc.laengen3d = (typeof(Laengen3d)!="undefined") ? Laengen3d : false;
@@ -273,6 +278,7 @@ JB.makeMap = function (ID) {
 		if(JB.Scripte.gra==0) {
 			JB.Scripte.gra = 1;
 			JB.LoadScript(JB.GPX2GM.Path+'gra_canvas.js', function(){ JB.Scripte.gra = 2; });
+//			JB.LoadScript(JB.GPX2GM.Path+'gra_svg.js', function(){ JB.Scripte.gra = 2; });
 			JB.Scripte.plot = 1;
 			JB.LoadScript(JB.GPX2GM.Path+"plot.js", function(){ JB.Scripte.plot = 2; }); 
 			JB.Debug_Info(ID,"Grafikscripte werden geladen",false);
@@ -302,7 +308,7 @@ JB.makeMap = function (ID) {
 			if(JB.gc.tkorr) getTimezone(gpxdaten);
 			gpxdaten = pict2WP(gpxdaten);
 			gpxdaten = div2WP(gpxdaten);
-			gpxdaten = sort_tracks(gpxdaten);
+			if(JB.gc.tracksort) gpxdaten = sort_tracks(gpxdaten);
 			gpxdaten = wp_dist(gpxdaten);
 			setMapHead();
 			show();
@@ -401,6 +407,26 @@ JB.makeMap = function (ID) {
 	function pict2WP(daten) {
 		var pict = document.getElementById(ID+"_img");
 		if(pict) {
+			var geodata = pict.getAttribute("data-geo");
+			if(geodata) {
+				var bounds = {},t,e=false;
+				geodata = geodata.split(",");
+				if(geodata.length==3) {
+					for(var i=0;i<3;i++) {
+						t = geodata[i].split(":");
+						if(t.length == 2) bounds[t[0]] = parseFloat(t[1]);
+						else e = true;
+					}
+				}
+				if(!e) {
+					JB.Debug_Info(id,"Im Bilderbereich Bounds gefunden.",false);
+					var bounds = JB.bounds(bounds.centerlat,bounds.centerlon,bounds.radius);
+					if(bounds.latmin<daten.latmin) daten.latmin=bounds.latmin; if(bounds.latmax>daten.latmax) daten.latmax=bounds.latmax;
+					if(bounds.lonmin<daten.lonmin) daten.lonmin=bounds.lonmin; if(bounds.lonmax>daten.lonmax) daten.lonmax=bounds.lonmax;
+				}
+				else
+					JB.Debug_Info(id,"Fehler bei Bounds in Pict-Div",false);
+			}
 			var im = pict.querySelectorAll("img, a");
 			JB.Debug_Info(id,im.length +" Bilder zum Geotaggen gefunden",false);
 			for(var i=0;i<im.length;i++) {
@@ -440,9 +466,29 @@ JB.makeMap = function (ID) {
 		return daten;
 	} // pict2WP
 
-	function div2WP(daten) {
+	function div2WP(daten) { 
 		var divs = document.getElementById(ID+"_wp");
 		if(divs) {
+			var geodata = divs.getAttribute("data-geo");
+			if(geodata) {
+				var bounds = {},t,e=false;
+				geodata = geodata.split(",");
+				if(geodata.length==3) {
+					for(var i=0;i<3;i++) {
+						t = geodata[i].split(":");
+						if(t.length == 2) bounds[t[0]] = parseFloat(t[1]);
+						else e = true;
+					}
+				}
+				if(!e) {
+					JB.Debug_Info(id,"Im Bilderbereich Bounds gefunden.",false);
+					var bounds = JB.bounds(bounds.centerlat,bounds.centerlon,bounds.radius);
+					if(bounds.latmin<daten.latmin) daten.latmin=bounds.latmin; if(bounds.latmax>daten.latmax) daten.latmax=bounds.latmax;
+					if(bounds.lonmin<daten.lonmin) daten.lonmin=bounds.lonmin; if(bounds.lonmax>daten.lonmax) daten.lonmax=bounds.lonmax;
+				}
+				else
+					JB.Debug_Info(id,"Fehler bei Bounds in Pict-Div",false);
+			}
 			var dv = divs.querySelectorAll("div");
 			JB.Debug_Info(id,dv.length +" Divs zum Geotaggen gefunden",false);
 			for(var i=0;i<dv.length;i++) {
@@ -1826,7 +1872,7 @@ JB.lpgpx = function(fns,id,callback) {
 						var tpause = 0;
 						daten[0].twob = daten[0].t;
 						for(var i=0;i<daten.length-1;i++) {
-							if(daten[i].v < 0.1) tpause += daten[i+1].t-daten[i].t ;
+							if(daten[i].v < JB.gc.movevmin) tpause += daten[i+1].t-daten[i].t ;
 							daten[i+1].twob = daten[i+1].t - tpause;
 						}
 						tracki.vmittwob = tracklen/(daten[daten.length-1].t-daten[0].t-tpause)
@@ -2126,7 +2172,7 @@ JB.GPX2GM.start = function() {
 				var Id = "map"+(Map_Nr++);
 				div.id = Id;
 			}
-			var GPX = Klasse.substring(CN).split()[0];
+			var GPX = decodeURI(Klasse.substring(CN+1).split(" ")[0]); console.log(GPX);
 			if(GPX.search(";")>=0 && JB.gc.dateitrenner != ";") GPX = GPX.split(";");    
 			else GPX = GPX.split(":");                     
 			if(GPX.length==3) {
@@ -2140,7 +2186,7 @@ JB.GPX2GM.start = function() {
 			var button = buttons[i];
 			var Klasse = button.className;
 			var CN = Klasse.search(/gpxview:/i); 
-			var cmd = Klasse.substring(CN).split(" ")[0];
+			var cmd = decodeURI(Klasse.substring(CN).split(" ")[0]);
 			if(cmd.search(";")>=0 && JB.gc.dateitrenner != ";") cmd = cmd.split(";") ;
 			else cmd = cmd.split(":") ;
 			if(cmd.length>2) {
@@ -2178,7 +2224,7 @@ JB.GPX2GM.start = function() {
 		for(var i=0;i<selects.length;i++) {
 			var select = selects[i];
 			select.onchange = function() {
-				var cmd = this.options[this.options.selectedIndex].value.split(":");
+				var cmd = decodeURI(this.options[this.options.selectedIndex].value).split(":");
 				if(cmd.length<2) return;
 				if(cmd.length<3) cmd[2] = ""; //undefined;
 				maps["Karte_"+cmd[0]].ShowGPX(cmd[1].split(JB.gc.dateitrenner),cmd[2]);
