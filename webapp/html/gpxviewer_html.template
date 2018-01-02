@@ -13,6 +13,7 @@
 			var Shtrtges=true;
 			var Shtrvmittwob=true;
 			var Twidth=4;
+			var Movevmin=0.1;
 		</script>
 		<link rel="stylesheet" type="text/css" href="css/gpstracker.css">
 	</head>
