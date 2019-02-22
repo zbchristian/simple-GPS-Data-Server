@@ -38,9 +38,8 @@
 <div>%ERROR%</div>
 <div id="map" class="map gpxview:%GPXFILE%:%MAPSTYLE%"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
 <div id="map_profiles">
-<div id="map_hp" class="map_hp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
-<div id="map_sp" class="map_sp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
 <div id="map_vp" class="map_vp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+<div id="map_hp" class="map_hp"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
 </div>
 
 <div>

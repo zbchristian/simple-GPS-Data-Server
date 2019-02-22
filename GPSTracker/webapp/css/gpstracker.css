@@ -83,9 +83,8 @@ div.map_vp {
 */
 #map { width:100%;height:80vh;display:inline-block;vertical-align:top;margin: 10px 0px 0px 5px;padding:0px }
 #map_profiles { width:0px;height:0x;display:inline-block; margin: 40px 0px 0px 0px;padding:0px}
-#map_hp { height:35%;width:100%;padding:0px;margin: 0px 0px -30px 0px}
-#map_sp { height:35%;width:100%;padding:0px;margin: 0px 0px -30px 0px}
-#map_vp { height:35%;width:100%;padding:0px;margin: 0px 0px -30px 0px}
+#map_hp { height:50%;width:100%;padding:0px;margin: 0px 0px -30px 0px}
+#map_vp { height:50%;width:100%;padding:0px;margin: 0px 0px -30px 0px}
 
 
 @media screen and (min-width:500px) {
