@@ -8,6 +8,8 @@
 		<script type="text/javascript">
 			var Doclang= "de";
 			var Legende_rr=false;
+			var Legende_fnm=false;
+			var Legende_wpt=false;
 			var Shtrh=false;
 			var Shtrs=false;
 			var Shtrtges=true;
