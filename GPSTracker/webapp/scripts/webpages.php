@@ -10,7 +10,7 @@
 
 function getAuthors() {
 	$html  = "<hr><p>&copy; Christian Zeitnitz 2017<br>";
-	$html .= 'GPXViewer Script: 23.05.2017 <a href="https://www.j-berkemeier.de/GPXViewer/">GPX-Viewer</a></p>';
+	$html .= 'GPXViewer Script: V 6.2 <a href="https://www.j-berkemeier.de/GPXViewer/">GPX-Viewer</a></p>';
 	return $html;
 }
 
