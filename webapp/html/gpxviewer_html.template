@@ -43,6 +43,7 @@
 <div id="map_vp" class="map_vp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
 </div>
 
+<div>
 <b>Set new end date/time and period for track selection</b>
 <form action="%URL%">
 <input value="%DEVID%" name="id" type="hidden">
@@ -56,6 +57,7 @@
 </div>
 <button>apply</button>
 </form>
+</div>
 
 <div><p>Download <a href="%LINKTOGPX%">GPX file</a></p></div>
 <div>
