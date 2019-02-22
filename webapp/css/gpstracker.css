@@ -2,7 +2,7 @@ html, body {
 	margin:0; 
 	padding:0; 
 	background:white;
-	width:500px;
+	width:calc(100%);
 }
 div.content {
 	margin:0px 20px 0px 10px;
@@ -60,17 +60,39 @@ div.header {
 	left:0;
 	background:steelblue;
  }
+
 div.map { 
+	display:block; 
+	width: calc(100%)-30px;
+	height:400px; 
+	margin:10px 10px 10px 0px;
+}
+/*
+div.map_hp { 
 	display:block; 
 	width:470px; 
 	height:500px; 
 	margin:10px 10px 10px 0px;
 }
+div.map_vp { 
+	display:block; 
+	width:470px; 
+	height:500px; 
+	margin:10px 10px 10px 0px;
+}
+
+#map { width:49%;height:500px;height:100vh;display:inline-block;vertical-align:top }
+#map_profiles { width:49%;height:500px;height:100vh;margin-left:1%;display:inline-block; }
+#map_hp { height:36%;height:calc((100% + 64px)/3);margin-top:10px }
+#map_sp { height:36%;height:calc((100% + 64px)/3);margin-top:-37px }
+#map_vp { height:36%;height:calc((100% + 64px)/3);margin-top:-37px }
+*/
+
 @media screen and (min-width:700px) {
-	html,body { width:700px; }
-	div.map {height:700px; width:670px;  }
+	div.map {height:500px;  }
 } 
 @media screen and (min-width:1000px) {
-	html,body {width:1000px; }
-	div.map {height:700px; width:970px;  }
+	div.map {height:700px;  }
+
 } 
+
