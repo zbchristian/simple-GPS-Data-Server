@@ -76,14 +76,19 @@ function create_gpx_data($devno,$gps) {
 	$wayp["trk"]=array();
 	$tlast = date($date_fmt,0);
 	$ntrk=0;
+	$lspd = -999.0;
 	foreach($gps as $i => $row) {
+		// remove consecutive entries  with exact same positions
+		if($i>0 && $llon == $row["lon"] && $llat == $row["lat"]) continue;
+		// remove consecutive points with speed = 0 
+		if($i>0 && $lspd == 0.0 && isset($row["spd"]) && $row["spd"] == 0.0) continue;
                 if(!empty($tlast) && (strtotime($row["time"])-strtotime($tlast)) > $SplitTrackSec ) {
                         $gpx .= '</trkseg></trk>';
 			if($i>1) {
 				$wayp["type"][]="End";
-				$wayp["idx"][]=$i-1;
+				$wayp["idx"][]=$li; // $i-1;
 				$wayp["trk"][]=$ntrk;
-			} 
+			}
                         $gpx .= '<trk><trkseg>';
 			++$ntrk;
 			$wayp["type"][]="Start";
@@ -97,6 +102,8 @@ function create_gpx_data($devno,$gps) {
 		}
 		$lat = number_format($row["lat"],6,".","");
 		$lon = number_format($row["lon"],6,".","");
+		$llat = $row["lat"];
+		$llon = $row["lon"];
 		$gpx .= '<trkpt lat="'.$lat.'" lon="'.$lon.'">';
 		$gpx .= '<time>'.$row["time"].'</time>';
 		if(isset($row["alt"]) && $row["alt"] > -10000 )$gpx .= '<ele>'.$row["alt"].'</ele>';
@@ -109,21 +116,29 @@ function create_gpx_data($devno,$gps) {
 			$mpersec=number_format($row["spd"],2,".","");
 			$gpx .= '<speed>'.$mpersec.'</speed>';			// m/sec
 			$gpx .= '</extensions>';
+			$lspd = $row["spd"];
 		}
 		$gpx .= '</trkpt>';
 		$tlast = $row["time"];
 		$li = $i;
 	}
 	$wayp["type"][]="End";
-	$wayp["idx"][]=$i;
+	$wayp["idx"][]=$li;
 	$wayp["trk"][]=$ntrk;
 	$gpx .= '</trkseg></trk>';
+// show waypoint for last position, if not same as end of last track
+	if($li < $i) {
+		$wayp["type"][]="Last pos";
+		$wayp["idx"][]=$i;
+		$wayp["trk"][]=-1;
+	}
 	foreach($wayp["idx"] as $i => $idx) {
 		$lat = number_format($gps[$idx]["lat"],6,".","");
 		$lon = number_format($gps[$idx]["lon"],6,".","");
 		$gpx .= '<wpt lat="'.$lat.'" lon="'.$lon.'">';
 		$datetime=date($date_fmt,strtotime($gps[$idx]["time"]));
-		$gpx .= '<name>'.$wayp["type"][$i].' track '.$wayp["trk"][$i].' at '.$datetime.'</name>';
+		if($wayp["trk"][$i] >= 0) $gpx .= '<name>'.$wayp["type"][$i].' track '.$wayp["trk"][$i].' at '.$datetime.'</name>';
+		else $gpx .= '<name>'.$wayp["type"][$i].' at '.$datetime.'</name>';
 		$gpx .= '<time>'.$gps[$idx]["time"].'</time>';
 		if(isset($gps[$idx]["alt"]) && $gps[$idx]["alt"] > -10000 ) $gpx .= '<ele>'.$gps[$idx]["alt"].'</ele>';
 		$gpx .= '</wpt>';
@@ -236,6 +251,16 @@ function correctDate($inputs) {
 	if($date > ($d=date("Y-m-d H:i:s"))) $date = $d;
 	if(date('H:i:s', strtotime($date)) === "00:00:00" ) $date=date('Y-m-d 23:59:59', strtotime($date));
 	return $date;
+}
+
+function  distanceInMeters($lon1,$lat1,$lon2,$lat2) {
+	define("NM",1852);		// nautical mile in m
+	define("mPerDeg",60*NM);	// meter per degree (longitude only at aquator)
+	$mlon1 = mPerDeg*cos(deg2rad($lat1));
+	$mlon2 = mPerDeg*cos(deg2rad($lat2));
+	$mlat1 = mPerDeg*$lat1;
+	$mlat2 = mPerDeg*$lat2;
+	return sqrt(pow(mlon1-mlat1,2)+pow(mlon2-mlat2,2));
 }
 
 ?>

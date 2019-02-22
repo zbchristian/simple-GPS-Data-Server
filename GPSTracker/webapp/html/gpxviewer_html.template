@@ -6,7 +6,7 @@
 		<title>%PAGETITLE%</title>
 		<script type="text/javascript" src="js/GM_Utils/GPX2GM.js"></script>
 		<script type="text/javascript">
-			var Doclang= "en";
+			var Doclang= "de";
 			var Legende_rr=false;
 			var Shtrh=false;
 			var Shtrs=false;
@@ -14,6 +14,7 @@
 			var Shtrvmittwob=true;
 			var Twidth=4;
 			var Movevmin=0.1;
+			var Tdiff=1;
 		</script>
 		<link rel="stylesheet" type="text/css" href="css/gpstracker.css">
 	</head>
@@ -34,7 +35,12 @@
 </form>
 
 <div>%ERROR%</div>
-<div class="map gpxview:%GPXFILE%:%MAPSTYLE%"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+<div id="map" class="map gpxview:%GPXFILE%:%MAPSTYLE%"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+<div id="map_profiles">
+<div id="map_hp" class="map_hp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+<div id="map_sp" class="map_sp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+<div id="map_vp" class="map_vp no_x"><noscript><p>Javascript is needed to display the track.</p></noscript></div>
+</div>
 
 <b>Set new end date/time and period for track selection</b>
 <form action="%URL%">
