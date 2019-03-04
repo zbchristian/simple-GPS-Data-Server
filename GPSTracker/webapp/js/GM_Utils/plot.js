@@ -1,5 +1,5 @@
 // plot
-// Version vom 10. 9. 2018
+// Version vom 25. 10. 2016
 // Jürgen Berkemeier
 // www.j-berkemeier.de
 
@@ -24,7 +24,7 @@ JB.plot = function(feld,xstr,ystr) {
 	this.labelcol = "black";
 	this.markercol = "black";
 	this.fillopac = 0.1;
-	this.xscaletime = "";
+	this.xscale60 = false;
 	
 	// Plotbereich anlegen
 	if(typeof feld == "string") feld = document.getElementById(feld);
@@ -45,7 +45,7 @@ JB.plot = function(feld,xstr,ystr) {
 			xmax = xmin = daten[0][xobj];
 			ymax = ymin = daten[0][yobj];
 		}
-		for(var i=0;i<daten.length;i++) {
+		for(var i=1;i<daten.length;i++) {
 			var t = daten[i];
 			if(t[xobj]<xmin) xmin = t[xobj];
 			if(t[xobj]>xmax) xmax = t[xobj];
@@ -69,22 +69,23 @@ JB.plot = function(feld,xstr,ystr) {
 		feld.innerHTML = "";
 		gr = new JB.grafik(feld);
 		this.method = gr.method;
-		// Elemente für ...
+		// Elemente für Mouseover, Marker, etc.
 		this.ifeld = JB.makediv(feld,"","","",feld.offsetWidth-1,feld.offsetHeight-1);
-		// ... Copyright
-		this.cp = JB.makediv(this.ifeld,"",0,0,10,10);
-		this.cp.innerHTML = "<a href='http://www.j-berkemeier.de' title='Plot 10. 9. 2018'>JB</a><button></button";
-		this.cp.style.zIndex = "100";
-		this.cp.style.opacity = "0";
-		// ... und Mouseover, Marker, etc.
+		var cp = JB.makediv(this.ifeld,"",0,0,10,10);
+		// Copyright
+		cp.innerHTML = "<a href='http://www.j-berkemeier.de' title='Plot 6. 10. 2016'>X</a>";
+		cp.style.zIndex = "100";
+		cp.style.opacity = "0";
+		// Elemente für Mouseover, Marker, etc.
 		this.mele = JB.makediv(this.ifeld,"",x0,0,gr.w-x0,gr.h-y0); 
 		// Achsenbeschriftungen
 		if(xtext.length) gr.text((gr.w-x0)/2+x0,0,".9em",this.labelcol,xtext,"mu","h"); 
 		if(ytext.length) gr.text(10,(gr.h-y0)/2+y0,".9em",this.labelcol,ytext,"mm","v");
 		// xmin und xmax auf die nächst kleinere bzw. größere "glatte" Zahl runden und den 
-		// Abstand der Tics auf glatte Zahlen (1 2 5 0) für x-Achse legen, wenn Zeitachse, entsprechend skalieren.
+		// Abstand der Tics auf glatte Zahlen (1 2 5 0) für x-Achse legen
 		if(xmax==xmin) { xmin -= 0.5; xmax += 0.5; }
-		dx = (xmax - xmin)/200;
+		if(this.xscale60) dx = (xmax - xmin)/50;
+		else dx = (xmax - xmin)/100;			
 		xmin -= dx; xmax += dx;
 		dx = xmax - xmin;
 		fx = Math.pow(10,Math.floor(Math.log10(dx))-1); // Die Größenordnung ermitteln
@@ -94,70 +95,36 @@ JB.plot = function(feld,xstr,ystr) {
 		var tx = JB.ticdist(100*dx/gr.w);
 		// Tics und Zahlen an der x-Achse
 		gr.setwidth(this.ticwidth);
-		if(this.xscaletime!="") {
-					 if(tx<0.005) tx = tx;
-			else if(tx<0.02) tx = 1/60;
+		if(this.xscale60 && tx<.75) {
+			var vz;
+			     if(tx<0.02) tx = 1/60;
 			else if(tx<0.04) tx = 1/30;
 			else if(tx<0.1)  tx = 1/12;
 			else if(tx<0.2)  tx = 1/6;
 			else if(tx<0.4)  tx = 1/3;
-			else if(tx<0.75) tx = 1/2;
-			else if(tx<1.5 ) tx = 1;
-			else if(tx<=2)   tx = 2;
-			else if(tx<=3)   tx = 3;
-			else if(tx<=4)   tx = 4;
-			else if(tx<=6)   tx = 6;
-			else if(tx<=8)   tx = 8;
-			else if(tx<=12)  tx = 12;
-			else if(tx<=24)  tx = 24;
-			else             tx = Math.ceil(tx/24)*24;
-			if(this.xscaletime=="relative") {
-				var vz,xt,y,mo,d,h,mi,r;
-				var mxmin = Math.ceil(xmin/tx)*tx;
-				var range = Math.abs(mxmin)+Math.abs(xmax);
-				for(var x=mxmin;x<=xmax;x+=tx) {
-					var xx = (x-xmin)*xfak + x0;
-					vz = "";
-					r = x;
-					if(x<0) {
-						vz = "-";
-						r = -r;
-					}
-					d = Math.floor(r/24);
-					r = r - d * 24;
-					h = Math.floor(r);
-					mi = Math.round((r - h) * 60);
-					if(mi == 60) { mi = 0; h++; }
-					if(d == 30) { d = 0; mo++; }
-					if(mo == 12) { mo = 0; y++; }
-					if(mi<10) mi = "0"+mi;
-					if(range<24)        xt = vz+h+"h"+mi+"'";
-					else if(range<300)  xt = vz+d+"d"+h+"h";
-					else                xt = vz+d+"d";
-					gr.line(xx,y0,xx,gr.h,this.gridcol);
-					if(xtext.length && xx<(gr.w-5) && xx>5) gr.text(xx,y0-2,".8em",this.labelcol,xt,"mo","h");
+			else             tx = 1/2;
+			var mxmin = Math.ceil(xmin/tx)*tx;
+			for(var x=mxmin;x<=xmax;x+=tx) {
+				var xx = (x-xmin)*xfak + x0;
+				vz = "";
+				if(x>=0) {
+					var xh = Math.floor(x);
+					var xm = Math.round((x - xh) * 60);
 				}
-			}
-			else if(this.xscaletime=="absolute") {
-				var locale = "de-de";
-				if(document.documentElement.hasAttribute("lang") && document.documentElement.getAttribute("lang")!="de") locale = "en-en";
-				var date;
-				tx  *= 2;
-				var mxmin = Math.ceil(xmin/tx)*tx;
-				for(var x=mxmin;x<=xmax;x+=tx) {
-					var xx = (x-xmin)*xfak + x0;
-					vz = "";
-					r = Math.round(x*3600)/3600;
-					date = new Date(r*3600000);
-					if(tx<24) xt = date.toLocaleString(locale, { timeZone: 'UTC' });
-					else      xt = date.toLocaleDateString(locale, { timeZone: 'UTC' });
-					gr.line(xx,y0,xx,gr.h,this.gridcol);
-					if(xtext.length && xx<(gr.w-5) && xx>5) gr.text(xx,y0-2,".8em",this.labelcol,xt,"mo","h");
+				else {
+					var xh = Math.ceil(x);
+					var xm = Math.round((xh - x) * 60);
+					if(xh==0 && xm!=0) vz = "-";
 				}
+				if(xm == 60) { xm = 0; xh++; }
+				if(xm<10) xm = "0"+xm;
+				var xln = vz+xh+"h"+xm+"'";
+				gr.line(xx,y0,xx,gr.h,this.gridcol);
+				if(xtext.length && xx<(gr.w-5) && xx>5) gr.text(xx,y0-2,".8em",this.labelcol,JB.myround(x,tx),"mo","h");
 			}
 		}
 		else {
-			//tx = JB.ticdist(tx);
+			tx = JB.ticdist(tx);
 			var mxmin = Math.ceil(xmin/tx)*tx;
 			for(var x=mxmin;x<=xmax;x+=tx) {
 				var xx = (x-xmin)*xfak + x0;
@@ -166,7 +133,7 @@ JB.plot = function(feld,xstr,ystr) {
 			}
 		}
 		// ymin und ymax auf die nächst kleinere bzw. größere "glatte" Zahl runden und den 
-		// Abstand der Tics auf glatte Zahlen (1 2 5 0) für y-Achse legen
+		// Abstand der Tics auf glatte Zahlen (1 2 5 0) für x-Achse legen
 		if(ymax==ymin) { ymin -= 0.5; ymax += 0.5; }
 		dy = (ymax - ymin)/100; 
 		ymin -= dy; ymax += dy;
@@ -246,8 +213,7 @@ JB.plot = function(feld,xstr,ystr) {
 		var dieses = this;
 		var posx=0,offx;
 		this.mele.onmouseover = this.mele.ontouchstart = function(e) {
-			//dieses.mele.click(); 
-			dieses.cp.querySelector("button").focus();
+			dieses.mele.click(); 
 			if(!e) e = window.event;
 			e.cancelBubble = true;
 			if (e.stopPropagation) e.stopPropagation();
