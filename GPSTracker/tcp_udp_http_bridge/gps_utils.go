@@ -352,23 +352,25 @@ func analyseHTTPResponse(response string) (ans string, err error) {
 //	CIPHER		= "AES/CBC/PKCS7PADDING"
 
 const (  
+	ENC_HEADER	= "$enc$-"
 	PASSWORD = "12345"
 	MIN_MSG_LEN = 128+8+24 
 	ITERATION_COUNT	 = 10000
-    KEY_LENGTH		= 128/8
+    KEY_LENGTH		= 128/8  // key length in bytes
  )
 
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = ""
-	err = errors.New("decryption of message failed")
-	if len(msg) >= MIN_MSG_LEN  {
+	err = errors.New("message is not encrypted")
+	if len(msg) >= MIN_MSG_LEN &&  {
 		txtcomp := strings.Split(msg,"-")
-		if len(txtcomp) == 3 {
-			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[0])
+		if len(txtcomp) == 4 {
+			if txtcomp[0] != ENC_HEADER { return } }
+			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[1])
 			if err1 != nil { err = err1; return }
-			IV,err1 	:= base64.StdEncoding.DecodeString(txtcomp[1])
+			IV,err1 	:= base64.StdEncoding.DecodeString(txtcomp[2])
 			if err1 != nil { err = err1; return }
-			enctxt,err1	:= base64.StdEncoding.DecodeString(txtcomp[2])
+			enctxt,err1	:= base64.StdEncoding.DecodeString(txtcomp[3])
 			if err1 != nil { err = err1; return }
 			key := pbkdf2.Key([]byte(PASSWORD), salt, ITERATION_COUNT, KEY_LENGTH, sha256.New)
 			blockCiph,err1 := aes.NewCipher(key) 
