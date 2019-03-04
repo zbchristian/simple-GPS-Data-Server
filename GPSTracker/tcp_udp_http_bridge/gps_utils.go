@@ -13,6 +13,7 @@ import (
 		"math"
 		"net/url"
 		"os"
+		"io/ioutil"
 		"bufio"
 		"strings"
 		"encoding/json"
@@ -353,12 +354,16 @@ func analyseHTTPResponse(response string) (ans string, err error) {
 
 const (  
 	ENC_HEADER	= "$enc$"
-	PASSWORD = "12345"
+	PASSWORD=""
 	MIN_MSG_LEN = 128+8+24 
 	ITERATION_COUNT	 = 10000
     KEY_LENGTH		= 128/8  // key length in bytes
- )
+	PSK_FILE = "encrypt_psk.config"
+)
 
+ var preshared_key="NIL"
+
+ 
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = msg
 	err = errors.New("Message is not encrypted")
@@ -366,13 +371,15 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 		txtcomp := strings.Split(msg,"-")
 		if len(txtcomp) == 4 {
 			if strings.Compare(txtcomp[0],ENC_HEADER)!=0 { return }
+			if preshared_key=="NIL" { preshared_key=read_psk() }
+			if len(preshared_key) == 0 { return }
 			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[1])
 			if err1 != nil { err = err1; return }
 			IV,err1 	:= base64.StdEncoding.DecodeString(txtcomp[2])
 			if err1 != nil { err = err1; return }
 			enctxt,err1	:= base64.StdEncoding.DecodeString(txtcomp[3])
 			if err1 != nil { err = err1; return }
-			key := pbkdf2.Key([]byte(PASSWORD), salt, ITERATION_COUNT, KEY_LENGTH, sha256.New)
+			key := pbkdf2.Key([]byte(preshared_key), salt, ITERATION_COUNT, KEY_LENGTH, sha256.New)
 			blockCiph,err1 := aes.NewCipher(key) 
 			if err1 != nil { err = err1; return }
 			ciphCBC := cipher.NewCBCDecrypter(blockCiph,IV)
@@ -392,4 +399,17 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 		}
 	}
 	return
+}
+
+func read_psk() (key string) {
+	fpsk := configpath+"/"+PSK_FILE 
+	_, err := os.Stat(fpsk) 
+	key = ""
+	if err == nil {
+		bkey, err := ioutil.ReadFile(fpsk)
+		if err == nil {
+			key = strings.Trim(string(bkey)," \n\t")
+		}
+	}
+	return 
 }
