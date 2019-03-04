@@ -352,7 +352,7 @@ func analyseHTTPResponse(response string) (ans string, err error) {
 //	CIPHER		= "AES/CBC/PKCS7PADDING"
 
 const (  
-	ENC_HEADER	= "$enc$-"
+	ENC_HEADER	= "$enc$"
 	PASSWORD = "12345"
 	MIN_MSG_LEN = 128+8+24 
 	ITERATION_COUNT	 = 10000
