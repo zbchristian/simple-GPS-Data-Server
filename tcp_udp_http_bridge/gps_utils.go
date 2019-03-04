@@ -361,7 +361,7 @@ const (
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = ""
 	err = errors.New("decryption of message failed")
-	if len(plaintxt) >= MIN_MSG_LEN  {
+	if len(msg) >= MIN_MSG_LEN  {
 		txtcomp := strings.Split(msg,"-")
 		if len(txtcomp) == 3 {
 			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[0])
