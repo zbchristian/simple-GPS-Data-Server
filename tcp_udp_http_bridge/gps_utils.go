@@ -17,6 +17,7 @@ import (
 		"strings"
 		"encoding/json"
 		"encoding/base64"
+		"encoding/hex"
 		"crypto/sha256"
 		"crypto/aes"
 		"crypto/cipher"
@@ -382,7 +383,8 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 //			for _,val := range plain {
 //				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
 //			}
-			if err == nil { plaintxt = string(plain) }
+//			if err == nil { plaintxt = string(plain) }
+			plaintxt = hex.EncodeToString(plain)
 		}
 	}
 	return
