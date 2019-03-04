@@ -362,7 +362,7 @@ const (
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = ""
 	err = errors.New("message is not encrypted")
-	if len(msg) >= MIN_MSG_LEN &&  {
+	if len(msg) >= MIN_MSG_LEN  {
 		txtcomp := strings.Split(msg,"-")
 		if len(txtcomp) == 4 {
 			if strings.Compare(txtcomp[0],ENC_HEADER)!=0 { return }
