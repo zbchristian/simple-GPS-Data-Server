@@ -379,14 +379,14 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			plain := make([]byte, len(enctxt))
 			ciphCBC.CryptBlocks(plain, enctxt)
 			err = nil
-			// trim padding bytes
+			// trimRight padding bytes
 			id := 0
-			for id = len(plain)-1; plain[id] < 0x20 && id >=0 ; id-- {}
+			for id = len(plain)-1; plain[id] <= 0x20 && id >=0 ; id-- {}
+			if id < 10 { err= errors.New("Message too short"); return }
 			for _,val := range plain[:id] {
 				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
 			}
-			if err == nil { plaintxt = string(plain) }
-//			plaintxt = hex.EncodeToString(plain)
+			if err == nil { plaintxt = string(plain[:id]) }
 		}
 	}
 	return
