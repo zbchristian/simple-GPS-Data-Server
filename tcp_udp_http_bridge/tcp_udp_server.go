@@ -34,6 +34,7 @@ import (
 
 const (
 	CONFIG_FILE	= "devices.config"
+	PSK_FILE = "encrypt_psk.config"
 	DEFAULT_HOST 	= "http://localhost"
 	DEFAULT_PORT 	= 20202
 	DEFAULT_KEY  	= "12345"
@@ -83,15 +84,20 @@ func initConf() {
 			_, err = os.Stat(fconf) 
 		}
 	}
-    	if err != nil ||  readDeviceConfig(fconf)!=nil {
-        	logger.Print("Cannot locate or read configuration file "+fconf+" ... EXIT")
+   	if err != nil ||  readDeviceConfig(fconf)!=nil {
+       	logger.Print("Cannot locate or read configuration file "+fconf+" ... EXIT")
+			
 		if(isReload) { 
 			isExit = true 
 		} else {
 			os.Exit(1)
 		}
-    	}
+   	}
 	isReload = false
+
+	fpsk := configpath+"/"+PSK_FILE 
+	_, err = os.Stat(fpsk) 
+	read_psk(fpsk)
 }
 
 func main() {

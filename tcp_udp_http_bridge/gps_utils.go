@@ -358,11 +358,10 @@ const (
 	MIN_MSG_LEN = 128+8+24 
 	ITERATION_COUNT	 = 10000
     KEY_LENGTH		= 128/8  // key length in bytes
-	PSK_FILE = "encrypt_psk.config"
+
 )
 
- var preshared_key="NIL"
-
+ var preshared_key=""
  
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = msg
@@ -371,7 +370,6 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 		txtcomp := strings.Split(msg,"-")
 		if len(txtcomp) == 4 {
 			if strings.Compare(txtcomp[0],ENC_HEADER)!=0 { return }
-			if preshared_key=="NIL" { preshared_key=read_psk() }
 			if len(preshared_key) == 0 { return }
 			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[1])
 			if err1 != nil { err = err1; return }
@@ -401,15 +399,15 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 	return
 }
 
-func read_psk() (key string) {
-	fpsk := configpath+"/"+PSK_FILE 
-	_, err := os.Stat(fpsk) 
-	key = ""
+func read_psk(fpsk string) (err error) {
+	key := ""
+	bkey, err := ioutil.ReadFile(fpsk)
 	if err == nil {
-		bkey, err := ioutil.ReadFile(fpsk)
-		if err == nil {
-			key = strings.Trim(string(bkey)," \n\t")
-		}
+		key = strings.Trim(string(bkey)," \n\t")
 	}
+	preshared_key = key
+	if err == nil { 
+		logger.Print("PSK read successfully") 
+	} else { logger.Print("FAILED to read PSK") }
 	return 
 }
