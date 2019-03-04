@@ -383,8 +383,12 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			for id,val := range plain {
 				if val<0x20 || val>0x7f { plain[id] = 0x20 }
 			}
-			if err == nil { plaintxt = strings.Trim(string(plain)," ") }
-			if len(plaintxt) < 10 { err= errors.New("Message too short"); plaintxt = msg; return }
+			ptxt := strings.Trim(string(plain)," ")
+			if len(ptxt) < 10 { 
+				err= errors.New("Message too short")
+			} else {
+				plaintxt = ptxt
+			}
 		}
 	}
 	return
