@@ -380,7 +380,8 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			ciphCBC.CryptBlocks(plain, enctxt)
 			err = nil
 			// trim padding bytes
-			for id := len(plain)-1; plain[id] < 0x20 && id >=0 ; id-- {}
+			id = 0
+			for id = len(plain)-1; plain[id] < 0x20 && id >=0 ; id-- {}
 			for _,val := range plain[:id] {
 				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
 			}
