@@ -17,7 +17,6 @@ import (
 		"strings"
 		"encoding/json"
 		"encoding/base64"
-		"encoding/hex"
 		"crypto/sha256"
 		"crypto/aes"
 		"crypto/cipher"
@@ -380,11 +379,13 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			plain := make([]byte, len(enctxt))
 			ciphCBC.CryptBlocks(plain, enctxt)
 			err = nil
-//			for _,val := range plain {
-//				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
-//			}
-//			if err == nil { plaintxt = string(plain) }
-			plaintxt = hex.EncodeToString(plain)
+			// trim padding bytes
+			for id := len(plain)-1; plain[id] < 0x20 && id >=0 ; id-- {}
+			for _,val := range plain[:id] {
+				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
+			}
+			if err == nil { plaintxt = string(plain) }
+//			plaintxt = hex.EncodeToString(plain)
 		}
 	}
 	return
