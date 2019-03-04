@@ -16,6 +16,11 @@ import (
 		"bufio"
 		"strings"
 		"encoding/json"
+		"encoding/base64"
+		"crypto/sha256"
+		"crypto/aes"
+		"crypto/cipher"
+		"golang.org/x/crypto/pbkdf2"   // go get -u golang.org/x/crypto/pbkdf2
 )
 
 const (	
@@ -93,8 +98,8 @@ type devPattern struct {
 // 
 // regular expression for GPRMC record w/o header, magnetic deviation and checksum 
 const (
-	REGEXP_GPRMC = "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
-//                    time  active/void  lat          lon          speed   angle    date
+	REGEXP_GPRMC  = "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
+//                     time  active/void  lat          lon          speed   angle    date 
 )
 
 var devs []devPattern
@@ -338,3 +343,42 @@ func analyseHTTPResponse(response string) (ans string, err error) {
 	return
 }
 
+// decrypt AES/CBC encrypted message
+// structure: salt-IV-ENCTEXT
+// Base64 encoded
+//
+// USED in GPSLogger:
+// 	KEY_FACTORY	= "PBKDF2WithHmacSHA256"
+//	CIPHER		= "AES/CBC/PKCS7PADDING"
+
+const (  
+	PASSWORD = "12345"
+	MIN_MSG_LEN = 128+8+24 
+	ITERATION_COUNT	 = 10000
+    KEY_LENGTH		= 128
+ )
+
+func decryptMessage(msg string) (plaintxt string, err error) {
+	plaintxt = ""
+	err = errors.New("decryption of message failed")
+	if len(plaintxt) >= MIN_MSG_LEN  {
+		txtcomp := strings.Split(msg,"-")
+		if len(txtcomp) == 3 {
+			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[0])
+			if err1 != nil { err = err1; return }
+			IV,err1 	:= base64.StdEncoding.DecodeString(txtcomp[1])
+			if err1 != nil { err = err1; return }
+			enctxt,err1	:= base64.StdEncoding.DecodeString(txtcomp[2])
+			if err1 != nil { err = err1; return }
+			key := pbkdf2.Key([]byte(PASSWORD), salt, ITERATION_COUNT, KEY_LENGTH, sha256.New)
+			blockCiph,err1 := aes.NewCipher(key) 
+			if err1 != nil { err = err1; return }
+			ciphCBC := cipher.NewCBCDecrypter(blockCiph,IV)
+			plain := make([]byte, len(enctxt))
+			ciphCBC.CryptBlocks(plain, enctxt)
+			plaintxt = string(plain)
+			err = nil;
+		}
+	}
+	return
+}

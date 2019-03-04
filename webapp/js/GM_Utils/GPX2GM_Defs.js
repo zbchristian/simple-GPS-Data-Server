@@ -1,5 +1,5 @@
 // Platz für weitere Definitionen
-// 4. 1. 2019
+// 29. 12. 2017
 
 "use strict";
 
@@ -7,13 +7,11 @@ window.JB = window.JB || {};
 window.JB.GPX2GM = window.JB.GPX2GM || {};
 
 // Google Maps API Key
-// JB.GPX2GM.GM_Api_key = "";
+// JB.GPX2GM.GM_Api_key = "GM_API_Key";
 // Key für OSM Cycle
-// JB.GPX2GM.OSM_Cycle_Api_Key = "";
+// JB.GPX2GM.OSM_Cycle_Api_Key = "OSM_Key";
 // Key für OSM Landscape
-// JB.GPX2GM.OSM_Landscape_Api_Key = "";
-
-//var Mapapi = "gm";
+// JB.GPX2GM.OSM_Landscape_Api_Key = "OSM_Key";
 
 // Definition der Icons, bei eigenen Icons nur Kleinbuchstaben verwenden.
 JB.Icons = function(baseurl) {
@@ -29,14 +27,12 @@ JB.Icons = function(baseurl) {
 											scaledSize: { width: 31, height: 31, widthUnit: "px", heightUnit: "px" },
 											size: { width: 31, height: 31, widthUnit: "px", heightUnit: "px" } } };
 	this.Kreis			= { icon:   { anchor: {x:38,y:38}, url: baseurl+"Icons/kreis.png" } };
-	this.marker_bw	= { icon:   { anchor: {x:13,y:41}, url: baseurl+"Icons/marker-icon_bw.png" } };
 	this.CL   			= { icon:   { anchor: {x:16,y:16}, url: baseurl+"Icons/current_location.svg", 
 											scaledSize: { width: 31, height: 31, widthUnit: "px", heightUnit: "px" },
 											size: { width: 31, height: 31, widthUnit: "px", heightUnit: "px" } } };
 	this.lodging		= { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/hotel2.png" },
 	//this.lodging		= { icon:   { anchor: {x:15,y:31}, url: baseurl+"Icons/hotel.png" },
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
-	this.hotel = this.lodging;
 	this.museum			= { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/museum.png" },
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
 	this.residence	= { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/villa.png" },
@@ -73,8 +69,6 @@ JB.Icons = function(baseurl) {
 	this.campground	= { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/tent.png" },
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
 	this.summit     = { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/peak.png" },
-											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
-	this.railway    = { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/train.png" },
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
 	this["shopping center"] = { icon:   { anchor: {x:15,y:36}, url: baseurl+"Icons/shoppingmall.png" },
 											shadow: { anchor: {x:10,y:31}, url: baseurl+"Icons/shadow.png" } };
@@ -138,7 +132,6 @@ JB.GPX2GM.strings.de = {
 	time_unit: "Stunden",
 	altdiff: "H\u00F6hendifferenz",
 	alt: "H\u00F6he",
-	in: " in ",
 	grade: "Stg.",
 	grade_unit: "%",
 	avspeed: "V<sub>m</sub>",
@@ -161,65 +154,7 @@ JB.GPX2GM.strings.de = {
 	// wait: "Bitte warten.<br />Daten werden geladen.",
 	wait: "",  // Wartebild nehmen
 	clkz: "Zum Zoomen klicken",
-	zb: "Zurück zoomen",
-	frage_datenschutz_gm: "Diese Seite verwendet Karten und ein Api von Google sowie möglicherweise auch OSM-Karten. Dadurch werden Besucherdaten an den jeweiligen Dienstanbieter übertragen. Mehr dazu im Impressum. Ist das OK?",
-	antwort_datenschutz_gm: "Die Zustimmung zur Nutzung des Google Maps API wurde verweigert. Beim erneuten Laden der Seite können Sie ihre Meinung ändern.",
-	frage_datenschutz_osm: "Diese Seite verwendet OSM-Karten. Dadurch werden Besucherdaten an den jeweiligen Dienstanbieter übertragen. Mehr dazu im Impressum. Ist das OK?",
-	antwort_datenschutz_osm: "Die Zustimmung zur Nutzung der OSM-Karten wurde verweigert. Beim erneuten Laden der Seite können Sie ihre Meinung ändern.",
-	fullScreen: "Full Screen",
-	normalSize: "Normale Gr\u00F6\u00dfe",
-	showCurrentLocation: "Aktuelle Position anzeigen",
-	hideCurrentLocation: "Aktuelle Position verbergen",
-	showTrafficLayer: "Verkehr anzeigen",
-	hideTrafficLayer: "Verkehr verbergen",
-	noMap: "Keine Karte"
-}
-// Französische Texte von Jean-Jacques und Pierre-Michel Sarton
-JB.GPX2GM.strings.fr = {
-	lenght: "Distance au point donné",
-	way: "Distance totale",
-	duration: "Durée totale",
-	tstart: "Date du trajet",
-	time: "Durée à ce point",
-	time_unit: "heures",
-	altdiff: "Dénivelés",
-	alt: "Altitude", //"Altitude",
-	//alt_unit: "m",
-	in: " en ",
-	grade: "Pente",
-	grade_unit: "%",
-	avspeed: "Vitesse moyenne",
-	speed2: "Vitesse instantannée",
-	speed: "V",
-	pace: "Pace",
-	hr2: "Pouls",
-	hr: "Pouls",
-	hr_unit: "1/min",
-	cad: "Cadence", 
-	cad_unit: "t/min",
-	wpt: "Point d'intérêt",
-	wpts: "Points d'intérêts",
-	pwpt: "Picture Waypoint",
-	trk: "Tracé",
-	trks: "Tracés",
-	rte: "Itinéraire",
-	rtes: "Itinéraires",
-	inmo: "En mouvement",
-	// wait: "Please wait.<br />Loading data.",
-	wait: "",  // Wartebild nehmen
-	clkz: "Cliquez pour agrandir",
-	zb: "Retour du Zoom",
-	frage_datenschutz_gm: "Cette page utilise des cartes et une API de Google et éventuellement aussi de cartes OSM. Cela transfère les données des visiteurs au fournisseur des services respectifs. Pour savoir plus voire les mentions légales. Est-ce que tout va bien ?",
-	antwort_datenschutz_gm: "L'autorisation d'utiliser l'API Google Maps a été refusée. Vous pouvez changer d'avis lorsque vous rechargez la page.",
-	frage_datenschutz_osm: "Cette page utilise des cartes OSM (OpenStreetMap). Les données des visiteurs sont transférées au fournisseur des services respectifs. En poursuivant votre navigation sur ce site, vous acceptez la transmission de vos informations",
-	antwort_datenschutz_osm: "L'autorisation d'utiliser les cartes OSM a été refusée. Vous pouvez changer d'avis lorsque vous rechargez la page.",
-	fullScreen: "Plein écran",
-	normalSize: "Taille normale",
-	showCurrentLocation: "Afficher la position actuelle",
-	hideCurrentLocation: "cacher la position actuelle",
-	showTrafficLayer: "Afficher le traffic",
-	hideTrafficLayer: "Cacher le traffic",
-	noMap: "Pas de carte"
+	zb: "Zurück zoomen"
 }
 JB.GPX2GM.strings.en = {
 	lenght: "Length",
@@ -231,7 +166,6 @@ JB.GPX2GM.strings.en = {
 	altdiff: "Elevation difference",
 	alt: "Elevation", //"Altitude",
 	//alt_unit: "m",
-	in: " in ",
 	grade: "Grade",
 	grade_unit: "%",
 	avspeed: "V<sub>m</sub>",
@@ -254,18 +188,7 @@ JB.GPX2GM.strings.en = {
 	// wait: "Please wait.<br />Loading data.",
 	wait: "",  // Wartebild nehmen
 	clkz: "Click to zoom",
-	zb: "Zoom back",
-	frage_datenschutz_gm: "This page uses maps and an api from Google and possibly also OSM maps. This transfers visitor data to the respective service provider. Read more about this in the imprint. Is that all right?",
-	antwort_datenschutz_gm: "Permission to use the Google Maps API has been denied. You can change your mind when you reload the page.",
-	frage_datenschutz_osm: "This page uses OSM maps. This transfers visitor data to the respective service provider. Read more about this in the imprint. Is that all right?",
-	antwort_datenschutz_osm: "Permission to use the OSM maps has been denied. You can change your mind when you reload the page.",
-	fullScreen: "Full Screen",
-	normalSize: "Normal Size",
-	showCurrentLocation: "Show current location",
-	hideCurrentLocation: "Hide current location",
-	showTrafficLayer: "Show traffic",
-	hideTrafficLayer: "Hide traffic",
-	noMap: "No Map"
+	zb: "Zoom back"
 }
 
 /* // Prototyp für Callbackfunktion
