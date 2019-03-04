@@ -237,7 +237,6 @@ func handleMessage(msg string, connType string) (response string, isClose bool, 
 	}
 	// try to decrypt message 
 	msg,err = decryptMessage(msg)
-	if err != nil { logger.Print(err.Error())	}
 	logger.Print("Message via "+connType+": " + msg)
 	// check if incoming message matches a known device 
 	response, query, err = filter_gps_device(msg)

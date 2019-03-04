@@ -360,7 +360,7 @@ const (
  )
 
 func decryptMessage(msg string) (plaintxt string, err error) {
-	plaintxt = ""
+	plaintxt = msg
 	err = errors.New("Message is not encrypted")
 	if len(msg) >= MIN_MSG_LEN  {
 		txtcomp := strings.Split(msg,"-")
@@ -379,14 +379,12 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			plain := make([]byte, len(enctxt))
 			ciphCBC.CryptBlocks(plain, enctxt)
 			err = nil
-			// trimRight padding bytes
-			id := 0
-			for id = len(plain)-1; plain[id] <= 0x20 && id >=0 ; id-- {}
-			if id < 10 { err= errors.New("Message too short"); return }
-			for _,val := range plain[:id] {
-				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
+			// replace all special characters
+			for id,val := range plain {
+				if val<0x20 || val>0x7f { plain[id] = 0x20 }
 			}
-			if err == nil { plaintxt = string(plain[:id]) }
+			if err == nil { plaintxt = strings.Trim(string(plain)," ") }
+			if len(plaintxt) < 10 { err= errors.New("Message too short"); plaintxt = msg; return }
 		}
 	}
 	return
