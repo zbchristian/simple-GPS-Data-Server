@@ -365,7 +365,7 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 	if len(msg) >= MIN_MSG_LEN &&  {
 		txtcomp := strings.Split(msg,"-")
 		if len(txtcomp) == 4 {
-			if txtcomp[0] != ENC_HEADER { return }
+			if !strings.Compare(txtcomp[0],ENC_HEADER) { return }
 			salt,err1  	:= base64.StdEncoding.DecodeString(txtcomp[1])
 			if err1 != nil { err = err1; return }
 			IV,err1 	:= base64.StdEncoding.DecodeString(txtcomp[2])
