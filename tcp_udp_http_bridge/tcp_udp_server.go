@@ -58,6 +58,7 @@ var regexCMD *regexp.Regexp
 var wg sync.WaitGroup // create wait group to sync exit of all processes 
 
 var fconf = ""
+var configpath=""
 
 // initialize the server (command line arguments and list of known devices)
 func init() {
@@ -77,6 +78,7 @@ func initConf() {
 	if fconf == "" {
 		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 		if err == nil { 
+			configpath=dir
 			fconf = dir+"/"+CONFIG_FILE 
 			_, err = os.Stat(fconf) 
 		}
