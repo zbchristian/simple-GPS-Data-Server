@@ -361,7 +361,7 @@ const (
 
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = ""
-	err = errors.New("message is not encrypted")
+	err = errors.New("Message is not encrypted")
 	if len(msg) >= MIN_MSG_LEN  {
 		txtcomp := strings.Split(msg,"-")
 		if len(txtcomp) == 4 {
@@ -378,8 +378,11 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			ciphCBC := cipher.NewCBCDecrypter(blockCiph,IV)
 			plain := make([]byte, len(enctxt))
 			ciphCBC.CryptBlocks(plain, enctxt)
-			plaintxt = string(plain)
 			err = nil;
+			foreach _,val := range plain {
+				if val < 0x20 || val > 0x7f { err = errors.New("Incorrect PSK?"); break; }
+			}
+			if err == nil { plaintxt = string(plain) }
 		}
 	}
 	return
