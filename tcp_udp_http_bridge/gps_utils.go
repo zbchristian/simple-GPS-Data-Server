@@ -355,7 +355,7 @@ const (
 	PASSWORD = "12345"
 	MIN_MSG_LEN = 128+8+24 
 	ITERATION_COUNT	 = 10000
-    KEY_LENGTH		= 128
+    KEY_LENGTH		= 128/8
  )
 
 func decryptMessage(msg string) (plaintxt string, err error) {
