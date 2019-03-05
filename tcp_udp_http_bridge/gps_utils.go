@@ -18,7 +18,7 @@ import (
 		"strings"
 		"encoding/json"
 		"encoding/base64"
-		"crypto/sha256"
+		"crypto/sha1"
 		"crypto/aes"
 		"crypto/cipher"
 		"golang.org/x/crypto/pbkdf2"   // go get -u golang.org/x/crypto/pbkdf2
@@ -377,7 +377,7 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			if err1 != nil { err = err1; return }
 			enctxt,err1	:= base64.StdEncoding.DecodeString(txtcomp[3])
 			if err1 != nil { err = err1; return }
-			key := pbkdf2.Key([]byte(preshared_key), salt, ITERATION_COUNT, KEY_LENGTH, sha256.New)
+			key := pbkdf2.Key([]byte(preshared_key), salt, ITERATION_COUNT, KEY_LENGTH, sha1.New)
 			blockCiph,err1 := aes.NewCipher(key) 
 			if err1 != nil { err = err1; return }
 			ciphCBC := cipher.NewCBCDecrypter(blockCiph,IV)
