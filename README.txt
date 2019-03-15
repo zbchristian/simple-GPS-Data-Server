@@ -4,6 +4,7 @@ Requirements
 ------------
 - PHP w/ SQLITE3 API installed 
 - GO compiler for TCP/UDP-HTTP bridge (only needed for commercial tracking devices like TK103 or GPS Logger in UDP mode)
+  o extra package golang.org/x/crypto is required. Install with "go get golang.org/x/crypto"
 - java script GPXVierwer by Jürgen Berkemeier (included in folder js/GM_utils/)
 
 Installation
