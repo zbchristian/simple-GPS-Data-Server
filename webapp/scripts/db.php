@@ -104,12 +104,19 @@ function cleanup_table_db($devno,$hist) {
 
 function gps_tablename($devno) { return  "devno_".$devno; }
 
+define("SECS1024WEEKS",1024*7*24*60*60);
 function insert_gps_db($data) {
 	global $db;
 	if(!sanity_check_gps($data)) return false;
 	$tbl_name=gps_tablename($data["devno"]);
 	if(!check_db($tbl_name)) return false;
-	$tstamp= gmdate('c',strtotime($data["time"]));
+	// try to correct for GPS week rollover
+	// if "time" is 1024 weeks ago wrt to today, add 1024 weeks
+	$ts=strtotime($data["time"]);
+	if(abs(time()-$ts-SECS1024WEEKS) < 86400) {	// 1024 weeks difference +- 1 day 
+		$ts += SECS1024WEEKS;
+	}
+	$tstamp= gmdate('c',$ts);
 	$tstored= gmdate('c',strtotime($data["tstored"]));
 	// check for already existing entry (same tstamp) and ignore
 	if(!val_exists_db($tbl_name,"tstamp",$tstamp)) {
