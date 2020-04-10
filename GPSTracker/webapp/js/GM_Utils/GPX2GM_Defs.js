@@ -10,7 +10,7 @@ window.JB = window.JB || {};
 window.JB.GPX2GM = window.JB.GPX2GM || {};
 
 // Google Maps API Key
-JB.GPX2GM.GM_Api_key = "AIzaSyA4hixr173ZOG5lBy_9syhNkYeFQB5fsbU";
+// JB.GPX2GM.GM_Api_key = "";
 // Key für OSM Cycle
 // JB.GPX2GM.OSM_Cycle_Api_Key = "";
 // Key für OSM Landscape
