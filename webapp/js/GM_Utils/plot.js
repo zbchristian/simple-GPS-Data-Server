@@ -1,11 +1,13 @@
 // plot
-// Version vom 10. 9. 2018
+// Version vom 29. 3. 2020
 // Jürgen Berkemeier
 // www.j-berkemeier.de
 
 "use strict";
 
 var JB = window.JB || {};
+JB.plot_version = 'Plot vom 29. 3. 2020';
+console.info(JB.plot_version);
 
 // Math.log10 wird noch nicht von allen Browsern unterstützt
 if(!Math.log10) Math.log10 = function(x) { return Math.log(x)/Math.LN10; };
@@ -73,7 +75,7 @@ JB.plot = function(feld,xstr,ystr) {
 		this.ifeld = JB.makediv(feld,"","","",feld.offsetWidth-1,feld.offsetHeight-1);
 		// ... Copyright
 		this.cp = JB.makediv(this.ifeld,"",0,0,10,10);
-		this.cp.innerHTML = "<a href='http://www.j-berkemeier.de' title='Plot 10. 9. 2018'>JB</a><button></button";
+		this.cp.innerHTML = "<a href='http://www.j-berkemeier.de' title=JB.plot_version>JB</a><button></button";
 		this.cp.style.zIndex = "100";
 		this.cp.style.opacity = "0";
 		// ... und Mouseover, Marker, etc.
@@ -139,8 +141,13 @@ JB.plot = function(feld,xstr,ystr) {
 				}
 			}
 			else if(this.xscaletime=="absolute") {
+				var doclang = "de";
 				var locale = "de-de";
-				if(document.documentElement.hasAttribute("lang") && document.documentElement.getAttribute("lang")!="de") locale = "en-en";
+				if(document.documentElement.hasAttribute("lang")) doclang = document.documentElement.getAttribute("lang");
+				if(doclang == "de") locale = "de-de";
+				else if(doclang == "en") locale = "en-en";
+				else if(doclang == "fr") locale = "fr-fr";
+				else if(doclang == "es") locale = "es-es";
 				var date;
 				tx  *= 2;
 				var mxmin = Math.ceil(xmin/tx)*tx;
@@ -244,52 +251,65 @@ JB.plot = function(feld,xstr,ystr) {
 	} // plot.setmarker
 	this.markeron = function(a,callback_over,callback_out,callback_move,callback_click,markertype) {
 		var dieses = this;
-		var posx=0,offx;
-		this.mele.onmouseover = this.mele.ontouchstart = function(e) {
-			//dieses.mele.click(); 
-			dieses.cp.querySelector("button").focus();
-			if(!e) e = window.event;
-			e.cancelBubble = true;
-			if (e.stopPropagation) e.stopPropagation();
-			var feldt = dieses.mele;
-			var pi=0,al;
+		var posx=0,posy=0,offx;
+		this.ystart=-1000;
+		var pi=0,al;
+		var starttime;
+		var can_pointer = ("PointerEvent" in window);
+		var can_touch = ("TouchEvent" in window) && !can_pointer;
+		var handle_move = function(e) {
+			e.preventDefault();
+			if(e.targetTouches && e.targetTouches[0] && e.targetTouches[0].clientX) {
+				posx = e.targetTouches[0].clientX - offx;
+				posy = e.targetTouches[0].clientY;
+				if(dieses.ystart>-1000 && Math.abs(dieses.ystart-posy)>10) {
+					window.scrollBy(0,dieses.ystart - posy);
+					dieses.ystart = posy;
+				}
+			}
+			else if(e.clientX) posx = e.clientX - offx;
+			pi = dieses.getPolylinePos(posx,a);
+			dieses.setmarker(a[pi],markertype);
+			if(callback_move && typeof(callback_move)=="function") callback_move(pi,a[pi]);
+		} // handle_move
+		var handle_click = function(e) {
+			e.preventDefault();
+			if(e.targetTouches && e.targetTouches[0] && e.targetTouches[0].clientX) posx = e.targetTouches[0].clientX - offx;
+			else if(e.clientX) posx = e.clientX - offx;
+			pi = dieses.getPolylinePos(posx,a);
+			dieses.setmarker(a[pi],markertype);
+			if(callback_click && typeof(callback_click)=="function") callback_click(pi,a[pi]);
+		} // handle_click
+		var handle_start = function(e) {
+			e.preventDefault();
 			offx = 0;
+			var feldt = dieses.mele;
 			if(feldt.offsetParent) 
 				do {
 					offx += feldt.offsetLeft;
-				} while(feldt = feldt.offsetParent);
+				} while(feldt = feldt.offsetParent); 
+			dieses.cp.querySelector("button").focus();
+			if(e.targetTouches && e.targetTouches[0] && e.targetTouches[0].clientX) posx = e.targetTouches[0].clientX - offx;
+			else if(e.clientX) posx = e.clientX - offx;
+			if(can_touch) handle_down(e);
+			if(e.targetTouches && e.targetTouches[0] && e.targetTouches[0].clientY) 
+				dieses.ystart = e.targetTouches[0].clientY;
 			if(callback_over && typeof(callback_over)=="function") callback_over();
-			dieses.mele.onmousemove = dieses.mele.ontouchmove = function(e) {
-				if(!e) e = window.event;
-				e.cancelBubble = true;
-				if(e.stopPropagation) e.stopPropagation();
-				if(e.targetTouches && e.targetTouches[0] && e.targetTouches[0].clientX) posx = e.targetTouches[0].clientX;
-				else if(e.pageX) posx = e.pageX;
-				else if(e.clientX) posx = e.clientX + document.body.scrollLeft + document.body.clientLeft;
-				posx -= offx;
-				pi = dieses.getPolylinePos(posx,a);
-				dieses.setmarker(a[pi],markertype);
-				if(callback_move && typeof(callback_move)=="function") callback_move(pi,a[pi]);
-				return false;
+			if(can_pointer) {
+				dieses.mele.addEventListener("pointermove",handle_move,false);
 			}
-			dieses.mele.onclick = dieses.mele.ontouch = function(e) {
-				if(!e) e = window.event;
-				e.cancelBubble = true;
-				if(e.stopPropagation) e.stopPropagation();
-				if(e.targetTouches && e.targetTouches[0] && e.targetTouches[0].clientX) posx = e.targetTouches[0].clientX;
-				else if(e.pageX) posx = e.pageX;
-				else if(e.clientX) posx = e.clientX + document.body.scrollLeft + document.body.clientLeft;
-				posx -= offx;
-				pi = dieses.getPolylinePos(posx,a);
-				dieses.setmarker(a[pi],markertype);
-				if(callback_click && typeof(callback_click)=="function") callback_click(pi,a[pi]);
-				return false;
+			else if(can_touch) {
+				dieses.mele.addEventListener("touchmove",handle_move,false);
 			}
-			document.onkeydown = function(e) {
-				if(!e) e = window.event;
+			else {
+				dieses.mele.addEventListener("mousemove",handle_move,false);
+				dieses.mele.addEventListener("click",handle_click,false);
+			}
+			document.addEventListener("keydown",handle_keydown,false);
+		} // handle_start
+		var handle_keydown = function(e) {
 				if(e.keyCode && (e.keyCode==37 || e.keyCode==39)) { 
-					e.cancelBubble = true;
-					if (e.stopPropagation) e.stopPropagation();
+					e.preventDefault();
 					if(e.keyCode==37) { pi--; if(pi<0) pi=0; }
 					if(e.keyCode==39) { pi++; if(pi>=al) pi=al-1; }
 					dieses.setmarker(a[pi],markertype);
@@ -301,22 +321,56 @@ JB.plot = function(feld,xstr,ystr) {
 					if(callback_click && typeof(callback_click)=="function") callback_click(pi,a[pi]);
 					return false;
 				}
-				return true;
 			}
-			return false;
-		} 
-		this.mele.onmouseout = this.mele.ontouchend = function(e) {
-			if(!e) e = window.event;
-			document.onkeydown = null;
-			dieses.mele.onclick = dieses.mele.ontouch = dieses.mele.onmousemove = dieses.mele.ontouchmove = null;
+		var handle_end = function(e) {
+			if(can_touch) handle_up(e);
+			dieses.ystart=-1000;
+			document.removeEventListener("keydown",handle_keydown);
+			dieses.mele.removeEventListener("click",handle_click);
+			dieses.mele.removeEventListener("mousemove",handle_move);
+			dieses.mele.removeEventListener("touchmove",handle_move);
+			dieses.mele.removeEventListener("pointermove",handle_move);
 			dieses.hidemarker();
 			if(callback_out && typeof(callback_out)=="function") callback_out();
-			return false;
+		} // handle_end
+		var handle_up = function(e) {
+			e.preventDefault();
+			if(e.pointerType == "mouse") handle_click(e);
+			else if((Date.now()-starttime)<150	) {
+				handle_click(e);
+			}
+		} // handle_up
+		var handle_down = function(e) { 
+			starttime = Date.now();
+		} // handle_down
+		if(can_pointer) {
+			this.mele.style.touchAction = "pan-y"; // "none"; // "pan-y"; // "manipulation";
+			this.mele.addEventListener("pointerover",handle_start,false);
+			this.mele.addEventListener("pointerout",handle_end,false);
+			this.mele.addEventListener("pointerdown",handle_down,false);
+			this.mele.addEventListener("pointerup",handle_up,false);
+		}
+		else {
+			if(can_touch) {
+				this.mele.addEventListener("touchstart",handle_start,false);
+				this.mele.addEventListener("touchend",handle_end,false);
+			}
+			else {
+				this.mele.addEventListener("mouseover",handle_start,false);
+				this.mele.addEventListener("mouseout",handle_end,false);
+			}
 		}
 	} // plot.markeron
 	this.markeroff = function() {
-		this.mele.onmousemove = this.mele.ontouchmove = null;
-		this.mele.onmouseout = this.mele.ontouchend = null;
+		this.mele.removeEventListener("pointerover",handle_start);
+		this.mele.removeEventListener("pointerout",handle_end);
+		this.mele.removeEventListener("pointerdown",handle_down);
+		this.mele.removeEventListener("pointerup",handle_up);
+		this.mele.removeEventListener("touchstart",handle_start);
+		this.mele.removeEventListener("touchend",handle_end);
+		this.mele.removeEventListener("mouseover",handle_start);
+		this.mele.removeEventListener("mouseout",handle_end);
+		this.mele.touchAction = "auto";
 	} // plot.markeroff
 	this.getPolylinePos =  function(posx,a) {
 		var x = posx/xfak+xmin;
@@ -354,7 +408,7 @@ JB.farbbalken = function(ele) {
 		this.fb = new JB.grafik(this.fbdiv);
 		this.fb.setwidth(2);
 		for(var i=0;i<this.fb.h;i++)
-			this.fb.line(0,i,this.fb.w,i,farbtafel[Math.floor(i*farbtafel.length/this.fb.h)]); // !!!!!!!!!!!!!!!!!!!!!!!!
+			this.fb.line(0,i,this.fb.w,i,farbtafel[Math.floor(i*farbtafel.length/this.fb.h)]);
 		var lbu = Math.max(0,u-6);
 		var lbo = Math.max(0,o-6);
 		var yoff = u - lbu;
@@ -364,7 +418,7 @@ JB.farbbalken = function(ele) {
 		this.lbdiv.style.top = lbo + "px";
 		this.lbdiv.style.bottom = lbu + "px";
 		this.lbdiv.style.width = "50px";
-		try { this.lbdiv.style.backgroundColor = "rgba(255,255,255,.2)"; } catch(e) { this.lbdiv.style.backgroundColor = "rgb(200,200,200)"; };
+		this.lbdiv.style.backgroundColor = "rgba(255,255,255,.2)";
 		this.lbdiv.style.zIndex = "1";
 		ele.appendChild(this.lbdiv);
 		this.lb = new JB.grafik(this.lbdiv);
