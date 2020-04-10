@@ -1,7 +1,8 @@
 // osmutils.js
-// Version 1.2 
-// 15. 1. 2019
+// Lizenz CC BY-NC-SA 4.0
+// Jürgen Berkemeier
 // www.j-berkemeier.de
+// Version 1.7 vom 29. 3. 2020
 
 "use strict";
 
@@ -9,16 +10,18 @@ window.JB = window.JB || {};
 
 ( function(verstring) {
 		JB.Debug_Info("",verstring,false);
-		if(!JB.debuginfo && typeof(console) != "undefined" && typeof(console.log) == "function" )
-			console.log(verstring);
-} )("osmutils.js 1.2 vom 15. 1. 2019");
+		if(!JB.debuginfo && typeof(console) != "undefined" && typeof(console.info) == "function" )
+			console.info(verstring);
+} )("osmutils.js 1.7 vom 29. 3. 2020");
 
-JB.Map = function(mapcanvas,id) {
+JB.Map = function(makemap) {
 	var dieses = this;
+	var id = makemap.id;
+	var mapcanvas = makemap.mapdiv;
 	dieses.id = id;
+	dieses.makemap = makemap;
 	dieses.mapcanvas = mapcanvas;
 	this.cluster_zoomhistory = [];
-	var large = mapcanvas.offsetHeight>190 && mapcanvas.offsetWidth>200;
 
 	// Map anlegen
 
@@ -73,26 +76,43 @@ JB.Map = function(mapcanvas,id) {
 
 	var grau = L.tileLayer(JB.GPX2GM.Path+"Icons/Grau256x256.png", { maxZoom: 22 });
 	this.maptypes.Keine_Karte = [nr++, grau];
-	baseLayers[JB.GPX2GM.strings[JB.gc.doclang].noMap] = grau;
+	baseLayers[JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].noMap] = grau;
 
 	var opensea = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
 		attribution: 'Kartendaten: © <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
 	});
 	this.maptypes.Open_Sea = [nr++, opensea];
 	overlayLayers["Open Sea"] = opensea;
+	
+	var genugplatz = JB.platzgenug(makemap.mapdiv);
 
 	this.map = L.map(mapcanvas, { 
 //		layers: osm, 
 		closePopupOnClick: false,
-		scrollWheelZoom: JB.gc.scrollwheelzoom,
-		tap: false
+		scrollWheelZoom: genugplatz & makemap.parameters.scrollwheelzoom,
+		tap: genugplatz,
+		keyboard: genugplatz,
+		touchZoom: true,
+		dragging: true,
 	} );
 	
-	if(JB.gc.unit=="si") L.control.scale({imperial:false}).addTo(this.map); // Mit Maßstab km
+	JB.handle_touch_action(dieses,genugplatz);
+	
+	if(makemap.parameters.unit=="si") L.control.scale({imperial:false}).addTo(this.map); // Mit Maßstab km
 	else L.control.scale({metric:false}).addTo(this.map); // Mit Maßstab ml
 	
-//	if(large && JB.gc.showmaptypecontroll) L.control.layers(baseLayers, overlayLayers).addTo(this.map);
-	if(JB.gc.showmaptypecontroll) L.control.layers(baseLayers, overlayLayers).addTo(this.map);
+	var ctrl_layer = null;
+	JB.onresize(mapcanvas,function(w,h){
+		if(w>200 && h>190 && makemap.parameters.showmaptypecontroll) {
+			if(!ctrl_layer) ctrl_layer = L.control.layers(baseLayers, overlayLayers).addTo(dieses.map);
+		}
+		else {
+			if(ctrl_layer) {
+				ctrl_layer.remove();
+				ctrl_layer = null;
+			}
+		}
+	},true);
 	
 	// Mein Copyright und Versionshinweis
 	L.Control.CP = L.Control.extend({
@@ -113,24 +133,27 @@ JB.Map = function(mapcanvas,id) {
 	new L.Control.CP({ position: 'bottomleft' }).addTo(this.map);
 
 	// Button für Full Screen / normale Größe
-	if(JB.gc.fullscreenbutton) {
+	var fullscreen = false;
+	if(makemap.parameters.fullscreenbutton) {
 		var fsb = document.createElement("button");
 		fsb.style.backgroundColor = "transparent";
 		fsb.style.border = "none"; 
 		fsb.style.padding = "7px 7px 7px 0";
 		fsb.style.cursor = "pointer";
 		var fsbim = document.createElement("img");
-		fsbim.src = JB.GPX2GM.Path+"Icons/lupe_p_32.png";
+		fsbim.width = 31;
+		fsbim.height = 31;
+		fsbim.src = JB.GPX2GM.Path+"Icons/fullscreen_p.svg";
 		//fsbim.width = "200px";
-		fsb.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.gc.doclang].fullScreen;
+		fsb.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].fullScreen;
 		fsbim.large = false;
 		var ele = mapcanvas.parentNode;
 		fsb.onclick = function() {
 			this.blur();
 			if(fsbim.large) {
 				document.body.style.overflow = "";
-				fsbim.src = JB.GPX2GM.Path+"Icons/lupe_p_32.png";
-				fsb.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.gc.doclang].fullScreen;
+				fsbim.src = JB.GPX2GM.Path+"Icons/fullscreen_p.svg";
+				fsb.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].fullScreen;
 				ele.style.left = ele.oleft + "px";
 				ele.style.top = ele.otop + "px";
 				ele.style.width = ele.owidth + "px";
@@ -146,11 +169,13 @@ JB.Map = function(mapcanvas,id) {
 					ele.style.height = ele.sheight;
 					//ele.style.zIndex = ele.szindex;
 				},1000);
+				JB.handle_touch_action(dieses,genugplatz);
+				fullscreen = false;
 			}
 			else {
 				document.body.style.overflow = "hidden";
-				fsbim.src = JB.GPX2GM.Path+"Icons/lupe_m_32.png";
-				fsb.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.gc.doclang].normalSize;
+				fsbim.src = JB.GPX2GM.Path+"Icons/fullscreen_m.svg";
+				fsb.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].normalSize;
 				var scrollY = 0;
 				if(document.documentElement.scrollTop && document.documentElement.scrollTop!=0)  scrollY = document.documentElement.scrollTop;
 				else if(document.body.scrollTop && document.body.scrollTop!=0)  scrollY = document.body.scrollTop;
@@ -184,6 +209,10 @@ JB.Map = function(mapcanvas,id) {
           ele.style.margin = "0px";
           ele.style.padding = "0px";
 				},100);
+				dieses.map.scrollWheelZoom.enable();
+				JB.handle_touch_action(dieses,true);
+				makemap.mapdiv.focus();
+				fullscreen = true;
 			}
 			fsbim.large = !fsbim.large;
 		};
@@ -199,12 +228,12 @@ JB.Map = function(mapcanvas,id) {
 	} // fullscreenbutton
 	
 	// Button für Traffic-Layer
-	if(JB.gc.trafficbutton) {
+	if(makemap.parameters.trafficbutton) {
 		console.warn("Traffic-Layer wird unter Leaflet (noch) nicht unterstützt.");
 	}
 		
 	// Button für Anzeige aktuelle Position
-	if(JB.gc.currentlocationbutton) {
+	if(makemap.parameters.currentlocationbutton) {
 		var clb = document.createElement("button");
 		clb.style.backgroundColor = "white";
 		clb.style.border = "none"; 
@@ -213,7 +242,7 @@ JB.Map = function(mapcanvas,id) {
 		clb.style.margin = "10px 10px 0 0";
 		clb.style.borderRadius = "2px";
 		clb.style.cursor = "pointer";
-		clb.title = JB.GPX2GM.strings[JB.gc.doclang].showCurrentLocation;
+		clb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].showCurrentLocation;
 		var clbimg = document.createElement("img");
 		clbimg.style.position = "absolute";
 		clbimg.style.top = "50%";
@@ -241,13 +270,13 @@ JB.Map = function(mapcanvas,id) {
 				first = true;
 				if(!marker) marker = dieses.Marker({lat:0,lon:0},JB.icons.CL)[0];
 				if ( wpid == -1 ) {
-					clb.title = JB.GPX2GM.strings[JB.gc.doclang].hideCurrentLocation;
+					clb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].hideCurrentLocation;
 					wpid = navigator.geolocation.watchPosition(geolocpos,geolocerror,{enableHighAccuracy:true, timeout: 5000, maximumAge: 60000});
 					marker.addTo(dieses.map); 
 					JB.Debug_Info("","Geolocation-Dienst wird eingerichtet.",false);
 				}
 				else {
-					clb.title = JB.GPX2GM.strings[JB.gc.doclang].showCurrentLocation;
+					clb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].showCurrentLocation;
 					navigator.geolocation.clearWatch(wpid);
 					wpid = -1;
 					marker.remove();
@@ -298,6 +327,10 @@ JB.Map = function(mapcanvas,id) {
 				dieses.zoomstatus.h = h;
 			}
 		}
+		if(!fullscreen) {
+			genugplatz = JB.platzgenug(makemap.mapdiv);
+			JB.handle_touch_action(dieses,genugplatz);
+		}
 	});
 
 } // JB.Map
@@ -312,9 +345,10 @@ JB.Map.prototype.addMapEvent = function(event,fkt) {
 } // addMapEvent
 
 JB.Map.prototype.addMapEventOnce = function(event,fkt) {	
+	var dieses = this;
 	var oncefkt = function(ev) {
 		fkt(ev);
-		this.map.off(event,oncefkt);
+		dieses.map.off(event,oncefkt);
 	}
 	this.map.on(event,oncefkt);
 	this.MapEvents.id ++;
@@ -337,16 +371,24 @@ JB.Map.prototype.change = function(maptype) {
 	var nr = this.maptypes[mt][0];
 	var type = this.maptypes[mt][1];
 	for(var m in this.maptypes) this.map.removeLayer(this.maptypes[m][1]);
-	var layerControlElement = this.mapcanvas.getElementsByClassName('leaflet-control-layers')[0];
-	var openseacheckbox = layerControlElement.querySelectorAll('input[type=checkbox]')[0];
-	if(maptype=="Open_Sea") {
-		if(!openseacheckbox.checked) openseacheckbox.click();
-	}
-	else {
-		if(openseacheckbox.checked) openseacheckbox.click();
+	if(this.makemap.parameters.showmaptypecontroll) {
+		var layerControlElement = this.mapcanvas.getElementsByClassName('leaflet-control-layers')[0];
+		if(layerControlElement) {
+			var openseacheckbox = layerControlElement.querySelectorAll('input[type=checkbox]')[0];
+			if(maptype=="Open_Sea") {
+				if(!openseacheckbox.checked) openseacheckbox.click();
+			}
+			else {
+				if(openseacheckbox.checked) openseacheckbox.click();
+			}
+		}
+		else {
+			var dieses = this;
+			window.setTimeout(function(){ dieses.change(maptype);},100);
+		}
 	}
 	this.map.addLayer(type);
-	JB.Debug_Info("this.id","Maptype, gewählt: "+maptype+", eingestellt: "+mt,false);
+	JB.Debug_Info(this.id,"Maptype, gewählt: "+maptype+", eingestellt: "+mt,false);
 } // change
 
 JB.Map.prototype.getPixelPerKM = function(gpxdaten) {
@@ -399,11 +441,15 @@ JB.Map.prototype.rescale = function(gpxdaten) {
 	}*/
 } // rescale
 
-JB.Map.prototype.infowindow = function(infotext,coord) {
-	var popup = L.popup({maxWidth: this.map.getContainer().offsetWidth-200, autoClose: false}) 
-		.setLatLng(coord)
-		.setContent(infotext)
-		.openOn(this.map);
+JB.Map.prototype.infowindow = function(info,coord) {
+	var popup = L.popup({maxWidth: this.map.getContainer().offsetWidth-200, autoClose: false }) 
+		.setLatLng(coord);
+		if(typeof(info) == "string") 
+			popup.setContent("<div class='JBinfofenster_gm'>"+info+"</div>");
+		else                       
+			popup.setContent(info);
+		// popup.bringToFront(); // -------------------------- keine Auswirkung, aber Map-Controll liegt über popup ?????
+		popup.openOn(this.map);
 	return popup;
 }
 JB.Map.prototype.gminfowindow = JB.Map.prototype.infowindow; // wg Kompatibilität
@@ -416,7 +462,7 @@ JB.Map.prototype.simpleLine = function(slat,slon,elat,elon) {
 
 JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_fkt) {
 	var dieses = this;
-	var coords = daten.daten;
+	var coords = daten.daten; 
 	var npt = coords.length, latlng = [], infofenster, line=[];
 	var cbtype;
 	if(route_oder_track == "Track") cbtype = "click_Track";
@@ -444,7 +490,6 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 	
 	var delta = function(coords,i,latlon) {
 		return coords[i+1][latlon]-coords[i-1][latlon] + 0.5*(coords[i+2][latlon]-coords[i-2][latlon]);
-//		return coords[i+range4c][latlon]-coords[i-range4c][latlon];
 	} // delta
 
 	var atan2 = function(x,y) {
@@ -466,7 +511,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 		return Math.floor(i);
 	} // findNextX
 	
-	if( (JB.gc.arrowtrack && route_oder_track == "Track") || (JB.gc.arrowroute && route_oder_track == "Route") ) {			
+	if( (this.makemap.parameters.arrowtrack && route_oder_track == "Track") || (this.makemap.parameters.arrowroute && route_oder_track == "Route") ) {			
 		var bounds = this.map.getBounds();
 		if(bounds) {
 			var size_px = Math.min(this.mapcanvas.offsetWidth,this.mapcanvas.offsetHeight);
@@ -476,7 +521,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 			var sizelon_km = JB.entf.rechne(latlon1.lat,latlon2.lng,0);
 			JB.entf.init(latlon1.lat,latlon1.lng,0);
 			var sizelat_km = JB.entf.rechne(latlon2.lat,latlon1.lng,0);
-			var size_km = Math.min(sizelon_km,sizelat_km);
+			var size_km = Math.max(sizelon_km,sizelat_km);
 			var dx_arrow = 400/size_px * size_km;
 			dx_arrow = daten.laenge/Math.ceil(daten.laenge/dx_arrow);
 			if(dx_arrow > daten.laenge) dx_arrow = daten.laenge;
@@ -486,13 +531,13 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 		}
 		var direction;
 		var arr_col = controls.col;
-		if(route_oder_track == "Track" && JB.gc.arrowtrackcol.length>0) arr_col = JB.gc.arrowtrackcol;
-		if(route_oder_track == "Route" && JB.gc.arrowroutecol.length>0) arr_col = JB.gc.arrowroutecol;
+		if(route_oder_track == "Track" && this.makemap.parameters.arrowtrackcol.length>0) arr_col = this.makemap.parameters.arrowtrackcol;
+		if(route_oder_track == "Route" && this.makemap.parameters.arrowroutecol.length>0) arr_col = this.makemap.parameters.arrowroutecol;
 		if(npt>=5) {
 			for(var x=dx_arrow/2,i;x<daten.laenge;x+=dx_arrow) {
 				i = findNextX(coords,x);
 				if(i<2) i=2; if(i>npt-3) i = npt-3;
-				direction = atan2(delta(coords,i,"lat"),delta(coords,i,"lon")); // hier evtl. über Nachbarn mitteln!
+				direction = atan2(delta(coords,i,"lat"),delta(coords,i,"lon"));
 				line = line.concat(dieses.setDirectionMarker(coords[i],direction,arr_col));
 			}
 		}
@@ -502,7 +547,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 	line[eventline] = L.polyline(coords,{color: "black", weight: controls.width*5, opacity: 0.01});
 	line[eventline].addTo(this.map);
 
-	if(JB.gc.trackover) {
+	if(this.makemap.parameters.trackover) {
 		if(!dieses.trackinfofenster) dieses.trackinfofenster = JB.Infofenster(this.map);
 		dieses.trackinfofenster.hide();
 		line[eventline].on('mouseover', function(o) {
@@ -521,15 +566,14 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 		});
 	} // trackover */
 	
-	if(JB.gc.trackclick) {
+	if(this.makemap.parameters.trackclick) {
 		line[eventline].on('click', function(o) {
 			var retval = true;
 			if(typeof(JB.GPX2GM.callback)=="function") 
 				retval = JB.GPX2GM.callback({type:cbtype,infotext:infotext,id:dieses.id,name:daten.name});
 			if(retval) {
 				if(daten.link) {
-					if(daten.link.search("~")==0) window.location.href = daten.link.substr(1);
-					else window.open(daten.link,"",JB.gc.popup_Pars);
+					JB.openurl(daten.link,dieses.makemap.parameters.popup_Pars);
 				}
 				else {
 					var mapcenter = dieses.map.getCenter();
@@ -540,7 +584,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols,click_
 			} 	
 		} );
 	} // trackclick
-
+	
 	return line;
 } // Polyline
 
@@ -551,17 +595,18 @@ JB.Map.prototype.setMarker = function(coord,icon,title) {
 		if (icon.icon) {
 			options.iconUrl = icon.icon.url;
 			options.iconAnchor = [icon.icon.anchor.x, icon.icon.anchor.y];
+			if(icon.icon.size) options.iconSize = [icon.icon.size.width,icon.icon.size.height];
 		}
-		if(JB.gc.shwpshadow) {
+		if(this.makemap.parameters.shwpshadow) {
 			if(icon.icon) {
 				if (icon.shadow) {
 					options.shadowUrl = icon.shadow.url;
-					options.iconAnchor = [icon.shadow.anchor.x, icon.shadow.anchor.y];
+					options.shadowAnchor = [icon.shadow.anchor.x, icon.shadow.anchor.y];
 				}
 			}
 			/*else {
 				options.shadowUrl = JB.icons.DefShadow.shadow.url;
-				options.iconAnchor = [JB.icons.DefShadow.shadow.anchor.x, JB.icons.DefShadow.shadow.anchor.y];				
+				options.shadowAnchor = [JB.icons.DefShadow.shadow.anchor.x, JB.icons.DefShadow.shadow.anchor.y];				
 			}*/
 		}
 		var thisIcon = L.Icon.extend({ options: options });
@@ -580,21 +625,32 @@ JB.Map.prototype.setClusterMarker = function(coord,icon,title,label) {
 	var w = icon.icon.size.width + icon.icon.size.widthUnit;
 	var h = icon.icon.size.height + icon.icon.size.heightUnit;
 	var marker = [];
-	var html = "<div style='background-image:url("+url+");width:"+w+";height:"+h+"'><div>"+label+"</div></div>";
-	var thisicon = L.divIcon({className:"JBcluster-icon", html: html });
-	marker[0] = L.marker(coord, {icon: thisicon, title: title, zIndexOffset: 500} ); 
+	var html = "<div style='background-image:url("+url+");background-repeat: no-repeat;width:"+w+";height:"+h+"'><div>"+label+"</div></div>";
+	var thisicon = L.divIcon({className:"JBcluster-icon", html: html, iconAnchor: [icon.icon.anchor.x, icon.icon.anchor.y] });
+	marker[0] = L.marker(coord, {icon: thisicon, title: title, zIndexOffset: 500 } ); 
 	marker[0].addTo(this.map);
 	return marker;
 } // setClusterMarker
   
-JB.Map.prototype.setDirectionMarker = function(coord,direction,color) { 
+JB.Map.prototype.setDistanceMarker = function(coord,icon,title,label) { 
+	var url = icon.icon.url;
+	var w = icon.icon.size.width + icon.icon.size.widthUnit;
+	var h = icon.icon.size.height + icon.icon.size.heightUnit;
+	var marker = [];
+	var html = "<div style='padding-top:1em;background-image:url("+url+");background-repeat: no-repeat;width:"+w+";height:"+h+"'><div>"+label+"</div></div>";
+	var thisicon = L.divIcon({className:"JBcluster-icon", html: html, iconAnchor: [icon.icon.anchor.x, icon.icon.anchor.y] });
+	marker[0] = L.marker(coord, {icon: thisicon, title: title, zIndexOffset: 500 } ); 
+	marker[0].addTo(this.map);
+	return marker;
+} // setClusterMarker
+  
+JB.Map.prototype.setDirectionMarker = function(coord,direction,color) {
 	var marker = [];
 	var dir = direction - Math.PI/2;
-	var html = "<div style='color:"+color+"; transform: translate(-50%,-50%) rotate("+dir+"rad)'>"+JB.gc.arrowsymbol+"</div>";
+	var html = "<div style='color:"+color+"; transform: translate(-50%,-50%) rotate("+dir+"rad)'>"+this.makemap.parameters.arrowsymbol+"</div>";
 	var thisicon = L.divIcon({className: "JBdirection-marker", iconAnchor: [0, 0], html: html });
 	marker[0] = L.marker(coord, {icon: thisicon, zIndexOffset: 500} ); 
 	marker[0].addTo(this.map);
-//	marker[1] = this.Marker(coord,JB.icons.MoveMarker,"")[0];
 	return marker;
 } // setDirectionMarker
   
@@ -605,8 +661,7 @@ JB.Map.prototype.Marker = function(coord,icon,title) {
 JB.Map.prototype.Marker_Link = function(coord,icon,titel,url,popup_Pars) { 
 	var marker = this.setMarker(coord,icon,titel);
 	marker[0].on('click', function() {
-		if(url.search("~")==0) window.location.href = url.substr(1);
-		else window.open(url,"",popup_Pars);
+		JB.openurl(url,popup_Pars);
 	});
 	return marker;
 } // Marker_Link
@@ -622,7 +677,7 @@ JB.Map.prototype.Marker_Text = function(coord,icon,titel) {
 			retval = JB.GPX2GM.callback({type:"click_Marker_Text",coord:coord,titel:titel,text:text,id:dieses.id});
 		if(retval) {
 			var mapcenter = dieses.map.getCenter();
-			var infowindow = dieses.infowindow("<div class='JBinfofenster_gm'>"+text+"</div>", coord); 
+			var infowindow = dieses.infowindow("<div>"+text+"</div>", coord);
 			dieses.map.on("popupclose", function() { 
 				dieses.map.setView(mapcenter);
 			});
@@ -632,7 +687,7 @@ JB.Map.prototype.Marker_Text = function(coord,icon,titel) {
 	return marker;
 } // Marker_Text
 
-JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
+JB.Map.prototype.Marker_Bild = function(coord,icon,bild) { 
 	var dieses = this;
 	var mapcenter,minibild;
 	var marker = this.setMarker(coord,icon);
@@ -648,8 +703,8 @@ JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
 			img.onload = function() { 
 				img.loaded = true;
 				var w = img.width, h = img.height, mw, mh;
-				if(w>h) { mw = JB.gc.groesseminibild; mh = Math.round(h*mw/w); }
-				else    { mh = JB.gc.groesseminibild; mw = Math.round(w*mh/h); }
+				if(w>h) { mw = dieses.makemap.parameters.groesseminibild; mh = Math.round(h*mw/w); }
+				else    { mh = dieses.makemap.parameters.groesseminibild; mw = Math.round(w*mh/h); }
 				bild_icon = L.icon({
 					iconUrl: bild,
 					iconSize: [mw, mh],
@@ -675,7 +730,7 @@ JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
 	marker[0].on("click", function() {
 		var retval = true;
 		if(typeof(JB.GPX2GM.callback)=="function") 
-			retval = JB.GPX2GM.callback({type:"click_Marker_Bild",coord:coord,src:bild,text:text,id:dieses.id});
+			retval = JB.GPX2GM.callback({type:"click_Marker_Bild",marker:marker[0],coord:coord,src:bild,text:text,id:dieses.id});
 		if(retval) {
 			if(img.loaded) {
 				afterimgload();
@@ -707,11 +762,18 @@ JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
 		container.style.backgroundColor = "white";
 		container.style.overflow = "auto";
 		container.innerHTML = "<img src='"+bild+"' width="+w+" height="+h+"><br>"+text;
+		if(coord.link && coord.link.length) {
+			container.onclick = function() { JB.openurl(coord.link,""); };
+			container.style.cursor = "pointer";
+		}
 		var mapcenter = dieses.map.getCenter();
 		var infowindow = dieses.infowindow(container, coord); 
 		dieses.map.on("popupclose", function() { dieses.map.setView(mapcenter);	});
 		if(container.clientHeight<container.scrollHeight) container.style.width = (w+20) + "px";
 	}
+
+	if(typeof(JB.GPX2GM.callback)=="function") 
+		JB.GPX2GM.callback({type:"created_Marker_Bild",marker:marker[0],coord:coord,src:bild,text:text,id:dieses.id});
 
 	return marker;
 } // Marker_Bild 
@@ -824,6 +886,7 @@ JB.Infofenster = function(map){
 		this.fenstercontainer.style.top = "10px";
 		this.fenstercontainer.style.left =  "50px";
 		this.fenstercontainer.style.zIndex = "1000";
+		JB.addClass("JBinfofenster",this.fenstercontainer);
 		map.getContainer().appendChild(this.fenstercontainer);
 	}
 	Infofenster_O.prototype.content = function(content) { 
@@ -846,7 +909,36 @@ JB.Infofenster = function(map){
 	return new Infofenster_O();
 }// JB.Infofenster
 
-JB.getTimezone = function(gpxdaten,cb) {
+JB.getTimezone = function(gpxdaten,cb) { 
 }
 
-// Ende gmutils.js
+JB.platzgenug = function(mapdiv) {
+	//var docwidth = document.body.offsetWidth;
+	var docheight = document.body.offsetHeight;
+	var screenwidth = window.innerWidth;
+	var screenheight = window.innerHeight;
+	var mapwidth = mapdiv.offsetWidth;
+	var mapheight = mapdiv.offsetHeight;
+	var genugplatz = mapwidth/screenwidth < 0.80;
+	genugplatz |= docheight <= screenheight;
+	genugplatz |= mapheight/screenheight < 0.8;
+	genugplatz = genugplatz?true:false;
+	return genugplatz;
+}
+
+JB.handle_touch_action = function(dieses,genugplatz) { 
+	if(genugplatz && dieses.makemap.parameters.scrollwheelzoom) dieses.map.scrollWheelZoom.enable();
+	else if(!(genugplatz && dieses.makemap.parameters.scrollwheelzoom)) dieses.map.scrollWheelZoom.disable();
+	if(genugplatz && dieses.map.tap && dieses.map.tap.enable) dieses.map.tap.enable();
+	else if(!genugplatz && dieses.map.tap && dieses.map.tap.disable) dieses.map.tap.disable();
+	dieses.map.options.tap = genugplatz;
+	//dieses.map.touchZoom.enable();
+	/*if(genugplatz)*/ //dieses.map.dragging.enable();
+	//else if(!(genugplatz)) dieses.map.dragging.disable();
+	if(genugplatz) dieses.map.keyboard.enable();
+	else if(!genugplatz) dieses.map.keyboard.disable();
+	if(genugplatz) dieses.map.getContainer().style.touchAction = "none";
+	else dieses.map.getContainer().style.touchAction = "auto";
+}
+	
+// Ende osmutils.js

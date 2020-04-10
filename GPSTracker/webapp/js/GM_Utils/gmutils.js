@@ -1,7 +1,8 @@
 // gmutils.js
-// Version 2.3
-// 15. 1. 2019
+// Lizenz CC BY-NC-SA 4.0
+// Jürgen Berkemeier
 // www.j-berkemeier.de
+// Version 2.6 vom 9. 2. 2020
 
 "use strict";
 
@@ -11,11 +12,14 @@ window.JB = window.JB || {};
 		JB.Debug_Info("",verstring,false);
 		if(!JB.debuginfo && typeof(console) != "undefined" && typeof(console.log) == "function" )
 			console.log(verstring);
-} )("osmutils.js 2.3 vom 15. 1. 2019");
+} )("gmmutils.js 2.6 vom 9. 2. 2020");
 
-	JB.Map = function(mapcanvas,id) {
+JB.Map = function(makemap) {
 	var dieses = this;
+	var id = makemap.id;
+	var mapcanvas = makemap.mapdiv;
 	dieses.id = id;
+	dieses.makemap = makemap;
 	dieses.mapcanvas = mapcanvas;
 	this.cluster_zoomhistory = [];
 	// Optionen für die Map und Map anlegen
@@ -23,7 +27,7 @@ window.JB = window.JB || {};
 	var myOptions = {
 		mapTypeId: google.maps.MapTypeId.ROADMAP,
 		zoomControl: true, //large,
-		mapTypeControl: large & JB.gc.showmaptypecontroll,
+		mapTypeControl: large && makemap.parameters.showmaptypecontroll,
 		mapTypeControlOptions: {
 			style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 			position: google.maps.ControlPosition.TOP_RIGHT,
@@ -31,7 +35,7 @@ window.JB = window.JB || {};
 		},
 		scaleControl: large,
 		streetViewControl: large,
-		scrollwheel: JB.gc.scrollwheelzoom
+		scrollwheel: makemap.parameters.scrollwheelzoom
 	};
 	this.map = new google.maps.Map(mapcanvas,myOptions);
 	
@@ -102,7 +106,7 @@ window.JB = window.JB || {};
     name: "Keine Karte",
     alt: "Keine Karte"
   });
-	if(JB.gc.doclang!="de") grau.alt = grau.name = "No Map";
+	if(JB.GPX2GM.parameters.doclang!="de") grau.alt = grau.name = "No Map";
 	this.maptypes.Keine_Karte = "nomap";
 	this.map.mapTypes.set('nomap', grau);
 
@@ -146,14 +150,14 @@ window.JB = window.JB || {};
 	this.map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(jbcp);
 
 	// Button für Full Screen / normale Größe
-	if(JB.gc.fullscreenbutton) {
+	if(makemap.parameters.fullscreenbutton) {
 		var fsbdiv = document.createElement("button");
 		fsbdiv.style.backgroundColor = "transparent";
 		fsbdiv.style.border = "none"; 
 		fsbdiv.style.padding = "7px 7px 7px 0";
 		var fsbim = document.createElement("img");
 		fsbim.src = JB.GPX2GM.Path+"Icons/lupe_p.png";
-		fsbdiv.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.gc.doclang].fullScreen;
+		fsbdiv.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].fullScreen;
 		fsbim.large = false;
 		var ele = mapcanvas.parentNode;
 		fsbdiv.onclick = function() {
@@ -161,7 +165,7 @@ window.JB = window.JB || {};
 			if(fsbim.large) {
 				document.body.style.overflow = "";
 				fsbim.src = JB.GPX2GM.Path+"Icons/lupe_p.png";
-				fsbdiv.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.gc.doclang].fullScreen;
+				fsbdiv.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].fullScreen;
 				ele.style.left = ele.oleft + "px";
 				ele.style.top = ele.otop + "px";
 				ele.style.width = ele.owidth + "px";
@@ -181,7 +185,7 @@ window.JB = window.JB || {};
 			else {
 				document.body.style.overflow = "hidden";
 				fsbim.src = JB.GPX2GM.Path+"Icons/lupe_m.png";
-				fsbdiv.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.gc.doclang].normalSize;
+				fsbdiv.title = fsbim.title = fsbim.alt = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].normalSize;
 				var scrollY = 0;
 				if(document.documentElement.scrollTop && document.documentElement.scrollTop!=0)  scrollY = document.documentElement.scrollTop;
 				else if(document.body.scrollTop && document.body.scrollTop!=0)  scrollY = document.body.scrollTop;
@@ -224,7 +228,7 @@ window.JB = window.JB || {};
 	} // fullscreenbutton
 	
 	// Button für Traffic-Layer
-	if(JB.gc.trafficbutton) {
+	if(makemap.parameters.trafficbutton) {
 		JB.Debug_Info("","Trafficlayer wird eingerichtet.",false);
 		var trbnr=-1,trafficLayer=null;
 		google.maps.event.addListener(this.map, "maptypeid_changed", function() {
@@ -242,25 +246,25 @@ window.JB = window.JB || {};
 			trb.style.margin = "10px 10px 0 0";
 			trb.style.borderRadius = "2px";
 			trb.innerText = "T";
-			trb.title = JB.GPX2GM.strings[JB.gc.doclang].showTrafficLayer;
+			trb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].showTrafficLayer;
 			trb.onclick = function() {
 				this.blur();
 				if(!trafficLayer) {
 					trafficLayer = new google.maps.TrafficLayer(); 
 					trafficLayer.setMap(dieses.map);
 					trb.style.color = "#bbb";
-					trb.title = JB.GPX2GM.strings[JB.gc.doclang].hideTrafficLayer;
+					trb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].hideTrafficLayer;
 				}
 				else {
 					trafficLayer.setMap(null);
 					trafficLayer = null;
 					trb.style.color = "#444";
-					trb.title = JB.GPX2GM.strings[JB.gc.doclang].showTrafficLayer;
+					trb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].showTrafficLayer;
 				}
 			}
 			if( maptype=="roadmap" || maptype=="terrain" || maptype=="hybrid") {
 				if(trbnr==-1) trbnr = dieses.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(trb);
-				if(JB.gc.trafficonload) trb.click();
+				if(makemap.parameters.trafficonload) trb.click();
 			}
 			else {
 				if(trafficLayer) {
@@ -274,7 +278,7 @@ window.JB = window.JB || {};
 	} // Traffic-Layer
 	
 	// Button für Anzeige aktuelle Position
-	if(JB.gc.currentlocationbutton) {
+	if(makemap.parameters.currentlocationbutton) {
 		var clb = document.createElement("button");
 		clb.style.backgroundColor = "white";
 		clb.style.border = "none"; 
@@ -284,7 +288,7 @@ window.JB = window.JB || {};
 		clb.style.height = "28px";
 		clb.style.margin = "10px 10px 0 0";
 		clb.style.borderRadius = "2px";
-		clb.title = JB.GPX2GM.strings[JB.gc.doclang].showCurrentLocation;
+		clb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].showCurrentLocation;
 		var clbimg = document.createElement("img");
 		clbimg.style.position = "absolute";
 		clbimg.style.top = "50%";
@@ -312,13 +316,13 @@ window.JB = window.JB || {};
 				first = true;
 				if(!marker) marker = dieses.Marker({lat:0,lon:0},JB.icons.CL)[0];
 				if ( wpid == -1 ) {
-					clb.title = JB.GPX2GM.strings[JB.gc.doclang].hideCurrentLocation;
+					clb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].hideCurrentLocation;
 					wpid = navigator.geolocation.watchPosition(geolocpos,geolocerror,{enableHighAccuracy:true, timeout: 5000, maximumAge: 60000});
 					marker.setMap(dieses.map);
 					JB.Debug_Info("","Geolocation-Dienst wird eingerichtet.",false);
 				}
 				else {
-					clb.title = JB.GPX2GM.strings[JB.gc.doclang].showCurrentLocation;
+					clb.title = JB.GPX2GM.strings[JB.GPX2GM.parameters.doclang].showCurrentLocation;
 					navigator.geolocation.clearWatch(wpid);
 					wpid = -1;
 					marker.setMap(null);
@@ -520,7 +524,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols) {
 		line[0] = new google.maps.Polyline(options);
 		line[0].setMap(this.map);
 	}
-	if( (JB.gc.arrowtrack && route_oder_track == "Track") || (JB.gc.arrowroute && route_oder_track == "Route") ) {
+	if( (this.makemap.parameters.arrowtrack && route_oder_track == "Track") || (this.makemap.parameters.arrowroute && route_oder_track == "Route") ) {
 		var range = Math.min(10,Math.ceil(npt/100)),lat,lon,ct,latlng_s=[];
 		latlng_s.push(new google.maps.LatLng(coords[0].lat,coords[0].lon));
 		for(var i=1;i<npt-1;i++) { 
@@ -534,8 +538,8 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols) {
 		}
 		latlng_s.push(new google.maps.LatLng(coords[npt-1].lat,coords[npt-1].lon));
 		var arr_col = controls.col;
-		if(route_oder_track == "Track" && JB.gc.arrowtrackcol.length>0) arr_col = JB.gc.arrowtrackcol;
-		if(route_oder_track == "Route" && JB.gc.arrowroutecol.length>0) arr_col = JB.gc.arrowroutecol;
+		if(route_oder_track == "Track" && makemap.parameters.arrowtrackcol.length>0) arr_col = makemap.parameters.arrowtrackcol;
+		if(route_oder_track == "Route" && makemap.parameters.arrowroutecol.length>0) arr_col = makemap.parameters.arrowroutecol;
 		var lineSymbol = {
 			path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
 			scale: 3,
@@ -564,7 +568,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols) {
 	line[eventline] = new google.maps.Polyline(options);
 	line[eventline].setMap(this.map);
 	var mapcenter,clk_ev;
-	if(JB.gc.trackclick) {
+	if(dieses.makemap.parameters.trackclick) {
 		var infowindow = new google.maps.InfoWindow({ });
 		google.maps.event.addListener(infowindow,"closeclick", function() { dieses.map.panTo(mapcenter); google.maps.event.removeListener(clk_ev) });
 		google.maps.event.addListener(line[eventline], 'click', function(o) {
@@ -573,8 +577,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols) {
 				retval = JB.GPX2GM.callback({type:cbtype,infotext:infotext,id:dieses.id,name:daten.name});
 			if(retval) {
 				if(daten.link) {
-					if(daten.link.search("~")==0) window.location.href = daten.link.substr(1);
-					else window.open(daten.link,"",JB.gc.popup_Pars);
+					JB.openurl(daten.link);
 				}
 				else {
 					mapcenter = dieses.map.getCenter();
@@ -588,7 +591,7 @@ JB.Map.prototype.Polyline = function(daten,controls,route_oder_track,cols) {
 			}
 		}); // click-Handler
 	} // trackclick
-	if(JB.gc.trackover) {
+	if(dieses.makemap.parameters.trackover) {
 		var oline;
 		infofenster = JB.Infofenster(this.map);
 		google.maps.event.addListener(line[eventline], 'mouseover', function(o) {
@@ -619,7 +622,7 @@ JB.Map.prototype.setMarker = function(option,options,icon) {
 		}
 	}
 	marker.push(new google.maps.Marker(option));
-	if(JB.gc.shwpshadow) {
+	if(this.makemap.parameters.shwpshadow) {
 		if (icon) {
 			if (icon.shadow) {
 				options.icon = icon.shadow;
@@ -645,8 +648,7 @@ JB.Map.prototype.Marker_Link = function(coord,icon,titel,url,popup_Pars) {
 	var options = { position: new google.maps.LatLng(coord.lat,coord.lon), map: this.map, clickable: false, zIndex: 190 };
 	var marker = this.setMarker(option,options,icon);
 	google.maps.event.addListener(marker[0], 'click', function() {
-		if(url.search("~")==0) window.location.href = url.substr(1);
-		else window.open(url,"",popup_Pars);
+		JB.openurl(url);
 	});
 	return marker;
 } // Marker_Link
@@ -689,9 +691,9 @@ JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
 	var options = { position: new google.maps.LatLng(coord.lat,coord.lon), map: this.map, clickable: false, zIndex: 190 };
 	var marker = this.setMarker(option,options,icon);
 	var infowindow = new google.maps.InfoWindow({  });
+	var text = coord.info;
 	google.maps.event.addListener(infowindow,"closeclick", function() { dieses.map.panTo(mapcenter); google.maps.event.removeListener(clk_ev) });
 	google.maps.event.addListener(marker[0], 'click', function() {
-		var text = coord.info;
 		var retval = true;
 		if(typeof(JB.GPX2GM.callback)=="function") 
 			retval = JB.GPX2GM.callback({type:"click_Marker_Bild",coord:coord,src:bild,text:text,id:dieses.id});
@@ -731,8 +733,8 @@ JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
 		var img = new Image();
 		img.onload = function() { 
 			var w = img.width, h = img.height, mw, mh;
-			if(w>h) { mw = JB.gc.groesseminibild; mh = Math.round(h*mw/w); }
-			else    { mh = JB.gc.groesseminibild; mw = Math.round(w*mh/h); }
+			if(w>h) { mw = makemap.parameters.groesseminibild; mh = Math.round(h*mw/w); }
+			else    { mh = makemap.parameters.groesseminibild; mw = Math.round(w*mh/h); }
 			var minibild = new google.maps.Marker({
 				position: new google.maps.LatLng(coord.lat,coord.lon), 
 				map: dieses.map,
@@ -758,6 +760,10 @@ JB.Map.prototype.Marker_Bild = function(coord,icon,bild) {
 		});
 		img.src = bild;
 	});
+	
+	if(typeof(JB.GPX2GM.callback)=="function") 
+		JB.GPX2GM.callback({type:"created_Marker_Bild",marker:marker[0],coord:coord,src:bild,text:text,id:dieses.id});
+	
 	return marker;
 } // Marker_Bild 
  
@@ -817,6 +823,10 @@ JB.Map.prototype.Marker_Cluster = function(cluster,wpts,strings) {
 	return [marker];
 } // Marker_Cluster
 
+JB.Map.prototype.setdistanceMarker = function(coord,icon,title,label) { 
+	return [];
+} // setClusterMarker
+  
 JB.RemoveElement = function(element) {
 	element.setMap(null);
 } // JB.RemoveElement    
@@ -886,7 +896,8 @@ JB.Infofenster = function(map) {
 	return new Infofenster_O();
 }// JB.Infofenster
 
-JB.getTimezone = function(gpxdaten,cb_trackinfo,cb) {
+JB.getTimezone = function(gpxdaten,cb) {
+		var dieses = this;
 		// Hier wird inzwischen ein weiterer API-Key benötigt!
 		var t,lat,lon,track=gpxdaten.tracks.track,wp=gpxdaten.wegpunkte.wegpunkt,daten,tzurl;
 		var count = gpxdaten.tracks.anzahl;
@@ -909,7 +920,7 @@ JB.getTimezone = function(gpxdaten,cb_trackinfo,cb) {
 								gpxdaten.tracks.track[tnr].daten[j].tabs += ( tz.dstOffset + tz.rawOffset ) / 3600;
 						}
 						count --;
-						if(!count && JB.gc.shtrtabs_p) show();
+						if(!count && dieses.parameters.shtrtabs_p) show.call(dieses);
 					}
 				})},tnr*110);
 			} )(i);
