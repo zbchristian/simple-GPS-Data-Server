@@ -103,7 +103,7 @@ Configuration of the map
  
 TCP/UDP Server
 --------------
-The GO code opens a port and accepts connections via TCP and UDP. The server just digests the paket and does not respond. The received data are matched to regular expressions of known device formats (./exe/devices.config). If a match if found and the device ID is known, the GPS location is passed to the PHP code via an HTTP connection to localhost. This stores the GPS location in the database. 
+The GO code opens a port and accepts connections via TCP and UDP. The server just digests the paket and does (usually) not respond. The received data are matched by regular expressions of known device formats (./exe/devices.config). If a match is found and the device ID is known, the GPS data are converted to the format, which is expected by the PHP code and passed via a HTTP connection to the server (e.g. localhost/gpstracker/index.php). The GPS location is then stored in the database. 
 Parameters to pass to the server:
 ```
  -port <portnumber>
@@ -114,11 +114,11 @@ Parameters to pass to the server:
 ```
 Example call
 ```
-tcp_udp_http_bridge -port 20202 -httpserver localhost -urlpath /gpstracker/index.php -key 123456
+nohup tcp_udp_http_bridge -port 20202 -httpserver localhost -urlpath /gpstracker/index.php -key 123456
 ```
 Encyption of UDP data
 ---------------------
-The tcp/udp server can handle encrypted 
+The tcp/udp server can handle AES encrypted pakets. This requires a server wide PSK in ./exe/encrypt_psk.config. Currently this is only implemented in my private version of the GPS logger for Android.  
 
 Information about GPS data formats
 ----------------------------------
@@ -149,4 +149,4 @@ GPS logger for Android with appended altitude
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20,alt=100.5
 ```
-Commcercial devices: different formats exist. Usually a short header of 2-3 characters is followed by the IMEI number of the device and a more or less complete GPRMC record. Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested.
+Commcercial devices: different formats exist. Usually a short header of 2-3 characters is followed by the IMEI number of the device, 2 characters status and a more or less complete GPRMC record (w/o $GPRMC header). Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested. Currently only a TK103B H02 device is included in devices.config. 
