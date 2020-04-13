@@ -10,8 +10,8 @@ Requirements
 ------------
 - Webserver (Apache or similar), which supports authentification (for the admin page)
 - PHP w/ SQLITE3 API installed 
-- GO compiler for TCP/UDP-HTTP bridge (only needed for commercial tracking devices like TK103 or GPS Logger in UDP mode)
-  o extra package golang.org/x/crypto is required. Install with "go get golang.org/x/crypto"
+- GO compiler for TCP/UDP-HTTP bridge (only needed for commercial tracking devices like TK103 or GPS Logger in UDP mode).
+  Extra package golang.org/x/crypto is required. Install with "go get golang.org/x/crypto"
 - java script GPXViewer by Jürgen Berkemeier (folder js/GM_utils/)
 
 Installation
@@ -101,13 +101,54 @@ Configuration of the map
 - the default map is selected in config.php (OpenStreet-Map (OSM,OSMDE) , Google-Map (Karte)) 
 - in order to use google maps, an API key is required. The key has to be entered into the script js/GM_utils/GPX2GM_Defs.js
  
-TCP/UDP-Server
+TCP/UDP Server
 --------------
 The GO code opens a port and accepts connections via TCP and UDP. The server just digests the paket and does not respond. The received data are matched to regular expressions of known device formats (./exe/devices.config). If a match if found and the device ID is known, the GPS location is passed to the PHP code via an HTTP connection to localhost. This stores the GPS location in the database. 
 Parameters to pass to the server:
 ```
  -port <portnumber>
- -httpserver <server name>
- -urlpath <url to send data to>
+ -httpserver <server name - e.g. localhost>
+ -urlpath <path on server>
  -key <secret key in order to check the status of the server - used by PHP>
+ -verbose - print raw messages, which allows to determine the format send by the device
 ```
+Example call
+```
+tcp_udp_http_bridge -port 20202 -httpserver localhost -urlpath /gpstracker/index.php -key 123456
+```
+Encyption of UDP data
+---------------------
+The tcp/udp server can handle encrypted 
+
+Information about GPS data formats
+----------------------------------
+Most devices provide the data as a NMEA GPRMC record (see https://de.wikipedia.org/wiki/NMEA_0183)
+```
+$GPRMC,162614,A,5230.5900,N,01322.3900,E,10.0,90.0,131006,1.2,E,A*13
+identifier, time, Active/Void, latitude, N/S, longitude, E/W, speed, angle, date, magnetic deviation, E/W, signal integrity, check sum 
+```
+Latitude and longitude are given in degree and minutes (ddmm.mmmm) - stored by server as degree
+Speed given in knots - stored by server as m/sec
+
+Often a reduced GPRMC record is used (no magnetic deviation), with additional identifiers for the device type, device identified. The identified is often the IMEI number of the device.
+Since GPRMC is lacking the altitude and the precision/accuracy, this is often added.
+The check sum is calculated by a XOR of all characters (ASCII codes) between the $ and the *
+
+- HTTP format
+```
+https://my-server.com?time=UTC&lat=LATTITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID (lat and lon given in degree 0-180 and 0-360, respectively) or
+https://my-server.com?id=DEVICEID&gprmc=<GPRMC-RECORD> or
+```
+
+- TCP/UDP format
+GPS logger for Android
+```
+uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20
+username/deviceid/GPRMC-RECORD
+```
+GPS logger for Android with appended altitude
+```
+uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20,alt=100.5
+```
+Commcercial devices: 
+Different formats exist. Usually a short header of 2-3 characters is followed by the IMEI number of the device and a more or less complete GPRMC record. Most device do send in addition a heartbeart message, which has a different format.
