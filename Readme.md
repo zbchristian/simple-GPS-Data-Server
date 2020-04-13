@@ -135,7 +135,7 @@ The check sum is calculated by a XOR of all characters (ASCII codes) between the
 
 - HTTP format
 ```
-https://my-server.com?time=UTC&lat=LATTITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID (lat and lon given in degree 0-180 and 0-360, respectively) or
+https://my-server.com?time=UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID (lat and lon given in degree 0-180 and 0-360, respectively) or
 https://my-server.com?id=DEVICEID&gprmc=<GPRMC-RECORD> or
 ```
 
