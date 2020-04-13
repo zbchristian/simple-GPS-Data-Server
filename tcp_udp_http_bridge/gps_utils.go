@@ -303,7 +303,7 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 		switch key {
 			case NS:
 				val = "N"
-				_,idx = getGPSValue(dev,matches,LAT)	// check sign of lattitude value
+				_,idx = getGPSValue(dev,matches,LAT)	// check sign of latitude value
 				if idx > 0 && idx < len(matches) { 
 					degval,err:=strconv.ParseFloat(matches[idx],32)
 					if err == nil && degval < 0.0 { val = "S" }
