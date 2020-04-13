@@ -22,7 +22,7 @@ Installation
  ```
  RewriteBase gpstracker
  ```
-- Cet the authentification for the admin interface
+- Set the authentification for the admin interface
  ```
  create .htpasswd file in the auth directory and/or adjust path in admin/.htaccess 
  ```
