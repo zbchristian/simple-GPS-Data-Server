@@ -140,6 +140,7 @@ https://my-server.com?id=DEVICEID&gprmc=<GPRMC-RECORD> or
 ```
 
 - TCP/UDP format
+
 GPS logger for Android
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20
