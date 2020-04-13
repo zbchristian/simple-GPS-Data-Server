@@ -150,5 +150,4 @@ GPS logger for Android with appended altitude
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20,alt=100.5
 ```
-Commcercial devices: 
-Different formats exist. Usually a short header of 2-3 characters is followed by the IMEI number of the device and a more or less complete GPRMC record. Most device do send in addition a heartbeart message, which has a different format.
+Commcercial devices: different formats exist. Usually a short header of 2-3 characters is followed by the IMEI number of the device and a more or less complete GPRMC record. Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested.
