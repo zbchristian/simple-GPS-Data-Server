@@ -127,8 +127,7 @@ Most devices provide the data as a NMEA GPRMC record (see https://de.wikipedia.o
 $GPRMC,162614,A,5230.5900,N,01322.3900,E,10.0,90.0,131006,1.2,E,A*13
 identifier, time, Active/Void, latitude, N/S, longitude, E/W, speed, angle, date, magnetic deviation, E/W, signal integrity, check sum 
 ```
-Latitude and longitude are given in degree and minutes (ddmm.mmmm) - stored by server as degree
-Speed given in knots - stored by server as m/sec
+Latitude and longitude are given in degree and minutes (ddmm.mmmm), stored by server in degree. Speed given in knots and stored by server in m/sec.
 
 Often a reduced GPRMC record is used (no magnetic deviation), with additional identifiers for the device type, device identified. The identified is often the IMEI number of the device.
 Since GPRMC is lacking the altitude and the precision/accuracy, this is often added.
