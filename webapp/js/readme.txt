@@ -1,0 +1,2 @@
+Place the GM_Utils folder from the GPXViewer (https://www.j-berkemeier.de/GPXViewer/) into this folder
+- In order to use Google maps an API key is required. Copy the key into the file GM_Utils/GPX2GM_Defs.js 
