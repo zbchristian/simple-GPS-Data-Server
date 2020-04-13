@@ -6,8 +6,6 @@ Collect the GPS position from devices (smart phone, GPS tracker), store in a SQL
 - Stored tracks can be downloaded as a GPX file
 - Simple admin interface to add and edit new devices
 
-**Howto - GPS-Tracker**
-
 Requirements
 ------------
 - Webserver (Apache or similar), which supports authentification (for the admin page)
@@ -47,7 +45,7 @@ compile code with GO in tcp_udp_http_bridge (go build)
 copy executable to exe directory on webspace
 adjust config.php accordingly (name and path of/to executable)
 call admin interface to start server
-add crontab entry to check once per hour, if the server is running (requires "wget")
+add a crontab entry to check once per hour, if the server is running (requires "wget")
    1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://<WEBSERVER>/<PATH>?checkserver=<SECRETKEY> >/dev/null 2>&1
  ```
 	 	 
@@ -76,7 +74,7 @@ Tracking devices
  ```
  ```
  Alternative communication method UDP: use the port number given in config.php (default 20202) -> requires the server to run
- If the cost of mobile data transmission is an issue, this is the correct choice, since the amount of data is extremely small 
+    If the cost of mobile data transmission is an issue, this is the correct choice, since the amount of data is minimal
  ```
  ```
 Settings->performance
@@ -91,7 +89,9 @@ set TCP/IP server and port in config.php
 configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
 server has to be compiled and placed in ./exe/ directory
 copy devices.config to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
-server is automatically started, when the admin interface is opened. This requires, that PHP is allowed to start the server via an "exec()" call. If this is not possible, the server should be started manually (see below)
+server is automatically started, when the admin interface is opened. 
+  This requires, that PHP is allowed to start the server via an "exec()" call. 
+  If this is not possible, the server has to be started manually or via a cron job (see below)
  ```
 
 Configuration of the map
@@ -103,7 +103,7 @@ Configuration of the map
  
 TCP/UDP-Server
 --------------
-The GO code opens a port and accepts connections via TCP and UDP. The server just digests the paket and does not respond. The received data are matched to regular expressions of known device formats (./exe/devices.config). If a match if found and the device ID is known, the GPS location if given to the PHP code via an HTTP connection to localhost.
+The GO code opens a port and accepts connections via TCP and UDP. The server just digests the paket and does not respond. The received data are matched to regular expressions of known device formats (./exe/devices.config). If a match if found and the device ID is known, the GPS location is passed to the PHP code via an HTTP connection to localhost. This stores the GPS location in the database. 
 Parameters to pass to the server:
 ```
  -port <portnumber>
