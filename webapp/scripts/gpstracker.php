@@ -2,7 +2,7 @@
 // Extra Simple GPS data server
 // ============================
 // Format of URL
-// Store GPS location: ?time=%UTC&lat=LATTITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID
+// Store GPS location: ?time=%UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID
 // or                  ?id=DEVICEID&gprmc=<GPRMC-RECORD>
 // Retrieve locations as GPX file: ?id=DEVICE_IDENTIFICATION&dt=TIMEINTHEPAST&DATE=ENDDATETIME
 // DEVICEID (defines in config.php) relates to the device name
