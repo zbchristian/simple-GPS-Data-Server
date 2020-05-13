@@ -1,5 +1,5 @@
 Simple GPS Data Server
-=====================
+======================
 
 Collect the GPS position from devices (smart phone, GPS tracker), store in a SQLite database and allow to display on a map (OSM or Google).
 - Data are received from the device either via HTTPS (PHP) or a tcp/udp packet (GO server)
