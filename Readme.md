@@ -150,4 +150,12 @@ GPS logger for Android with appended altitude
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20,alt=100.5
 ```
-Commcercial devices: different formats exist. Usually a short header of 2-3 characters is followed by the IMEI number of the device, 2 characters status and a more or less complete GPRMC record (w/o $GPRMC header). Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested. Currently only a TK103B H02 device is included in devices.config. 
+Commcercial devices 
+
+Different formats exist. Usually a short header of 2-3 characters is followed by the IMEI/device identification number of the device, 2 characters status and a more or less complete GPRMC record (w/o $GPRMC header). Some status bits might be added at the end. Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested. Currently only a TK103B H02 device is included in devices.config. 
+
+Example GPS location message via UDP
+```
+*HQ,7893267561,V1,050316,A,2212.8745,N,11346.6574,E,14.28,028,220902,FFFFFFFF#
+```
+HQ is the manufacturer ID, followed by an identification number and the message type "V1". The GPRMC record is missing the $GPRMC header, the magnetic deviation and the check sum. At the end of the message, status information is given.
