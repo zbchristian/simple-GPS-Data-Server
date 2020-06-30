@@ -297,6 +297,12 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
 				if dev.Units[i] == MPERS 	{ v *= 3.6/1.852 }	// calc knots
 				if dev.Units[i] == KNOTS 	{ }					// nothing to do	
 				val = fmt.Sprintf("%.1f",v)
+			case DEVIMEI:   // imei too short -> extend to 15 digits
+				if len(val) < 15 {
+					v,err:=strconv.Atoi(val)
+					if err != nil {break}
+                    val = fmt.Sprintf("%015d",v)
+				}
 			default:
 		}
 	} else {	// key not in input string -> use default, or determine from different source
