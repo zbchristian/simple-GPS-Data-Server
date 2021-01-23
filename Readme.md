@@ -32,7 +32,7 @@ Installation
   * Specify the time w/o movement to start a new track
   * Enable or disable the start of the tcp/udp bridge GO server 
 * Get the javascript GPXViewer from <code>https://www.j-berkemeier.de/GPXViewer/</code> and copy the folder GM_Utils to <code>gpstracker/js/</code>
-  * In order to use Google maps, an API key is required search for <code>google maps api key application</code>)
+  * In order to use Google maps, an API key is required search for <code>google maps api key application</code>
   * Edit the file <code>./js/GM_Utils/GPX2GM_Defs.js</code> and uncomment the line containing  <code>JB.GPX2GM.GM_Api_key</code> and add the API key as the value
 * TCP/UDP-HTTP-Bridge 
   * enable/disable in scripts/config.php
@@ -55,6 +55,8 @@ View data
 
 Tracking devices
 ----------------
+* Any OpenGTS compliant tracking APP will work
+  * Examples: GPS Logger for Android, Traccar Client ... 
 * GPS Logger for Android
   * Open settings -> Logging Details -> "Log to OpenGTS server" in order to activate the real time tracking
 	 * server: "<servername.com>"
@@ -75,6 +77,8 @@ Tracking devices
   * configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
   * server has to be compiled and placed in ./exe/ directory
   * copy <code>devices.config</code> to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
+    * More device can be added
+	  * Run the server with option -verbose to study the format and add corresponding regular expressions to <code>devices.config</code>
   * server is automatically started, when the admin interface is opened. 
     * This requires, that PHP is allowed to start the server via an "exec()" call. 
     * If this is not possible, the server has to be started manually or via a cron job.

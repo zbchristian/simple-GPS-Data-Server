@@ -18,6 +18,16 @@ function filter_devno($n) {
 	return preg_replace("/\D/u", '', $n);
 }
 
+function replace_alternative_var_names($inputs) {
+        if(array_key_exists("latitude",$inputs)) $inputs["lat"]=$inputs["latitude"];
+        if(array_key_exists("longitude",$inputs)) $inputs["lon"]=$inputs["longitude"];
+        if(array_key_exists("timestamp",$inputs)) $inputs["time"]=gmdate("c",$inputs["timestamp"]);
+        if(array_key_exists("speed",$inputs)) $inputs["spd"]=$inputs["speed"];
+        if(array_key_exists("altitude",$inputs)) $inputs["alt"]=$inputs["altitude"];
+        if(array_key_exists("accuracy",$inputs)) $inputs["acc"]=$inputs["accuracy"];
+        return $inputs;
+}
+
 function convert_GPRMC_data($inputs) {
 	if(!isset($inputs["gprmc"])) return false;
 	$gprmc = explode(",",$inputs["gprmc"]);
