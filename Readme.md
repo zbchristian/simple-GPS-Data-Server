@@ -24,8 +24,8 @@ Installation
  ```
 * Set the authentification for the admin interface
   * In the file <code>auth/.htpasswd</code> a single user <code>admin</code> with the password <code>changeme</code> is included
-  * The path to the .htpasswd file has to be adjusted in <code>admin/.htaccess</code>
-  * Update .htpasswd with new users/passwords. Best use the command line <code>htpasswd /path-to-htpasswd-file/.htpasswd myusername mypassword</code> or an online generator  
+  * The path to the .htpasswd file has to be adjusted in <code>admin/.htaccess</code>. The absolute path is required!
+  * Update .htpasswd with new users/passwords. Best use the command line<br> <code>htpasswd /path-to-htpasswd-file/.htpasswd myusername mypassword</code> or an online generator  
 * Edit scripts/config.php: adjust settings
   * Define timezone, which map to use, date/time format
   * Specify the time span w/o movement to be recognized as a pause
@@ -41,7 +41,7 @@ Installation
   * adjust config.php accordingly (name and path of/to executable)
   * call admin interface to start server
   * add a crontab entry to check once per hour, if the server is running (requires "wget")<br>
-   <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://<WEBSERVER>/<PATH>?checkserver=<SECRETKEY> >/dev/null 2>&1</code>	 	 
+   <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://WEBSERVER/gpstracker?checkserver=SECRETKEY >/dev/null 2>&1</code>	 	 
 * The database file will be created automatically
 	
 Enter tracking devices
@@ -118,13 +118,13 @@ Often a reduced GPRMC record is used (no magnetic deviation), with additional id
 Since GPRMC is lacking the altitude and the precision/accuracy, this is sometimes added.
 The check sum is calculated by a XOR of all characters (ASCII codes) between the $ and the *
 
-## HTTP format
+**HTTP format**
 ```
 https://my-server.com?time=UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID (lat and lon given in degree 0-180 and 0-360, respectively) or
 https://my-server.com?id=DEVICEID&gprmc=<GPRMC-RECORD> or
 ```
 
-## TCP/UDP format
+**TCP/UDP format**
 
 GPS logger for Android (OpenGTS format)
 ```
@@ -135,7 +135,7 @@ GPS logger for Android with appended altitude
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20,alt=100.5
 ```
-## Commcercial devices (TCP/UDP)
+**Commcercial devices (TCP/UDP)**
 
 Different formats exist. Usually a short header of 2-3 characters is followed by the IMEI/device identification number of the device, 2 characters status and a more or less complete GPRMC record (w/o $GPRMC header). Some status bits might be added at the end. Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested. Currently only a TK103B H02 device is included in devices.config. 
 
