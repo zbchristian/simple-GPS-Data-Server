@@ -1,6 +1,6 @@
 AuthName        "Username and Password required"
 AuthType        Basic
-AuthUserFile    /srv/www/gpstracker/auth/.htpasswd
+AuthUserFile    /PATH-TO-MY-DOCUMENT-ROOT/gpstracker/auth/.htpasswd
 
 <Limit GET POST>
 require valid-user
