@@ -16,32 +16,32 @@ Requirements
 
 Installation
 ------------
-*Copy all files in the webapp folder to the web space folder (in the following ./gpstracker/ is assumed)
-*Create corresponding entry in webserver config to allow web access and php to run
-*Adjust the top level .htaccess file
+* Copy all files in the webapp folder to the web space folder (in the following ./gpstracker/ is assumed)
+* Create corresponding entry in webserver config to allow web access and php to run
+* Adjust the top level .htaccess file
  ```
  RewriteBase gpstracker
  ```
-*Set the authentification for the admin interface
-  *In the file `<auth/.htpasswd>` a single user `<admin>` with the password `<changeme>` is included
-  *The path to the .htpasswd file has to be adjusted in `<admin/.htaccess>`
-  *Update .htpasswd with new users/passwords. Best use the command line `<htpasswd /path-to-htpasswd-file/.htpasswd myusername mypassword>` or an online generator  
-*Edit scripts/config.php: adjust settings
-  *Define timezone, which map to use, date/time format
-  *Specify the time span w/o movement to be recognized as a pause
-  *Specify the time w/o movement to start a new track
-  *Enable or disable the start of the tcp/udp bridge GO server 
-*Get the javascript GPXViewer from `<https://www.j-berkemeier.de/GPXViewer/>` and copy the folder GM_Utils to `<gpstracker/js/>`
-  *In order to use Google maps, an API key is required
-  *Edit the file `<./js/GM_Utils/GPX2GM_Defs.js>` and uncomment the line containing  `<JB.GPX2GM.GM_Api_key>` and add the API key as the value
-*TCP/UDP-HTTP-Bridge 
-  *enable/disable in scripts/config.php
-  *compile code with GO in tcp_udp_http_bridge (go build)
-  *copy executable to exe directory on webspace
-  *adjust config.php accordingly (name and path of/to executable)
-  *call admin interface to start server
-  *add a crontab entry to check once per hour, if the server is running (requires "wget")
-   `<1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://<WEBSERVER>/<PATH>?checkserver=<SECRETKEY> >/dev/null 2>&1>`	 	 
+* Set the authentification for the admin interface
+  * In the file <code>auth/.htpasswd</code> a single user <code>admin</code> with the password <code>changeme</code> is included
+  * The path to the .htpasswd file has to be adjusted in <code>admin/.htaccess</code>
+  * Update .htpasswd with new users/passwords. Best use the command line <code>htpasswd /path-to-htpasswd-file/.htpasswd myusername mypassword</code> or an online generator  
+* Edit scripts/config.php: adjust settings
+  * Define timezone, which map to use, date/time format
+  * Specify the time span w/o movement to be recognized as a pause
+  * Specify the time w/o movement to start a new track
+  * Enable or disable the start of the tcp/udp bridge GO server 
+* Get the javascript GPXViewer from <code>https://www.j-berkemeier.de/GPXViewer/</code> and copy the folder GM_Utils to <code>gpstracker/js/</code>
+  * In order to use Google maps, an API key is required
+  * Edit the file <code>./js/GM_Utils/GPX2GM_Defs.js</code> and uncomment the line containing  <code>JB.GPX2GM.GM_Api_key</code> and add the API key as the value
+* TCP/UDP-HTTP-Bridge 
+  * enable/disable in scripts/config.php
+  * compile code with GO in tcp_udp_http_bridge (go build)
+  * copy executable to exe directory on webspace
+  * adjust config.php accordingly (name and path of/to executable)
+  * call admin interface to start server
+  * add a crontab entry to check once per hour, if the server is running (requires "wget")
+   <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://<WEBSERVER>/<PATH>?checkserver=<SECRETKEY> >/dev/null 2>&1</code>	 	 
 *The database file will be created automatically
 	
 Enter tracking devices
@@ -55,29 +55,29 @@ View data
 
 Tracking devices
 ----------------
-*GPS Logger for Android
-  *Open settings -> Logging Details -> "Log to OpenGTS server" in order to activate the real time tracking
-	 *server: "<servername.com>"
-	 *port: 443
-	 *communication method: HTTPS
-	 *server path: /gpstracker
-	 *device ID: the ID you entered in the admin interface
-	 *test the comunication by clicking "check SSL certificate"
-  *Alternative communication method UDP: use the port number given in config.php (default 20202) -> requires the server to run
-  *If the cost of mobile data transmission is an issue, this is the correct choice, since the amount of data is minimal
-  *Settings->performance
-     *select interval  (e.g. 20 sec)
-     *keep the GPS activated between fixes: makes sense for a short interval, but needs more battery 
-     *set distance bewteen data points: send no data, when distance is below a certain limit (e.g. 10m)
-     *activate "stop recording, if no movement is detected"
-*Commercial devices usually send the GPS position via tcp/udp. This requires the server to run
-  *set TCP/IP server and port in config.php 
-  *configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
-  *server has to be compiled and placed in ./exe/ directory
-  *copy devices.config to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
-  *server is automatically started, when the admin interface is opened. 
-    *This requires, that PHP is allowed to start the server via an "exec()" call. 
-    *If this is not possible, the server has to be started manually or via a cron job (see below)
+* GPS Logger for Android
+  * Open settings -> Logging Details -> "Log to OpenGTS server" in order to activate the real time tracking
+	 * server: "<servername.com>"
+	 * port: 443
+	 * communication method: HTTPS
+	 * server path: /gpstracker
+	 * device ID: the ID you entered in the admin interface
+	 * test the comunication by clicking "check SSL certificate"
+  * Alternative communication method UDP: use the port number given in config.php (default 20202) -> requires the server to run
+  * If the cost of mobile data transmission is an issue, this is the correct choice, since the amount of data is minimal
+  * Settings->performance
+     * select interval  (e.g. 20 sec)
+     * keep the GPS activated between fixes: makes sense for a short interval, but needs more battery 
+     * set distance bewteen data points: send no data, when distance is below a certain limit (e.g. 10m)
+     * activate "stop recording, if no movement is detected"
+* Commercial devices usually send the GPS position via tcp/udp. This requires the server to run
+  * set TCP/IP server and port in config.php 
+  * configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
+  * server has to be compiled and placed in ./exe/ directory
+  * copy devices.config to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
+  * server is automatically started, when the admin interface is opened. 
+    * This requires, that PHP is allowed to start the server via an "exec()" call. 
+    * If this is not possible, the server has to be started manually or via a cron job (see below)
 
 Configuration of the map
 ------------------------
