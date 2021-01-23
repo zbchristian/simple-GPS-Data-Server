@@ -12,7 +12,7 @@ Requirements
 - PHP with SQLITE3 API installed 
 - GO compiler for TCP/UDP-HTTP bridge (only needed for commercial tracking devices like TK103 or GPS Logger in UDP mode).
   Extra package golang.org/x/crypto is required. Install with "go get golang.org/x/crypto"
-- java script GPXViewer by Jürgen Berkemeier (folder js/GM_utils/)
+- java script <a href="https://www.j-berkemeier.de/GPXViewer/">GPXViewer</a> by Jürgen Berkemeier (folder <code>js/GM_utils/</code>) 
 
 Installation
 ------------
@@ -41,7 +41,7 @@ Installation
   * adjust config.php accordingly (name and path of/to executable)
   * call admin interface to start server
   * add a crontab entry to check once per hour, if the server is running (requires "wget")<br>
-   <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://WEBSERVER/gpstracker?checkserver=SECRETKEY >/dev/null 2>&1</code>	 	 
+   <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://servername/gpstracker?checkserver=SECRETKEY >/dev/null 2>&1</code>	 	 
 * The database file will be created automatically
 	
 Enter tracking devices
@@ -50,8 +50,8 @@ Enter tracking devices
 
 View data
 ---------
-- open page https://servername/gpstracker?id=<ID of device>
-  optional parameter to select the time span: dt=<time span> in min(m), hours(h), days(d) or years(y), e.g. "10d" for 10 days 
+* open page https://servername/gpstracker?id=ID-of-device
+  * optional parameter to select the time span: dt=<time span> in min(m), hours(h), days(d) or years(y), e.g. "10d" for 10 days 
 
 Tracking devices
 ----------------
@@ -77,7 +77,7 @@ Tracking devices
   * copy <code>devices.config</code> to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
   * server is automatically started, when the admin interface is opened. 
     * This requires, that PHP is allowed to start the server via an "exec()" call. 
-    * If this is not possible, the server has to be started manually or via a cron job (see above)
+    * If this is not possible, the server has to be started manually or via a cron job.
 
 Configuration of the map
 ------------------------
