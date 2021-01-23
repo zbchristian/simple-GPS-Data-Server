@@ -55,7 +55,7 @@ View data
 
 Tracking devices
 ----------------
-* Any OpenGTS compliant tracking APP will work
+* Any OpenGTS or Traccar compliant tracking APP will work
   * Examples: GPS Logger for Android, Traccar Client ... 
 * GPS Logger for Android
   * Open settings -> Logging Details -> "Log to OpenGTS server" in order to activate the real time tracking

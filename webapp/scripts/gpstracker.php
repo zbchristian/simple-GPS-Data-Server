@@ -4,7 +4,7 @@
 // Format of URL
 // Store GPS location: ?time=%UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID
 // or                  ?id=DEVICEID&gprmc=<GPRMC-RECORD>
-// or                  Traccar format
+// or                  ?timestamp=%TIMESTAMP&lat=LATITUDE&lon=LONGITUDE&altitude=ALTITUDE&accuracy=ACCURACY&id=DEVICEID
 // Retrieve locations as GPX file: ?id=DEVICE_IDENTIFICATION&dt=TIMEINTHEPAST&DATE=ENDDATETIME
 // DEVICEID (defines in config.php) relates to the device name
 //
