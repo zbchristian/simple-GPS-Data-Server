@@ -32,7 +32,7 @@ Installation
   * Specify the time w/o movement to start a new track
   * Enable or disable the start of the tcp/udp bridge GO server 
 * Get the javascript GPXViewer from <code>https://www.j-berkemeier.de/GPXViewer/</code> and copy the folder GM_Utils to <code>gpstracker/js/</code>
-  * In order to use Google maps, an API key is required
+  * In order to use Google maps, an API key is required search for <code>google maps api key application</code>)
   * Edit the file <code>./js/GM_Utils/GPX2GM_Defs.js</code> and uncomment the line containing  <code>JB.GPX2GM.GM_Api_key</code> and add the API key as the value
 * TCP/UDP-HTTP-Bridge 
   * enable/disable in scripts/config.php
@@ -40,9 +40,9 @@ Installation
   * copy executable to exe directory on webspace
   * adjust config.php accordingly (name and path of/to executable)
   * call admin interface to start server
-  * add a crontab entry to check once per hour, if the server is running (requires "wget")
+  * add a crontab entry to check once per hour, if the server is running (requires "wget")<br>
    <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://<WEBSERVER>/<PATH>?checkserver=<SECRETKEY> >/dev/null 2>&1</code>	 	 
-*The database file will be created automatically
+* The database file will be created automatically
 	
 Enter tracking devices
 ----------------------
@@ -74,17 +74,17 @@ Tracking devices
   * set TCP/IP server and port in config.php 
   * configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
   * server has to be compiled and placed in ./exe/ directory
-  * copy devices.config to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
+  * copy <code>devices.config</code> to the ./exe/ directory. This contains regular expressions for different formats (e.g. OpenGTS, TK103)
   * server is automatically started, when the admin interface is opened. 
     * This requires, that PHP is allowed to start the server via an "exec()" call. 
-    * If this is not possible, the server has to be started manually or via a cron job (see below)
+    * If this is not possible, the server has to be started manually or via a cron job (see above)
 
 Configuration of the map
 ------------------------
 - the map and tracks are included by the java script GPX Viewer by Jürgen Berkemeier (https://www.j-berkemeier.de/GPXViewer/)
-- the look and behavior can be controlled by adding optional parameters (listed on the above web page) into the html template in html/gpxviewer_html.template
+- the look and behavior can be controlled by adding optional parameters (listed on the above web page) into the html template in <code>html/gpxviewer_html.template</code>
 - the default map is selected in config.php (OpenStreet-Map (OSM,OSMDE) , Google-Map (Karte)) 
-- in order to use google maps, an API key is required. The key has to be entered into the script js/GM_utils/GPX2GM_Defs.js
+- in order to use google maps, an API key is required. The key has to be entered into the script <code>js/GM_utils/GPX2GM_Defs.js</code>
  
 TCP/UDP Server
 --------------
@@ -103,7 +103,7 @@ nohup tcp_udp_http_bridge -port 20202 -httpserver localhost -urlpath /gpstracker
 ```
 Encyption of UDP data
 ---------------------
-The tcp/udp server can handle AES encrypted pakets. This requires a server wide PSK in ./exe/encrypt_psk.config. Currently this is only implemented in my private version of the GPS logger for Android.  
+The tcp/udp server can handle AES encrypted pakets. This requires a server wide PSK in <code>./exe/encrypt_psk.config</code>. Currently this is only implemented in my private version of the GPS logger for Android.  
 
 Information about GPS data formats
 ----------------------------------
@@ -112,21 +112,21 @@ Most devices provide the data as a NMEA GPRMC record (see https://de.wikipedia.o
 $GPRMC,162614,A,5230.5900,N,01322.3900,E,10.0,90.0,131006,1.2,E,A*13
 identifier, time, Active/Void, latitude, N/S, longitude, E/W, speed, angle, date, magnetic deviation, E/W, signal integrity, check sum 
 ```
-Latitude and longitude are given in degree and minutes (ddmm.mmmm), stored by server in degree. Speed given in knots and stored by server in m/sec.
+Latitude and longitude are given in degree and minutes (ddmm.mmmm), stored by the server in degree. Speed given in knots and stored by the server in m/sec.
 
 Often a reduced GPRMC record is used (no magnetic deviation), with additional identifiers for the device type, device identified. The identified is often the IMEI number of the device.
-Since GPRMC is lacking the altitude and the precision/accuracy, this is often added.
+Since GPRMC is lacking the altitude and the precision/accuracy, this is sometimes added.
 The check sum is calculated by a XOR of all characters (ASCII codes) between the $ and the *
 
-- HTTP format
+## HTTP format
 ```
 https://my-server.com?time=UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&id=DEVICEID (lat and lon given in degree 0-180 and 0-360, respectively) or
 https://my-server.com?id=DEVICEID&gprmc=<GPRMC-RECORD> or
 ```
 
-- TCP/UDP format
+## TCP/UDP format
 
-GPS logger for Android
+GPS logger for Android (OpenGTS format)
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20
 username/deviceid/GPRMC-RECORD
@@ -135,7 +135,7 @@ GPS logger for Android with appended altitude
 ```
 uabcde/Y0xXyY/$GPRMC,180725,A,5637.37477,N,1211.26495,E,0.000000,0.000000,021017,,*20,alt=100.5
 ```
-Commcercial devices 
+## Commcercial devices (TCP/UDP)
 
 Different formats exist. Usually a short header of 2-3 characters is followed by the IMEI/device identification number of the device, 2 characters status and a more or less complete GPRMC record (w/o $GPRMC header). Some status bits might be added at the end. Most device do send in addition a heartbeart message, which has a different format. Some devices require a login in order to start the communication. This protocol is included in the server and the device configuration, but is currently untested. Currently only a TK103B H02 device is included in devices.config. 
 
