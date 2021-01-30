@@ -21,7 +21,7 @@ function filter_devno($n) {
 function replace_alternative_var_names($inputs) {
         if(array_key_exists("latitude",$inputs)) $inputs["lat"]=$inputs["latitude"];
         if(array_key_exists("longitude",$inputs)) $inputs["lon"]=$inputs["longitude"];
-        if(array_key_exists("timestamp",$inputs)) $inputs["time"]=gmdate("c",$inputs["timestamp"]);
+        if(array_key_exists("timestamp",$inputs)) $inputs["time"]=abs($inputs["timestamp"]/time()) < 10 ? gmdate("c",$inputs["timestamp"]) : gmdate("c",$inputs["timestamp"]/1000);
         if(array_key_exists("speed",$inputs)) $inputs["spd"]=$inputs["speed"];
         if(array_key_exists("altitude",$inputs)) $inputs["alt"]=$inputs["altitude"];
         if(array_key_exists("accuracy",$inputs)) $inputs["acc"]=$inputs["accuracy"];
