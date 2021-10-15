@@ -3,7 +3,7 @@
 <head> 
 <meta charset="utf-8"> 
 <title>%PAGETITLE%</title>
-<link rel="stylesheet" type="text/css" href="css/gpstracker.css">
+<link rel="stylesheet" type="text/css" href="/css/gpstracker.css">
 </head>
 <body>
 <div class="header">
