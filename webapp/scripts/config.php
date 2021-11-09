@@ -26,7 +26,7 @@ $TCPBridge="$relpath/exe/tcp_udp_http_bridge";	// path to TCP-HTTP-Bridge server
 $HTTPSserver="localhost";
 $TCPport=20202;
 $urlpath="/gpstracker/index.php";
-$secretkey="12aBfgRt90kkLLpY";	// CHANGE THIS VALUE !!!!
+$secretkey="12345abcde";	// CHANGE THIS VALUE !!!!
 
 // some initializations
 $error="";
