@@ -4,7 +4,7 @@
 		<meta charset="utf-8"> 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>%PAGETITLE%</title>
-		<script type="text/javascript" src="js/GM_Utils/GPX2GM.js"></script>
+		<script type="text/javascript" src="/js/GM_Utils/GPX2GM.js"></script>
 		<script type="text/javascript">
 			var Doclang= "de";
 			var Legende_rr=false;
@@ -17,7 +17,7 @@
 			var Movevmin=0.1;
 			var Tdiff=1;
 		</script>
-		<link rel="stylesheet" type="text/css" href="css/gpstracker.css">
+		<link rel="stylesheet" type="text/css" href="/css/gpstracker.css">
 	</head>
 <body>
 <div class="header">
