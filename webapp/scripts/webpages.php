@@ -37,7 +37,9 @@ function display_admin($devlist,$vals) {
     if($isEdit && !$isEditRetry && ($dev=retrieve_device_db("devno",$vals["devno"])) !== false) {
         $name = isset($dev["name"]) ? $dev["name"] : "";
         $id   = isset($dev["id"])   ? $dev["id"] : "";
-        $imei = isset($dev["imei"]) ? $dev["imei"] : 30;
+        $keys = isset($dev["keys"])   ? $dev["keys"] : "";
+        if(empty($keys)) $keys=$id;
+        $imei = isset($dev["imei"]) ? $dev["imei"] : "";
         $desc = isset($dev["desc"]) ? $dev["desc"] : "";
         $hist = isset($dev["history"]) ? $dev["history"] : 30;
         $devno =  $vals["devno"];
@@ -45,7 +47,9 @@ function display_admin($devlist,$vals) {
     else {
         $name = $isError && isset($vals["name"]) ? $vals["name"] : "";
         $id   = $isError && isset($vals["id"])   ? $vals["id"]   : "";
-        $imei = $isError && isset($vals["imei"])   ? $vals["imei"]   : "";
+        $keys = $isError && isset($vals["keys"]) ? $vals["keys"] : "";
+        if(empty($keys)) $keys=bin2hex(random_bytes(5));
+        $imei = $isError && isset($vals["imei"]) ? $vals["imei"]   : "";
         $desc = $isError && isset($vals["desc"]) ? $vals["desc"] : "";
         $hist = $isError && isset($vals["history"]) ? $vals["history"] : 30;
         $devno = !$isEditRetry ? 0 : $vals["devno"];
@@ -54,6 +58,7 @@ function display_admin($devlist,$vals) {
     $html = str_replace("%DEVNO%",$devno,$html);
     $html = str_replace("%NAME%",$name,$html);
     $html = str_replace("%ID%",$id,$html);
+    $html = str_replace("%KEYS%",$keys,$html);
     $html = str_replace("%IMEI%",$imei,$html);
     $html = str_replace("%TCPPORT%",$TCPport,$html);
     $html = str_replace("%DESC%",$desc,$html);
@@ -68,12 +73,13 @@ function display_admin($devlist,$vals) {
         $buttons = '<a class="but" href="'.$url.'?admin_device=clear&devno='.$devno.'">clear data</a>&nbsp;&nbsp; <a class="but" href="'.$url.'?admin_device=delete&devno='.$devno.'">remove device</a>';
     }
     $html = str_replace("%ADMINBUTTONS%",$buttons,$html);
-    $devtable='<table><tr><th style="width:5%;"></th><th style="width:15%;">Name</th><th style="width:10%;">ID</th><th style="width:35%;">Description</th><th style="width:5%;">Days</th><th style="width:15%;">IMEI</th><th style="width:10%;"></th></tr>';
+    $devtable='<table><tr><th style="width:5%;"></th><th style="width:13%;">Name</th><th style="width:7%;">ID</th><th style="width:25%;">Description</th><th style="width:15%;">Access Key(s)</th><th style="width:5%;">Days</th><th style="width:15%;">IMEI</th><th style="width:10%;"></th></tr>';
     foreach($devlist as $dev) {
         $devtable .='<tr>';
         $devtable .='<td><a class="but" href="'.$url.'?admin_device=edit&devno='.$dev["devno"].'">edit</a></td>';
-        $devtable .='<td>'.$dev["name"].'</td><td>'.$dev["id"].'</td><td>'.$dev["desc"].'</td><td>'.$dev["history"].'</td><td>'.$dev["imei"].'</td>';
-        $devtable .='<td><a class="but" href="'.$urlid.'?id='.$dev["id"].'">view data</a></td>';
+        $devtable .='<td>'.$dev["name"].'</td><td>'.$dev["id"].'</td><td>'.$dev["desc"].'</td><td>'.$dev["keys"].'</td><td>'.$dev["history"].'</td><td>'.$dev["imei"].'</td>';
+        $key = !empty($dev["keys"]) ? explode(",",$dev["keys"]) : $dev["id"];
+        $devtable .='<td><a class="but" href="'.$urlid.'?id='.$key[0].'">view data</a></td>';
         $devtable .='</tr>';
     }
     $devtable .="</table>\n";

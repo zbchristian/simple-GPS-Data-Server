@@ -25,7 +25,7 @@ $startTCPUDPserver=true;
 $TCPBridge="$relpath/exe/tcp_udp_http_bridge";	// path to TCP-HTTP-Bridge serverprogram to start (wrt admin script)
 $HTTPSserver="localhost";
 $TCPport=20202;
-$urlpath="/gpstracker/index.php";
+$urlpath="/index.php";
 $secretkey="12345abcde";	// CHANGE THIS VALUE !!!!
 
 // some initializations

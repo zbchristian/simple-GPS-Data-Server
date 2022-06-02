@@ -15,15 +15,16 @@ include "$relpath/scripts/tcp_service.php";
 $inputs=filter_GET_inputs();
 if(isset($inputs["devno"])) $inputs["devno"] = filter_devno($inputs["devno"]);
 if(isset($inputs["id"])) $inputs["id"] = filter_ident($inputs["id"]);
+if(isset($inputs["keys"])) $inputs["keys"] = filter_keys($inputs["keys"]);
 if(isset($inputs["imei"]) && !empty($inputs["imei"])) {
 	$imei = filter_imei($inputs["imei"]);
 	$inputs["imei"] = $imei !== false ? $imei : "";
 }
-// var_dump($inputs);
 if(isset($inputs["admin_device"]) ) {
 	if(in_array($inputs["admin_device"],array("add","change","clear","delete")) ) {
 		$dev["name"]  = isset($inputs["name"])  ?  $inputs["name"]  : "";
 		$dev["id"]    = isset($inputs["id"])    ?  $inputs["id"]    : "";
+		$dev["keys"]  = isset($inputs["keys"])  ?  $inputs["keys"]  : "";
 		$dev["imei"]  = isset($inputs["imei"])  ?  $inputs["imei"]  : "";
 		$dev["desc"]  = isset($inputs["desc"])  ?  $inputs["desc"]  : "";
 		$dev["devno"] = isset($inputs["devno"]) ?  $inputs["devno"] : 0;

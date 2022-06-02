@@ -2,7 +2,7 @@
 // Extra Simple GPS data server
 // ============================
 // Format of URL
-// Store GPS location: ?time=UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&spd=SPEED&id=DEVICEID
+// Store GPS location: ?time=%UTC&lat=LATITUDE&lon=LONGITUDE&alt=ALTITUDE&acc=ACCURACY&spd=SPEED&id=DEVICEID
 // or                  ?id=DEVICEID&gprmc=<GPRMC-RECORD>
 // or                  ?timestamp=TIMESTAMP&lat=LATITUDE&lon=LONGITUDE&altitude=ALTITUDE&accuracy=ACCURACY&speed=SPEED&id=DEVICEID
 // Retrieve locations as GPX file: ?id=DEVICE_IDENTIFICATION&dt=TIMEINTHEPAST&DATE=ENDDATETIME
@@ -25,12 +25,11 @@ if(isset($inputs["checkserver"]) && $inputs["checkserver"]==$secretkey ) {
 }
 if(isset($inputs["gprmc"])) $inputs=convert_GPRMC_data($inputs);
 // var_dump($inputs);
-
-$inputs= replace_alternative_var_names($inputs); // accept alternative names for time, alt, acc etc.
+$inputs= replace_alternative_var_names($inputs);
 
 $dev=false;
 // valid device requested
-$devno=isset($inputs["id"]) && (($dev=retrieve_device_db("id",$inputs["id"],false))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
+$devno=isset($inputs["id"]) && (($dev=retrieve_device_db("keys",$inputs["id"],false,true))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
 if($devno === false)
 	$devno=isset($inputs["imei"]) && (($dev=retrieve_device_db("imei",$inputs["imei"],false))!== false) && isset($dev["devno"]) ? $dev["devno"] : false;
 if($devno === false) {

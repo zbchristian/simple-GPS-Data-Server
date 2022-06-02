@@ -36,6 +36,10 @@
 <input id="hist" value="%HISTORY%" name="history" maxlength="3" size="4">
 </div>
 <div style="display:inline-block;margin-right:10px;">
+<label for"keys" style="display:block">Access Key(s)</label>
+<input id="keys" value="%KEYS%" name="keys" maxlength="30" size="20">
+</div>
+<div style="display:inline-block;margin-right:10px;">
 <label for"imei" style="display:block">IMEI (TCP/UDP only)</label>
 <input id="imei" value="%IMEI%" name="imei" maxlength="15" size="20">
 </div>
@@ -45,7 +49,8 @@
 <div>
 <dl>
 <dt>Name</dt><dd> a short descriptive name of the device (min 5 characters long)<br>Will be shown on top of page when viewing tracks</dd>
-<dt>Identification</dt><dd>unique identification of the device (use only letters and numbers, not case sensitive, min. length 5).<br> This has to be used by the device to deliver data and to select the device when viewing GPS data</dd>
+<dt>Identification</dt><dd>unique identification of the device (use only letters and numbers, not case sensitive, min. length 5).<br> This has to be used by the device to deliver data</dd>
+<dt>Access Key(s)</dt> <dd>Key(s) (comma separated) to view the GPS tracks of the device on a map</dd>
 <dt>Description</dt> <dd>More detailed description of device. Will be shown as additional infomation when viewing GPS data</dd>
 <dt>Days</dt> <dd>Number of days to store the GPS data</dd>
 <dt>IMEI</dt> <dd>15 digit IMEI number of the device. This is only needed, if the device communicates via TCP/UDP port %TCPPORT% instead of HTTPS</dd>

@@ -9,6 +9,11 @@ function filter_ident($id) {
     return preg_replace("/[^a-zA-Z0-9]+/u", '', $id);
 }
 
+function filter_keys($keys) {
+        $keys=preg_replace("/[,]+$/u", '', $keys);
+    return preg_replace("/[^a-zA-Z0-9,]+/u", '', $keys);
+}
+
 // IMEI has to be 15 digits long
 function filter_imei($imei) {   
     return preg_replace("/[^0-9]/u", '', $imei);
@@ -19,7 +24,7 @@ function filter_devno($n) {
 }
 
 function replace_alternative_var_names($inputs) {
-    if(array_key_exists("timestamp",$inputs)) $inputs["time"]=abs($inputs["timestamp"]/time()) < 10 ? gmdate("c",$inputs["timestamp"]) : gmdate("c",$inputs["timestamp"]/1000);
+        if(array_key_exists("timestamp",$inputs)) $inputs["time"]=abs($inputs["timestamp"]/time()) < 10 ? gmdate("c",$inputs["timestamp"]) : gmdate("c",$inputs["timestamp"]/1000);
     if(array_key_exists("speed",$inputs)) $inputs["spd"]=$inputs["speed"];
     if(array_key_exists("altitude",$inputs)) $inputs["alt"]=$inputs["altitude"];
     if(array_key_exists("accuracy",$inputs)) $inputs["acc"]=$inputs["accuracy"];
@@ -68,10 +73,10 @@ function convert_GPRMC_data($inputs) {
 
 // modify the time string for the gpx file
 function gpx_time($time) {
-    global $timezone;
-    if (!empty($timezone)) date_default_timezone_set($timezone);
-    $t=date("c",strtotime($time));
-    return $t;
+        global $timezone;
+        if (!empty($timezone)) date_default_timezone_set($timezone);
+        $t=date("c",strtotime($time));
+        return $t;
 }
 
 function create_gpx_data($devno,$gps) {
@@ -95,7 +100,7 @@ function create_gpx_data($devno,$gps) {
     $ntrk=0;
     $lspd = -999.0;
     foreach($gps as $i => $row) {
-        $row["time"]=gpx_time($row["time"]);
+                $row["time"]=gpx_time($row["time"]);
         // remove consecutive entries  with exact same positions
         if($i>0 && $llon == $row["lon"] && $llat == $row["lat"]) continue;
         // remove consecutive points with speed = 0 
@@ -151,7 +156,7 @@ function create_gpx_data($devno,$gps) {
         $wayp["trk"][]=-1;
     }
     foreach($wayp["idx"] as $i => $idx) {
-        $gps[$idx]["time"]=gpx_time($gps[$idx]["time"]);
+                $gps[$idx]["time"]=gpx_time($gps[$idx]["time"]);
         $lat = number_format($gps[$idx]["lat"],6,".","");
         $lon = number_format($gps[$idx]["lon"],6,".","");
         $gpx .= '<wpt lat="'.$lat.'" lon="'.$lon.'">';
@@ -199,7 +204,7 @@ function check_ascii($str) {
 }
 function strip_str($str) {
         if(empty($str)) return "";
-    $pat = "/[\'\"\`\´\?;\%\&\!]/";
+        $pat = "/[\'\"\`\´\?;\%\&\!]/";
         if(is_array($str))      {
                 $ret = array();
                 foreach($str as $i => $s)
@@ -226,22 +231,22 @@ function timerange2minutes($dt) {
     $dt = preg_replace('/\s+/', '', $dt);
         if(is_numeric($dt)) $dt=$dt*60;  // just a number -> time range given in hours
         else {
-                $i=sscanf($dt,"%d%s",$n,$unit);
-        $unit = trim(strtolower($unit));
-        if(preg_match("/^da*y*s*$/",$unit)) $unit="d";
-        else if(preg_match("/^ho*u*r*s*$/",$unit)) $unit="h";
-        else if(preg_match("/^mi*n*u*t*e*s*$/",$unit)) $unit="m";
-        else if(preg_match("/^ye*a*r*s*$/",$unit)) $unit="y";
-                if($i<=0) $dt=24*60;
-                else {
-                        switch($unit) {
-                                default:
-                                case 'm': $dt = $n; break;
-                                case 'h': $dt = $n*60; break;
-                                case 'd': $dt = $n*60*24; break;
-                                case 'y': $dt = $n*365*24*60; break;
-                        }
+            $i=sscanf($dt,"%d%s",$n,$unit);
+			$unit = trim(strtolower($unit));
+			if(preg_match("/^da*y*s*$/",$unit)) $unit="d";
+            else if(preg_match("/^ho*u*r*s*$/",$unit)) $unit="h";
+			else if(preg_match("/^mi*n*u*t*e*s*$/",$unit)) $unit="m";
+			else if(preg_match("/^ye*a*r*s*$/",$unit)) $unit="y";
+            if($i<=0) $dt=24*60;
+            else {
+                switch($unit) {
+                    default:
+                    case 'm': $dt = $n; break;
+                    case 'h': $dt = $n*60; break;
+                    case 'd': $dt = $n*60*24; break;
+                    case 'y': $dt = $n*365*24*60; break;
                 }
+            }
         }
     return $dt;
 }
@@ -266,7 +271,7 @@ function correctDate($inputs) {
             if($ok) break;
         }
     }
-        if(!$ok) $date=date("Y-m-d H:i:s");
+    if(!$ok) $date=date("Y-m-d H:i:s");
     if($date > ($d=date("Y-m-d H:i:s"))) $date = $d;
     if(date('H:i:s', strtotime($date)) === "00:00:00" ) $date=date('Y-m-d 23:59:59', strtotime($date));
     return $date;
