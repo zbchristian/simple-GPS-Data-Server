@@ -178,10 +178,10 @@ function handle_device_db($devinfo,$mode) {
     }
     $devno = isset($devinfo["devno"]) ? trim($devinfo["devno"]) : 0;
     if($mode == "add") {
-        if(val_exists_db($devicelist_tbl,"name",$name)) return "Device with name $name already existing";
-        if(val_exists_db($devicelist_tbl,"id",$id)) return "Device with ID $id already existing";
-        if(val_exists_db($devicelist_tbl,"keys",$keys)) return "Device with KEYS $keys already existing";
-        if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei)) return "Device with IMEI $imei already existing";
+        if(val_exists_device_db("name",$name)) return "Device with name $name already existing";
+        if(val_exists_device_db("id",$id)) return "Device with ID $id already existing";
+        if(val_exists_device_db("keys",$keys)) return "Device with KEYS $keys already existing";
+        if(!empty($imei) && val_exists_device_db("imei",$imei)) return "Device with IMEI $imei already existing";
         if(!empty($imei) && strlen($imei)!=15) return "Provided IMEI $imei does not have 15 digits";
         $db->exec('INSERT INTO "'.$devicelist_tbl.'" (tstamp,name,desc,id,keys,imei,history) VALUES
             ("'.$tstamp.'","'.$name.'","'.$desc.'","'.$id.'","'.$keys.'","'.$imei.'",'.$hist.')' );
@@ -190,10 +190,10 @@ function handle_device_db($devinfo,$mode) {
     }
     else if ($mode == "change") {
         if(($curr = retrieve_device_db("devno",$devno) === false)) return "Change of device failed";
-        if(val_exists_db($devicelist_tbl,"name",$name,"devno=".$devno)) return "New device name $name already exists";
-        if(val_exists_db($devicelist_tbl,"id",$id,"devno=".$devno)) return "New device ID $id already exists";
-        if(val_exists_db($devicelist_tbl,"keys",$keys)) return "Device with KEYS $keys already existing";
-        if(!empty($imei) && val_exists_db($devicelist_tbl,"imei",$imei,"devno=".$devno)) return "New device IMEI $imei already exists";
+        if(val_exists_device_db("name",$name,$devno)) return "Device NAME $name already exists";
+        if(val_exists_device_db("id",$id,$devno)) return "Device ID $id already exists";
+        if(val_exists_device_db("keys",$keys,$devno)) return "Device with KEYS $keys already existing";
+        if(!empty($imei) && val_exists_device_db("imei",$imei,$devno)) return "Device IMEI $imei already exists";
         if(!empty($imei) && strlen($imei)!=15) return "Provided IMEI $imei does not have 15 digits";
         $db->exec('UPDATE "'.$devicelist_tbl.'" SET tstamp="'.$tstamp.'",name="'.$name.'",desc="'.$desc.'",id="'.$id.'",keys="'.$keys.'",imei="'.$imei.'",history='.$hist.' WHERE devno='.$devno);
 //      echo "<h2>Device $name with ID $id has been modified</h2>";
@@ -223,18 +223,32 @@ function retrieve_devicelist_db() {
     return $devs;
 }
 
-function retrieve_device_db($col,$val,$isCase=true,$isList=false) {
+function  match_in_list($needle, $list, $isCase=true) {
+    $flag= $isCase ? "" : "i";
+    return !empty($needle) && !empty($list) && preg_match('/\b'.$needle.'\b/'.$flag,$list);
+}
+
+function retrieve_device_db($col,$val,$isCase=true,$isList=false,$excl="") {
     global $db,$devicelist_tbl;
     if(!check_db("")) return false;
-    $coll = $isCase ? "" : "COLLATE NOCASE";
-    $results = $db->query('SELECT * FROM '.$devicelist_tbl.' WHERE '.$col.'="'.$val.'" '.$coll);
+    $qadd  = !empty($excl) ? ' AND NOT('.$excl.')' : "";
+    $qadd .= $isCase ? "" : " COLLATE NOCASE";
+    $results = $db->query('SELECT * FROM '.$devicelist_tbl.' WHERE '.$col.'="'.$val.'" '.$qadd);
     if ($results !== false && ($row = $results->fetchArray())) return $row;
     if ( $isList ) { // handle a comma separated list
-        $results = $db->query('SELECT * FROM '.$devicelist_tbl.' WHERE '.$col.' LIKE "%'.$val.'%" '.$coll);
-        while( $results !== false && ($row = $results->fetchArray()) && isset($row[$col]) 
-               && preg_match('/\b'.$val.'\b/i',$row[$col]) ) return $row;
+           $results = $db->query('SELECT * FROM '.$devicelist_tbl.' WHERE '.$col.' LIKE "%'.$val.'%" '.$qadd);
+           while( $results !== false && ($row = $results->fetchArray()) && isset($row[$col])
+                  && match_in_list($val, $row[$col]) ) return $row;
     }
     return false;
+}
+
+function val_exists_device_db($col,$val,$dev_excl=-1) {
+        $vals=explode(",",$val);
+        $ret=false;
+        foreach ($vals as $val)  
+            $ret |= retrieve_device_db($col,$val,false,true,"devno=".$dev_excl)!== false;
+        return $ret;
 }
 
 function val_exists_db($table,$col,$val,$excl="",$isCase=true) {
