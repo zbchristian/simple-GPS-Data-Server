@@ -1,6 +1,7 @@
 <!DOCTYPE html> 
 <html lang="en"> 
 <head> 
+%ICONS%
 <meta charset="utf-8"> 
 <title>%PAGETITLE%</title>
 <link rel="stylesheet" type="text/css" href="/css/gpstracker.css">

@@ -14,6 +14,14 @@ function getAuthors() {
     return $html;
 }
 
+function iconsHeader(&$html) {
+    $icons ='<link rel="shortcut icon" href="/favicon.ico" type="image/ico">';
+    $icons.='<link rel="shortcut icon" href="/icons/icon.svg" type="image/svg+xml">';
+    $icons.='<link rel="apple-touch-icon" href="/icons/icon_180.png">';
+    $icons.='<link rel="manifest" href="/icons/manifest.webmanifest">';
+    $html = str_replace("%ICONS%",$icons,$html);
+}
+
 function display_admin($devlist,$vals) {
     global $prog,$relpath,$error,$TCPport;
     $isError = !empty($error);
@@ -25,6 +33,7 @@ function display_admin($devlist,$vals) {
     }
     $isEditRetry = $isError && $isEdit;
     $html=file_get_contents($fhtml);
+    iconsHeader($html);
     $html = str_replace("%PAGETITLE%","$prog"." - Administration",$html);
     $url=parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $urlid=preg_replace('/admin/','',$url);
@@ -93,6 +102,7 @@ function display_confirm($dev,$mode) {
     $fhtml=$relpath."/html/confirm_html.template";
     if(!file_exists($fhtml)) die("<h2>HTML template missing</h2>");
     $html=file_get_contents($fhtml);
+    iconsHeader($html);
     $html = str_replace("%PAGETITLE%","$prog",$html);
     $url=parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $url=preg_replace('/\/+/','/',$url);
@@ -112,6 +122,7 @@ function display_id_input() {
     $fhtml="html/getid_html.template";
     if(!file_exists($fhtml)) die("<h2>HTML template missing</h2>");
     $html=file_get_contents($fhtml);
+    iconsHeader($html);
     $html = str_replace("%PAGETITLE%","$prog",$html);
     $url=parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $url=preg_replace('/\/+/','/',$url);
@@ -122,7 +133,7 @@ function display_id_input() {
 function display_gpx($devno,$gpx, $gps) {
     global $tmp, $prog,$timezone,$error,$date_fmt,$mapstyle;
     $isError=!empty($error);
-    list($name,$namenb)=get_devname_db($devno); 
+    list($name,$namenb)=get_devname_db($devno);
     if($name === false) return array();
     $fname = "$tmp/$namenb.gpx";
     $dev = retrieve_device_db("devno",$devno);
@@ -132,10 +143,11 @@ function display_gpx($devno,$gpx, $gps) {
     if($isError) touch($fname);
     $fhtml="html/gpxviewer_html.template";
     if(!file_exists($fhtml)) die("<h2>HTML template missing</h2>");
-        date_default_timezone_set($timezone);
-        $tstart = !$isError ? date($date_fmt,strtotime($gps[0]["startdate"])) : date($date_fmt,strtotime($gps[0]["query_startdate"]));
-        $tend = !$isError ? date($date_fmt,strtotime($gps[0]["enddate"])) : date($date_fmt,strtotime($gps[0]["query_enddate"]));
+    date_default_timezone_set($timezone);
+    $tstart = !$isError ? date($date_fmt,strtotime($gps[0]["startdate"])) : date($date_fmt,strtotime($gps[0]["query_startdate"]));
+    $tend = !$isError ? date($date_fmt,strtotime($gps[0]["enddate"])) : date($date_fmt,strtotime($gps[0]["query_enddate"]));
     $html=file_get_contents($fhtml);
+    iconsHeader($html);
     $html = str_replace("%PAGETITLE%","$prog"." - ".$name,$html);
     $html = str_replace("%DEVICE%","$name",$html);
     $html = str_replace("%DEVICEDESC%","<p>Details of device: $desc</p>",$html);
