@@ -289,5 +289,3 @@ function table_exists($tab) {
     $cnt=$cnt->fetchArray();
     return $cnt['count(*)']>0;
 }
-
-?>

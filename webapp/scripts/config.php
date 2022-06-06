@@ -32,4 +32,3 @@ $secretkey="12345abcde";	// CHANGE THIS VALUE !!!!
 $error="";
 
 setlocale(LC_ALL,"en_US.UTF-8");
-?>

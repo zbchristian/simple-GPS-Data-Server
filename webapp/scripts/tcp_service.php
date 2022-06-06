@@ -40,5 +40,3 @@ function controlTCPService($action) {
 	@socket_close($socket);
 	return $response === "OK";
 }
-
-?>

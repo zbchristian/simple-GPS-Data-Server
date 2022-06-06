@@ -183,7 +183,7 @@ function display_gpx($devno,$gpx, $gps) {
 
 function download_gpx($devno,$gpx) {
     global $tmp;
-    if(count($gpx)==0) die();
+    if(empty($gpx)) die();
     list($name,$namenb)=get_devname_db($devno);
     header("Content-type: application/gpx+xml");
     header('Content-Disposition: attachment; filename="'.$namenb.'.gpx"');
@@ -191,6 +191,3 @@ function download_gpx($devno,$gpx) {
     echo $gpx;
     die();
 }
-
-?>
-

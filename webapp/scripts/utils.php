@@ -286,6 +286,3 @@ function  distanceInMeters($lon1,$lat1,$lon2,$lat2) {
     $mlat2 = mPerDeg*$lat2;
     return sqrt(pow(mlon1-mlat1,2)+pow(mlon2-mlat2,2));
 }
-
-?>
-
