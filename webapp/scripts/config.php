@@ -23,6 +23,11 @@ $tmp="temp";	// temp directory to store gpx files
 // Needed for tracking devices connecting by TCP/IP
 $startTCPUDPserver=true;
 $TCPBridge="$relpath/exe/tcp_udp_http_bridge";	// path to TCP-HTTP-Bridge serverprogram to start (wrt admin script)
+// GPS data received via TCP/UDP are stored by a HTTP(S) request to the webserver
+// Cases:
+// - Bridge and webserver running on same machine/container: "localhost"
+// - Separate servers/containers: HTTP(S)://<webserver>.tld
+//   - in case of inter container communication use HTTP://<nginx/apache-container-name>  
 $HTTPSserver="localhost";
 $TCPport=20202;
 $urlpath="/index.php";
