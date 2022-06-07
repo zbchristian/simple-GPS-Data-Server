@@ -1,8 +1,10 @@
 How to Dockerize the GPS Data Server?
 =====================================
-The setup is assuming Traefik as the network proxy, which takes care of the SSL certificates (Lets Encrypt).
+First you need to copy the `webapp` folder, which contains the source PHP source code and the TCP/UDP bridge, into a subdirectory of this docker setup (e.g. `./html/`). This directory is copied directly into the containers.
+Afterwards go through the configuration steps below.
 
-The actual server is accessible under https://gps.example.tld/admin .
+The setup is assuming Traefik as the network proxy, which takes care of the SSL certificates (Lets Encrypt).
+The actual server is in the end accessible under https://gps.example.tld/admin .
 
 General Configuration
 -------------
