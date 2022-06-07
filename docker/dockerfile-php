@@ -1,0 +1,6 @@
+ARG PHP_TAG
+FROM php:$PHP_TAG
+ARG HTML_PATH
+COPY --chown=www-data:www-data $HTML_PATH /var/www/html
+RUN rm -rf /var/www/html/db &&  rm -rf /var/www/html/temp && \
+    docker-php-ext-install sockets

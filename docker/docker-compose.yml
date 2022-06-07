@@ -1,0 +1,62 @@
+version: '2.4'
+
+# This docker setup uses Traefik as a proxy and to take care of SSL certificates by Lets Encrypt 
+# All variables are defined in the .env file
+# Webserver (nginx) and PHP are running in different containers
+# - The source code is included in the containers
+# - temp ($GPS_EXT/temp/) and database directory ($GPS_EXT/db/) are external to the containers
+# TCP/UDP bridge (port 20202) is started by PHP and therfore running in the PHP container
+# - the bridge conencts to the webserver to deliver the received GPS data
+# - config.php: $HTTPSserver="http://gps-nginx"; (over gps-internal network) 
+#
+
+services:
+  gps-server:
+    container_name: gps-nginx
+    build:
+      context: .
+      args:
+        NGINX_TAG: ${GPS_NGINX_TAG}
+        HTML_PATH: ${GPS_WWW}
+      dockerfile: dockerfile-nginx
+    image: gps-nginx:latest
+    depends_on:
+      - gps-php
+    restart: unless-stopped
+    volumes:
+      - ${GPS_EXT}/temp/:/var/www/html/temp/
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.gps.rule=Host(`gps.${DOMAIN}`)"
+        - "traefik.http.routers.gps.entrypoints=websecure"
+        - "traefik.http.routers.gps.tls=true"
+        - "traefik.http.routers.gps.tls.certresolver=leresolver"
+        - "traefik.docker.network=webnet"
+    networks:
+      - gps-internal
+      - webnet
+
+  gps-php:
+    container_name: gps-php
+    build:
+      context: .
+      args:
+        PHP_TAG: ${GPS_PHP_TAG}
+        HTML_PATH: ${GPS_WWW}
+      dockerfile: dockerfile-php
+    image: gps-php:latest
+    restart: unless-stopped
+    ports:
+        - 20202:20202/tcp
+        - 20202:20202/udp
+    volumes:
+      - ${GPS_EXT}/db/:/var/www/html/db/
+      - ${GPS_EXT}/temp/:/var/www/html/temp/
+    networks:
+      - gps-internal
+
+networks:
+  gps-internal:
+      driver: bridge
+  webnet:
+      external: true
