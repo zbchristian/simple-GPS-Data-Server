@@ -12,34 +12,34 @@ package main
 import (
         "io/ioutil"
         "net/http"
-		"strings"
-		"regexp"
-		"time"
-		"crypto/tls"
+        "strings"
+        "regexp"
+        "time"
+        "crypto/tls"
 )
 
 func sendHTTPrequest(host string, urlpath string, query string) (string, error) {
-	host = strings.TrimSpace(host)
-	urlpath = strings.TrimSpace(urlpath)
-	skipVerify := false
-	// disable certificate verify for access to localhost
-	if host == "localhost" || host == "127.0.0.1" { skipVerify = true } 	
-	Url := host
-	ishttp, err := regexp.MatchString("^(http|https)://.+$", Url)
-	if !ishttp { Url = "https://"+Url }
-	query = strings.TrimSpace(query)
-	urlpath = strings.Trim(urlpath,"/") 
-	Url += "/" + urlpath + "?" + query
-	if isVerbose { logger.Print("URL: " + Url) }
-	timeout := time.Duration(5 * time.Second)
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: skipVerify},} 
-	client := http.Client{Timeout: timeout,Transport: tr,}
- 	strBody := ""
-	resp,err := client.Get(Url)
-	if err == nil { 
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err == nil {strBody = strings.TrimSpace(string(body))}
-	}
-	return strBody,err
+    host = strings.TrimSpace(host)
+    urlpath = strings.TrimSpace(urlpath)
+    skipVerify := false
+    // disable certificate verify for access to localhost
+    if host == "localhost" || host == "127.0.0.1" { skipVerify = true }     
+    Url := host
+    ishttp, err := regexp.MatchString("^(http|https)://.+$", Url)
+    if !ishttp { Url = "https://"+Url }
+    query = strings.TrimSpace(query)
+    urlpath = strings.Trim(urlpath,"/") 
+    Url += "/" + urlpath + "?" + query
+    if isVerbose { logger.Print("URL: " + Url) }
+    timeout := time.Duration(5 * time.Second)
+    tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: skipVerify},} 
+    client := http.Client{Timeout: timeout,Transport: tr,}
+    strBody := ""
+    resp,err := client.Get(Url)
+    if err == nil { 
+        defer resp.Body.Close()
+        body, err := ioutil.ReadAll(resp.Body)
+        if err == nil {strBody = strings.TrimSpace(string(body))}
+    }
+    return strBody,err
 }

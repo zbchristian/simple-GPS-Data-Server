@@ -1,84 +1,84 @@
 html, body { 
-	margin:0; 
-	padding:0; 
-	background:white;
-	width:calc(100%);
+    margin:0; 
+    padding:0; 
+    background:white;
+    width:calc(100%);
 }
 div.content {
-	margin:0px 20px 0px 10px;
+    margin:0px 20px 0px 10px;
 }
 input, p, button, div {
-	font-size:1.0em;  
-	font-weight: normal;
+    font-size:1.0em;  
+    font-weight: normal;
 }
 label {
-	font-size:1.0em; 
-	font-weight: normal;
+    font-size:1.0em; 
+    font-weight: normal;
 }
 h1 {
-	font-size:1.1em; 
-	color:white;
-	text-align:center;
-	line-height:30px;
-	vertical-align:middle;
-	top:0;
-	left0;
-	margin:0;
-	padding0;
+    font-size:1.1em; 
+    color:white;
+    text-align:center;
+    line-height:30px;
+    vertical-align:middle;
+    top:0;
+    left0;
+    margin:0;
+    padding0;
 }
 
 dt {font-weight:bold;}
 table {
-	border-collapse:collapse; 
-	font-height:0.8em;
+    border-collapse:collapse; 
+    font-height:0.8em;
 }
 th {text-align: left;}
 td { 
-	font-size:80%; 
-	vertical-align:middle; 
-	border-top:1px solid lightgray; 
-	height:25px; 
-	padding:2px 10px 2px 2px;
+    font-size:80%; 
+    vertical-align:middle; 
+    border-top:1px solid lightgray; 
+    height:25px; 
+    padding:2px 10px 2px 2px;
 }
 a.but {
-	font-size:120%;
-	background:gray; 
-	color:white; 
-	display:inline; 
-	padding:1px 7px 1px 7px; 
-	text-decoration:none;
+    font-size:120%;
+    background:gray; 
+    color:white; 
+    display:inline; 
+    padding:1px 7px 1px 7px; 
+    text-decoration:none;
 }
 
 div.header { 
-	clear:both; 
-	width:100%; 
-	heighth:40px;
-	margin:0;
-	padding:0;
-	text-align:center;
-	top:0;
-	left:0;
-	background:steelblue;
+    clear:both; 
+    width:100%; 
+    heighth:40px;
+    margin:0;
+    padding:0;
+    text-align:center;
+    top:0;
+    left:0;
+    background:steelblue;
  }
 
 div.map { 
-	display:block; 
-	width: calc(100%);
-	height:400px; 
-	margin:10px 10px 10px 10px;
+    display:block; 
+    width: calc(100%);
+    height:400px; 
+    margin:10px 10px 10px 10px;
 }
 /*
 div.map_hp { 
-	display:block; 
-	width:470px; 
-	height:500px; 
-	margin:10px 10px 10px 0px;
+    display:block; 
+    width:470px; 
+    height:500px; 
+    margin:10px 10px 10px 0px;
 }
 div.map_vp { 
-	display:block; 
-	width:470px; 
-	height:500px; 
-	margin:10px 10px 10px 0px;
+    display:block; 
+    width:470px; 
+    height:500px; 
+    margin:10px 10px 10px 0px;
 }
 */
 #map { width:100%;height:80vh;display:inline-block;vertical-align:top;margin: 10px 0px 0px 5px;padding:0px }
@@ -88,13 +88,13 @@ div.map_vp {
 
 
 @media screen and (min-width:500px) {
-	div.map {height:400px;  }
-	#map {width:58%;height:100vh;}
-	#map_profiles {width:38%;height:100vh;}
+    div.map {height:400px;  }
+    #map {width:58%;height:100vh;}
+    #map_profiles {width:38%;height:100vh;}
 } 
 @media screen and (min-width:1000px) {
-	div.map {height:700px;  }
-	#map {width:58%;height:85vh;}
-	#map_profiles {width:38%;height:85vh;}
+    div.map {height:700px;  }
+    #map {width:58%;height:85vh;}
+    #map_profiles {width:38%;height:85vh;}
 } 
 
