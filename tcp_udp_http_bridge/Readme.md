@@ -6,24 +6,25 @@ To install the golang compiler and to build the program
 - Compile the program by running `go build` in this directory
 - The executable expects the two files `devices.config` and `encrypt_psk.config` in the same directory
 - Copy the executable and these two files to a location of your choice
-- The server is started by the PHP code, when the admin page is opened, so PHP needs to have access to this folder (e.g. a directory in the webapp path)
+- The server is started by the PHP code, when the admin page is opened.So PHP needs to have access to this folder (e.g. a directory in the webapp path). Change `config.php` accordingly.
 - Alternatively, create a crontab entry
 
-Golang executables usually has no external dependencies, so the sexecutable can be copied to other machines of the same platform. You can cross-compile the code for a different platform as well, see the golang documentation.
+Golang executables usually have no external dependencies, so the sexecutable can be copied to other machines of the same platform. You can cross-compile the code for a different platform as well, see the golang documentation.
 
 
 Options
 -------
 Run `./tcp_udp_http_bridge --help` to see the options to pass to the program.
-  -httpserver string
-        name of HTTP server (default "http://localhost")
-  -key string
+
+	-httpserver string
+		name of HTTP server (default "http://localhost")
+	-key string
         secret key to terminate program via TCP/UDP port (default "12345")
-  -port int
+	-port int
         port number (default 20202)
-  -urlpath string
+	-urlpath string
         relative url path (default "index.php")
-  -verbose
+	-verbose
         enable verbose logging output
 
 Run the server
