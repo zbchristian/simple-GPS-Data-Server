@@ -5,8 +5,6 @@
 // Author: C.Zeitnitz 2017
 //
 
-define("USE_GO_SERVER",true);
-
 function checkTCP_UDP_Service() {
 	global $startTCPUDPserver;
 	$isRunning = controlTCPService("STATUS") === true;
@@ -23,8 +21,7 @@ function controlTCPService($action) {
 		if (file_exists($logfile)) {
 			rename($logfile, $logfile.".last");
 		}
-		if(USE_GO_SERVER) 	exec("nohup $TCPBridge -port $TCPport -httpserver $HTTPSserver -urlpath $urlpath -key $secretkey > $logfile &");
-		else 				exec("nohup $TCPBridge $TCPport $HTTPSserver $urlpath $secretkey &> $logfile 2>&1 &");
+		exec("nohup $TCPBridge -port $TCPport -httpserver $HTTPSserver -urlpath $urlpath -key $secretkey > $logfile &");
 		sleep(2);	// wait for service to start
 		$action = "STATUS";	// check status after start
 	}

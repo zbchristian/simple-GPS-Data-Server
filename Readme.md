@@ -9,7 +9,7 @@ Collect the GPS position from devices (smart phone, GPS tracker), store in a SQL
 Requirements
 ------------
 - Webserver (Apache or similar), which supports authentification (for the admin page)
-- PHP with SQLITE3 API installed 
+- PHP with SQLITE3 API (e.g. php-sqlite3 package ) and sockets (e.g. package php-sockets) installed 
 - GO compiler for TCP/UDP-HTTP bridge (only needed for commercial tracking devices like TK103 or GPS Logger in UDP mode).
   Extra package golang.org/x/crypto is required. Install with "go get golang.org/x/crypto"
 - java script <a href="https://www.j-berkemeier.de/GPXViewer/">GPXViewer</a> by Jürgen Berkemeier (folder <code>js/GM_utils/</code>) 
@@ -18,7 +18,7 @@ Installation
 ------------
 * Copy all files in the webapp folder to the web space folder (in the following ./gpstracker/ is assumed)
 * Create corresponding entry in webserver config to allow web access and php to run
-* Adjust the top level .htaccess file
+* Adjust the top level .htaccess file (Apache), or limit access in Nginx configuration
  ```
  RewriteBase gpstracker
  ```
