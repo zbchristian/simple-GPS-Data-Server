@@ -32,9 +32,10 @@ Run the server
 Just running the program in foreground without any options:
 - Read the device list from `devices.config` in the local directory
 - Read the pre-shared key encryption key from `encrypt_psk.config`
-- Communication secret key (used by the PHP code) set to 1234
+- Communication secret key (used by the PHP code) set to 12345
 - Start the servers for incoming GPS data on TCP and UDP port 20202 (yes its the same port) 
 - Valid data are passed to `http://localhost/index.php` (this server and the webserver/PHP running on the same host)
+- The server can be stopped by sending `exit 12345` (actual secret key) to port 20202 (actual used port): `echo "exit 12345" | netcat localhost 20202`
 
 
  

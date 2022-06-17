@@ -288,7 +288,7 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
                     min := (degval - deg)*60.0;
                     degfmt := "%02d%05.2f"
                     if key == LON { degfmt = "%03d%05.2f" }
-                    val = fmt.Sprintf(degfmt,math.Abs(deg),min)
+                    val = fmt.Sprintf(degfmt,int(math.Abs(deg)),min)
                 }
             case SPEED: // get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
                 v,err:=strconv.ParseFloat(val,32)

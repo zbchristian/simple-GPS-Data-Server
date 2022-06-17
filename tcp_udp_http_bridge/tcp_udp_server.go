@@ -40,9 +40,9 @@ const (
     DEFAULT_KEY     = "12345"
     DEFAULT_URLPATH = "index.php"
     TIMEOUT         = 2
-    MAXCHILDS       = 20
+    MAXCHILDS       = 100
     MAXTCPCONN      = 2*60  // after this number of minutes the TCP connection is closed
-    MAXTCPINACTIVE  = 300   // after this number of seconds w/o received data, the TCP connection is closed
+    MAXTCPINACTIVE  = 120   // after this number of seconds w/o received data, the TCP connection is closed
 )
 
 var Host string
@@ -193,8 +193,12 @@ func handleRequest(conn net.Conn) {
         conn.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
         // Read the incoming connection into the buffer.
         nb, err := conn.Read(buf)
-        if err != nil { 
+        if err != nil {
             if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() { timeInactive+=TIMEOUT; continue }
+            // check if connection still active
+            _, err := conn.Write([]byte("ACTIVE?"))
+            isClose = err != nil
+
             break; 
         }
         if nb > 0 {
@@ -231,7 +235,7 @@ func handleMessage(msg string, connType string) (response string, isClose bool, 
         if isClose || isExit { 
             if isVerbose { logger.Print("close/exit message received") }
             err = errors.New("Close connection")
-            return 
+            return
         } else if cmd == "status" { 
             response = "OK"
             return 

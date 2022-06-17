@@ -1,0 +1,10 @@
+FROM golang:1.18
+ARG SRC_PATH 
+RUN mkdir /app
+COPY $SRC_PATH  /app
+WORKDIR /app
+RUN go mod init $SRC_PATH && go mod tidy && go mod verify
+RUN go build -o tcp_udp_http_bridge
+
+# NEED to set environment variables 
+CMD /app/tcp_udp_http_bridge -port ${PORT} -httpserver ${HTTP_SERVER} -urlpath ${URL_PATH} -key ${SECRET_KEY} -verbose=${VERBOSE}

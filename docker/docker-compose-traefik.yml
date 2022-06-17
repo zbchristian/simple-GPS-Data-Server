@@ -1,0 +1,39 @@
+version: '2.4'
+
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:latest
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "${LE_PATH:-./certs/}:/letsencrypt"
+    ports:
+# http(s)
+      - "80:80"
+      - "443:443"
+    command:
+# proxy web and websecure traffic
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+# web
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.websecure.http.tls.certresolver=leresolver"
+      # forward 80 -> 443
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # end forward 80 -> 443
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.leresolver.acme.email=${LE_MAIL}"
+      - "--certificatesresolvers.leresolver.acme.tlschallenge=false"
+      - "--certificatesresolvers.leresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web"
+#      - "--certificatesresolvers.leresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+    networks:
+       - webnet
+ 
+networks:
+    webnet:
+       external: true

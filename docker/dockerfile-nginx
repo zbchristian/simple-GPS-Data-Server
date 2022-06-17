@@ -6,4 +6,4 @@ COPY  --chown=www-data:www-data $HTML_PATH /var/www/html
 RUN rm -rf /var/www/html/db && \
     rm -rf /var/www/html/temp && \
     chmod -R u=rwx,g=rx,o= /var/www/html && \
-    usermod -a -G www-data nginx
+    usermod -a -G www-data nginx 

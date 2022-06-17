@@ -1,14 +1,16 @@
 version: '2.4'
 
-# This docker setup uses Traefik as a proxy and to take care of SSL certificates by Lets Encrypt 
-# All variables are defined in the .env file
-# Webserver (nginx) and PHP are running in different containers
-# - The source code is included in the containers
-# - temp ($GPS_EXT/temp/) and database directory ($GPS_EXT/db/) are external to the containers
-# TCP/UDP bridge (port 20202) is started by PHP and therfore running in the PHP container
-# - the bridge conencts to the webserver to deliver the received GPS data
-# - config.php: $HTTPSserver="http://gps-nginx"; (over gps-internal network) 
+# Simple GPS-Data Server
 #
+# Webserver (nginx), PHP and TCP-UDP Bridge are running in different containers
+# - The source code is included in the containers
+# - temp and database directory are external
+# - the bridge connects to the webserver to deliver the received GPS data
+# Configuration
+# - relies on Traefik as proxy (see docker-compose-traefik.yml)
+# - set the DOMAIN name 
+# - webapp config.php: $HTTPSserver="http://gps-nginx"; (over gps-internal network) 
+# - set the 
 
 services:
   gps-server:
@@ -16,18 +18,18 @@ services:
     build:
       context: .
       args:
-        NGINX_TAG: ${GPS_NGINX_TAG}
-        HTML_PATH: ${GPS_WWW}
+        NGINX_TAG: ${GPS_NGINX_TAG:-latest}
+        HTML_PATH: ${GPS_WWW:-webapp}
       dockerfile: dockerfile-nginx
     image: gps-nginx:latest
     depends_on:
       - gps-php
     restart: unless-stopped
     volumes:
-      - ${GPS_EXT}/temp/:/var/www/html/temp/
+      - ${GPS_EXT:-.}/temp/:/var/www/html/temp/
     labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.gps.rule=Host(`gps.${DOMAIN}`)"
+        - "traefik.http.routers.gps.rule=Host(`gps.${DOMAIN:-example.tld}`)"
         - "traefik.http.routers.gps.entrypoints=websecure"
         - "traefik.http.routers.gps.tls=true"
         - "traefik.http.routers.gps.tls.certresolver=leresolver"
@@ -41,17 +43,35 @@ services:
     build:
       context: .
       args:
-        PHP_TAG: ${GPS_PHP_TAG}
-        HTML_PATH: ${GPS_WWW}
+        PHP_TAG: ${GPS_PHP_TAG:-8-fpm}
+        HTML_PATH: ${GPS_WWW:-webapp}
       dockerfile: dockerfile-php
     image: gps-php:latest
+    restart: unless-stopped
+    volumes:
+      - ${GPS_EXT:-.}/db/:/var/www/html/db/
+      - ${GPS_EXT:-.}/temp/:/var/www/html/temp/
+    networks:
+      - gps-internal
+
+  gps-tcp-udp-bridge:
+    container_name: gps-tcp-udp-bridge
+    build:
+      context: .
+      args:
+        SRC_PATH: ${GPS_TCP_SRC:-tcp_udp_http_bridge}
+      dockerfile: dockerfile-tcp-udp-bridge
+    image: gps-tcp-udp-bridge:latest
     restart: unless-stopped
     ports:
         - 20202:20202/tcp
         - 20202:20202/udp
-    volumes:
-      - ${GPS_EXT}/db/:/var/www/html/db/
-      - ${GPS_EXT}/temp/:/var/www/html/temp/
+    environment:
+      PORT: 20202
+      HTTP_SERVER: http://gps-nginx
+      URL_PATH: index.php
+      SECRET_KEY: 123456
+      VERBOSE: 0
     networks:
       - gps-internal
 
