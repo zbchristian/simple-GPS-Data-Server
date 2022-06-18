@@ -276,7 +276,11 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
             case TIME:  fallthrough
             case DATE:
                 val = fmt.Sprintf("%6s",val)
-            case ACTIVE:
+            case ALT:
+                alt,err := strconv.ParseFloat(val,32)
+                if err != nil {break}
+                val = fmt.Sprintf("%d",int(alt))
+           case ACTIVE:
                 
             case LAT:   fallthrough
             case LON:
@@ -286,8 +290,8 @@ func getGPSValue(dev devPattern, matches []string, key int) (val string, idx int
                 if dev.Units[i] == DEGREE {     // calculate degree*100 + minutes
                     deg := float64(int(degval))     
                     min := (degval - deg)*60.0;
-                    degfmt := "%02d%05.2f"
-                    if key == LON { degfmt = "%03d%05.2f" }
+                    degfmt := "%02d%08.5f"
+                    if key == LON { degfmt = "%03d%08.5f" }
                     val = fmt.Sprintf(degfmt,int(math.Abs(deg)),min)
                 }
             case SPEED: // get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
