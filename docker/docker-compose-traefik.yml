@@ -26,7 +26,7 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.leresolver.acme.email=${LE_MAIL}"
+      - "--certificatesresolvers.leresolver.acme.email=${LE_MAIL:-me@example.tld}"
       - "--certificatesresolvers.leresolver.acme.tlschallenge=false"
       - "--certificatesresolvers.leresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web"

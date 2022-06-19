@@ -1,10 +1,9 @@
 FROM golang:1.18
 RUN mkdir /app
-COPY ./src  /app
+COPY ./mqtt-bridge  /app
 WORKDIR /app
-RUN go mod init src && go mod tidy && go mod verify
+RUN go mod init mqtt-bridge && go mod tidy && go mod verify
 RUN go build -o mqtt-bridge
 
 # NEED to set environment variables 
-CMD /app/mqtt-bridge -mqtt_server ${MQTT_SERVER} -mqtt_port ${MQTT_PORT} -user ${MQTT_USER} -password ${MQTT_PW} -tcp_server ${TCP_SERVER} -tcp_port ${TCP_PORT} -mqtt_topic ${MQTT_TOPIC}
-# CMD ["/app/mqtt-bridge"]
+CMD /app/mqtt-bridge -mqtt_server ${MQTT_SERVER} -mqtt_port ${MQTT_PORT} -user ${MQTT_USER} -password ${MQTT_PW} -tcp_server ${TCP_SERVER} -tcp_port ${TCP_PORT} -mqtt_topic ${MQTT_TOPIC} -psk_enc ${PSK_ENC}

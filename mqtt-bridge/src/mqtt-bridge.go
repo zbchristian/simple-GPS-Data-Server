@@ -21,6 +21,7 @@ import (
     mqtt "github.com/eclipse/paho.mqtt.golang"
     "time"
     "encoding/json"
+    "encoding/base64"
     "strings"
     "strconv"
     "net"
@@ -28,6 +29,8 @@ import (
     "os"
     "os/signal"
     "flag"
+    "math"
+    "golang.org/x/crypto/nacl/secretbox"
 )
 
 const (
@@ -50,6 +53,7 @@ var Password = ""
 var Topic = ""
 var tcpHost = ""
 var tcpPort = 0
+var preSharedKey = ""
 
 func main() {
 
@@ -101,9 +105,24 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
          fmt.Println(err.Error())
          return
     }
-//    fmt.Println(gps_data)
+    fmt.Println(gps_data)
     if gps_data["_type"].(string) == "encrypted" {
-       fmt.Println("Payload is encrypted - no decryption algorithm implemented")
+       datab,err := base64.StdEncoding.DecodeString(gps_data["data"].(string))
+       if err == nil {
+         var nonce [24]byte
+         copy(nonce[:], datab[:24])
+         data_enc := []byte(datab[24:])
+         var psk [32]byte
+         pp := []byte(preSharedKey)
+         l := int(math.Min(float64(len(pp)),32))
+         copy(psk[:],pp[:l])
+         data_decr,_ := secretbox.Open(nil, data_enc, &nonce, &psk)
+         fmt.Println(string(data_decr))
+         if err := json.Unmarshal(data_decr, &gps_data); err != nil {
+            fmt.Println(err.Error())
+            return
+         }
+       }
     }
     if gps_data["_type"].(string) == "location" {
       id  := topic[strings.LastIndex(topic,"/")+1:]
@@ -116,7 +135,7 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
       gpsDate := fmt.Sprintf("%6s",tm.Format("020106"))
       gpsTime := fmt.Sprintf("%6s",tm.Format("150405"))
       gpsRecord := id + "/" + gpsDate + "," + gpsTime  + "," + lat  + "," + lon  + "," + alt  + "," + vel + "," + acc
-//      fmt.Println(gpsRecord)
+      fmt.Println(gpsRecord)
       connClient, _ := net.Dial("tcp", tcpHost+":"+strconv.Itoa(tcpPort))
       fmt.Fprint(connClient, gpsRecord)
       connClient.Close()
@@ -148,6 +167,7 @@ func init() {
     flag.StringVar(&Topic,"mqtt_topic",DEFAULT_TOPIC,"Topic to subscribe to (e.g. owntracks/gps)")
     flag.StringVar(&tcpHost,"tcp_server",DEFAULT_TCPHOST,"address of the TCP server to deliver the data to")
     flag.IntVar(&tcpPort,"tcp_port",DEFAULT_TCPPORT,"port of the TCP server to deliver the data to")
+    flag.StringVar(&preSharedKey,"psk_enc","","PSK to decrypt the payload")
     flag.Parse()
     fmt.Println("MQTT Bridge starting - MQTT Broker expected at : "+Host+"  Port :"+strconv.Itoa(Port))
     fmt.Println("                       TCP server expected at : "+tcpHost+"  Port :"+strconv.Itoa(tcpPort))

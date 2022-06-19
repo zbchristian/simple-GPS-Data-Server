@@ -2,17 +2,17 @@ version: "2.4"
 
 services:
   gps-mqtt:
-# edit mqtt-config/mosquitto.conf and password.txt
+# edit config/mosquitto.conf and password.txt
     image: eclipse-mosquitto
     container_name: gps-mqtt
     restart: unless-stopped
     volumes:
-      - ./data/:/mosquitto/:rw
+      - /srv/mqtt:/mosquitto/:rw
     ports:
       - 1883:1883
 #      - 9001:9001
     networks:
-      - webnet
+      - mqttnet
 
   gps-mqtt-bridge:
     container_name: gps-mqtt-bridge
@@ -27,14 +27,15 @@ services:
       MQTT_SERVER: gps-mqtt
       MQTT_PORT: 1883
       MQTT_USER: gps
-      MQTT_PW: secret
+      MQTT_PW: gps-data
       MQTT_TOPIC: owntracks/gps
       TCP_SERVER: example.tld
       TCP_PORT: 20202
+      PSK_ENC: encryptionSecret
     networks:
-      - webnet
+      - mqttnet
 
 networks:
-  webnet:
-      external: true
+   mqttnet:
+     driver: bridge
 
