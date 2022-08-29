@@ -28,7 +28,7 @@ For Traefik
 Create and run the Containers
 -----------------------------
 After the configuration is complete run `sudo docker-compose build` to create the containers `gps-nginx`, `gps-php` and `gps-tcp-udp-bridge`
-- Start Traefik `sudo docker-compose docker-compose-trafik.yml up -d`
+- Start Traefik `sudo docker-compose -f docker-compose-trafik.yml up -d`
 - Start the containers with `sudo docker-compose up -d`
 - Stop the containers with `sudo docker-compose down`
 - Stop Traefik `sudo docker-compose docker-compose-trafik.yml down`
