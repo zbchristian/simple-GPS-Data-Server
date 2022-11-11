@@ -31,6 +31,6 @@ After the configuration is complete run `sudo docker-compose build` to create th
 - Start Traefik `sudo docker-compose -f docker-compose-trafik.yml up -d`
 - Start the containers with `sudo docker-compose up -d`
 - Stop the containers with `sudo docker-compose down`
-- Stop Traefik `sudo docker-compose docker-compose-trafik.yml down`
+- Stop Traefik `sudo docker-compose -f docker-compose-trafik.yml down`
 
 Have Fun!

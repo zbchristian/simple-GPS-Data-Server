@@ -16,33 +16,38 @@ Requirements
 
 Installation
 ------------
-* Copy all files in the webapp folder to the web space folder (in the following ./gpstracker/ is assumed)
-* Create corresponding entry in webserver config to allow web access and php to run
-* Adjust the top level .htaccess file (Apache), or limit access in Nginx configuration
+* Using Docker
+  * Copy the folder `docker` to your server
+  * Copy the folder `webapp` (and if needed `tcp_udp_http_bridge`) into the `docker` directory
+  * Follow the instructions in [the docker folder](docker/Readme.md)  
+* Install each component separately
+  * Copy all files in the webapp folder to the web space folder (in the following ./gpstracker/ is assumed)
+  * Create corresponding entry in webserver config to allow web access and php to run
+  * Adjust the top level .htaccess file (Apache), or limit access in Nginx configuration ([example nginx.conf](docker/nginx.conf)
  ```
  RewriteBase gpstracker
  ```
-* Set the authentification for the admin interface
-  * In the file <code>auth/.htpasswd</code> a single user <code>admin</code> with the password <code>changeme</code> is included
-  * The path to the .htpasswd file has to be adjusted in <code>admin/.htaccess</code>. The absolute path is required!
-  * Update .htpasswd with new users/passwords. Best use the command line<br> <code>htpasswd /path-to-htpasswd-file/.htpasswd myusername mypassword</code> or an online generator  
-* Edit scripts/config.php: adjust settings
-  * Define timezone, which map to use, date/time format
-  * Specify the time span w/o movement to be recognized as a pause
-  * Specify the time w/o movement to start a new track
-  * Enable or disable the start of the tcp/udp bridge GO server 
-* Get the javascript GPXViewer from <code>https://www.j-berkemeier.de/GPXViewer/</code> and copy the folder GM_Utils to <code>gpstracker/js/</code>
-  * In order to use Google maps, an API key is required search for <code>google maps api key application</code>
-  * Edit the file <code>./js/GM_Utils/GPX2GM_Defs.js</code> and uncomment the line containing  <code>JB.GPX2GM.GM_Api_key</code> and add the API key as the value
-* TCP/UDP-HTTP-Bridge 
-  * enable/disable in scripts/config.php
-  * compile code with GO in tcp_udp_http_bridge (go build)
-  * copy executable to exe directory on webspace
-  * adjust config.php accordingly (name and path of/to executable)
-  * call admin interface to start server
-  * add a crontab entry to check once per hour, if the server is running (requires "wget")<br>
-   <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://servername/gpstracker?checkserver=SECRETKEY >/dev/null 2>&1</code>	 	 
-* The database file will be created automatically
+  * Set the authentification for the admin interface
+    * In the file <code>auth/.htpasswd</code> a single user <code>admin</code> with the password <code>changeme</code> is included
+    * The path to the .htpasswd file has to be adjusted in <code>admin/.htaccess</code>. The absolute path is required!
+    * Update .htpasswd with new users/passwords. Best use the command line<br> <code>htpasswd /path-to-htpasswd-file/.htpasswd myusername mypassword</code> or an online generator  
+  * Edit scripts/config.php: adjust settings
+    * Define timezone, which map to use, date/time format
+    * Specify the time span w/o movement to be recognized as a pause
+    * Specify the time w/o movement to start a new track
+    * Enable or disable the start of the tcp/udp bridge GO server 
+  * Get the javascript GPXViewer from <code>https://www.j-berkemeier.de/GPXViewer/</code> and copy the folder GM_Utils to <code>gpstracker/js/</code>
+    * In order to use Google maps, an API key is required search for <code>google maps api key application</code>
+    * Edit the file <code>./js/GM_Utils/GPX2GM_Defs.js</code> and uncomment the line containing  <code>JB.GPX2GM.GM_Api_key</code> and add the API key as the value
+  * TCP/UDP-HTTP-Bridge 
+    * enable/disable in scripts/config.php
+    * compile code with GO in tcp_udp_http_bridge (go build)
+    * copy executable to exe directory on webspace
+    * adjust config.php accordingly (name and path of/to executable)
+    * call admin interface to start server
+    * add a crontab entry to check once per hour, if the server is running (requires "wget")<br>
+     <code>1 * * * * /usr/bin/wget -O /dev/null -o /dev/null https://servername/gpstracker?checkserver=SECRETKEY >/dev/null 2>&1</code>	 	 
+  * The database file will be created automatically
 	
 Enter tracking devices
 ----------------------
