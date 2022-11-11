@@ -81,7 +81,7 @@ Tracking devices
 	 * Adjust the `docker-compose.yml` file to your setup or set the corresponding environment variables (server, passwords, secrets ...)
 	 * Build the container of the bridge code `docker-compose build`
      * Start the containers `docker-compose up -d`
-	 * Set the username and password: sudo docker exec gps-mqtt sh -c "mosquitto_passwd -b mosquitto/config/password.txt <username> <password>"
+	 * Set the username and password: `sudo docker exec gps-mqtt sh -c "mosquitto_passwd -b mosquitto/config/password.txt <username> <password>"`
 * Commercial devices usually send the GPS position via tcp/udp. This requires the server to run
   * set TCP/IP server and port in config.php 
   * configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
