@@ -66,12 +66,21 @@ Tracking devices
 	 * device ID: the ID you entered in the admin interface
 	 * test the comunication by clicking "check SSL certificate"
   * Alternative communication method UDP: use the port number given in config.php (default 20202) -> requires the server to run
-  * If the cost of mobile data transmission is an issue, this is the correct choice, since the amount of data is minimal
+  * If the cost of mobile data transmission is an issue, UDP is the best choice, since the amount of data is minimal
   * Settings->performance
      * select interval  (e.g. 20 sec)
      * keep the GPS activated between fixes: makes sense for a short interval, but needs more battery 
      * set distance bewteen data points: send no data, when distance is below a certain limit (e.g. 10m)
      * activate "stop recording, if no movement is detected"
+* Owntracks client APP
+  * The app sends the position data to a MQTT server (can be encrypted). Topic: `owntracks/gps`
+  * A bridge code, which extracts the data from the MQTT server and sends them to the Simple GPS Data Server, is available under `mqtt-bridge`
+  * The example includes the MQTT server as well
+  * This is a pure docker implementation
+  * How to 
+	 * Adjust the docker-compose.yml file to your setup or set the corresponding environment variables (server, passwords, secrets ...)
+	 * Build the container of the bridge code `docker-compose build`
+     * Start the containers `docker-compose up -d`	 
 * Commercial devices usually send the GPS position via tcp/udp. This requires the server to run
   * set TCP/IP server and port in config.php 
   * configure the server and port in the tracking device (usually done via SMS. Check the manual how to do this)
