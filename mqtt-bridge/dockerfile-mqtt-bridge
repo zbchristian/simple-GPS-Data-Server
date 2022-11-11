@@ -1,6 +1,6 @@
 FROM golang:1.18
 RUN mkdir /app
-COPY ./mqtt-bridge  /app
+COPY ./src  /app
 WORKDIR /app
 RUN go mod init mqtt-bridge && go mod tidy && go mod verify
 RUN go build -o mqtt-bridge

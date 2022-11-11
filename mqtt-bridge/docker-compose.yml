@@ -7,7 +7,7 @@ services:
     container_name: gps-mqtt
     restart: unless-stopped
     volumes:
-      - /srv/mqtt:/mosquitto/:rw
+      - ${MQTT_PATH:-.}/config:/mosquitto/config:rw
     ports:
       - 1883:1883
 #      - 9001:9001
@@ -17,7 +17,7 @@ services:
   gps-mqtt-bridge:
     container_name: gps-mqtt-bridge
     build:
-      context: .
+      context: ${MQTT_PATH:-.}
       dockerfile: dockerfile-mqtt-bridge
     image: gps-mqtt-bridge:latest
     restart: unless-stopped
@@ -27,11 +27,11 @@ services:
       MQTT_SERVER: gps-mqtt
       MQTT_PORT: 1883
       MQTT_USER: gps
-      MQTT_PW: anotherSecret
+      MQTT_PW: ${MQTT_PW}
       MQTT_TOPIC: owntracks/gps
       TCP_SERVER: example.tld
       TCP_PORT: 20202
-      PSK_ENC: encryptionSecret
+      PSK_ENC: ${MQTT_ENC_SECRET}
     networks:
       - mqttnet
 
