@@ -17,16 +17,13 @@ Requirements
 Installation
 ------------
 * Using Docker
-  * Copy the folder `docker` to your server
-  * Copy the folder `webapp` (and if needed `tcp_udp_http_bridge`) into the `docker` directory
+  * Copy the folder `docker` to your server (rename for example to `gps-server`)
+  * Copy the folder `webapp` (and if needed `tcp_udp_http_bridge`) into the `gps-server` directory
   * Follow the instructions in [the docker folder](docker/Readme.md)  
 * Install each component separately
   * Copy all files in the webapp folder to the web space folder (in the following ./gpstracker/ is assumed)
   * Create corresponding entry in webserver config to allow web access and php to run
-  * Adjust the top level .htaccess file (Apache), or limit access in Nginx configuration ([example nginx.conf](docker/nginx.conf)
- ```
- RewriteBase gpstracker
- ```
+  * Adjust the top level .htaccess file (Apache), or limit access in Nginx configuration ([example nginx.conf](docker/nginx.conf))
   * Set the authentification for the admin interface
     * In the file <code>auth/.htpasswd</code> a single user <code>admin</code> with the password <code>changeme</code> is included
     * The path to the .htpasswd file has to be adjusted in <code>admin/.htaccess</code>. The absolute path is required!

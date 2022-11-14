@@ -15,7 +15,7 @@
 			var Shtrvmittwob=true;
 			var Twidth=4;
 			var Movevmin=0.1;
-			var Tkorr=false;
+			var Tkorr=true;
 		</script>
 		<script type="text/javascript" src="/js/GM_Utils/GPX2GM.js"></script>
 		<link rel="stylesheet" type="text/css" href="/css/gpstracker.css">
