@@ -49,19 +49,21 @@ The messages from devices are matched using regular expressions (case insensitiv
 
 **Device:**
 --name of device (string)
+
 **Mode:**
--- "string" or "binary". Default is "string" 
--- Binary data will be converted to a hex string before matching starts
+- "string" or "binary". Default is "string" 
+  - Binary data will be converted to a hex string before matching starts
 
 Three regular expression patterns (`"msg":`) are needed per device, but can be empty. All regular expression are evaluated case insensitive!
+
 **Login** 
--- login message of device. Default: `{ "msg":"", "resp":"" }`
+- login message of device. Default: `{ "msg":"", "resp":"" }`
 
 **Heartbeat** 
--- heartbeat message of the device. Default: `{ "msg":"", "resp":"" }`
+- heartbeat message of the device. Default: `{ "msg":"", "resp":"" }`
 
 **Gps_data** 
--- the actual message containing GPS data. `{ "msg":"", "resp":"" }`
+- the actual message containing GPS data. `{ "msg":"", "resp":"" }`
 
 Example message pattern: `"msg":"^\\*\\w{2},(\\d{15}),XT,[V|A]*,([0-9]+),([0-9]+)#\\s*$"`
 
@@ -70,18 +72,18 @@ For each message type a, currently static, response (e.g. `"resp":"OK"`) can be 
 For each type a set of Order, Units and Scale keys can be added. These are arrays and each elements refers to the corresponding matched group of the regular expression.
 
 **Order:**
--- Array of int - assign the corresponding parameter to the matched pattern (regexp group) as a keyword (see below). The keywords are replaced automatically. 
-  - Example: for a login message the device ID (`%DEVID%`) can be extracted. For GPS data the latitude `%LAT%`,longitude `%LON%` etc has to be specified
+ - Array of int - assign the corresponding parameter to the matched pattern (regexp group) as a keyword (see below). The keywords are replaced automatically. 
+   - Example: for a login message the device ID (`%DEVID%`) can be extracted. For GPS data the latitude `%LAT%`,longitude `%LON%` etc has to be specified
 
 **Units:**
--- Array of int - for each parameter which is defined in "Order", the unit of the parameter has to be defined as a keyword(e.g. `%DEGREE%`) or `%NONE%`
+ - Array of int - for each parameter which is defined in "Order", the unit of the parameter has to be defined as a keyword(e.g. `%DEGREE%`) or `%NONE%`
 
 **Scale:**
--- Array of floats - Parameters might have been scaled in order to fit into the data format. This scaling has to be inverted. The scale value is a float value.
-  - Example: an integer is send, but represents the latitude in `minutes*30000`. Unit can be given as `%DEGREE%` and the scaling would be `1/30000/60=5.5555555E-7`. This inverts the factor 30000 and scales minutes to degree
+  - Array of floats - Parameters might have been scaled in order to fit into the data format. This scaling has to be inverted. The scale value is a float value.
+    - Example: an integer is send, but represents the latitude in `minutes*30000`. Unit can be given as `%DEGREE%` and the scaling would be `1/30000/60=5.5555555E-7`. This inverts the factor 30000 and scales minutes to degree
 
 **Bits:**
--- Mask bits and extract string/value. The input string is assumed to be in hex format! 
+ - Mask bits and extract string/value. The input string is assumed to be in hex format! 
    - **pat:** array of strings - hex number to mask bits (e.g. "3ff")
    - **res:** array of strings - result of the operation (true:false). Give two string separated by ":" (e.g. "N:S"). Empty string, if the value should be used directly
    - Hint: in order to apply different bit masks to the same byte, you need to capture the same regexp group multiple times:
