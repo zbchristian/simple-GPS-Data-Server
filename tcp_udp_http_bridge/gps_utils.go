@@ -32,15 +32,15 @@ const (
     GPRMC   int = iota  
     TIME    int = iota
     ACTIVE  int = iota
-    LAT 	int = iota
-    LON 	int = iota
-    NS  	int = iota
-    EW  	int = iota
+    LAT     int = iota
+    LON     int = iota
+    NS      int = iota
+    EW      int = iota
     SPEED   int = iota
     ANGLE   int = iota
     DATE    int = iota
-    ALT 	int = iota
-    ACC 	int = iota
+    ALT     int = iota
+    ACC     int = iota
     DEGMIN  int = iota
     KMPERH  int = iota
     MPERS   int = iota
@@ -85,28 +85,28 @@ type keys struct {
 }
 
 
-type bitsMatch struct { 	// match bit pattern and define result
-    Pat     	[]string		// bit pattern as hex string (e.g. 0x2ff) 
-    Res    		[]string	// result: "" = number , "N:S" = val&pattern!=0 "N" else "S"
+type bitsMatch struct {     // match bit pattern and define result
+    Pat         []string        // bit pattern as hex string (e.g. 0x2ff) 
+    Res         []string    // result: "" = number , "N:S" = val&pattern!=0 "N" else "S"
 }
 
 type MsgPattern struct { // regular expressions describing the message + response
-    Mode		string	 	// Mode is String or binary 
-    Msg     	string		// message pattern
-	Resp    	string		// response
-    Msg1     	string		// optional 2. message
-    Resp1    	string		// optional 2. response
+    Mode        string      // Mode is String or binary 
+    Msg         string      // message pattern
+    Resp        string      // response
+    Msg1        string      // optional 2. message
+    Resp1       string      // optional 2. response
     Order       []int       // define the Order of the incoming parameters (see list of keywords)
     Units       []int       // for unit conversion provide unit of parameter (enum UNITS)
-    Scale       []float64	// scale factor for value (e.g. lat is given as integer. Scale back to minutes/degree.)
-	Bits		bitsMatch  	// match bit patterns 
+    Scale       []float64   // scale factor for value (e.g. lat is given as integer. Scale back to minutes/degree.)
+    Bits        bitsMatch   // match bit patterns 
     MsgRegexp   *regexp.Regexp
     Msg1Regexp  *regexp.Regexp
 }
 
 type devPattern struct {
     Device      string      // device name/imei 
-    Mode    	string   	// "string" or "binary" 
+    Mode        string      // "string" or "binary" 
     Login       MsgPattern
     Heartbeat   MsgPattern
     Gps_data    MsgPattern
@@ -133,16 +133,16 @@ var devs []devPattern
 
 
 func compileMsg(msgPat *MsgPattern, name string) bool {
-	isOk := true
+    isOk := true
     if msgPat.Msg != "" {
         msgPat.MsgRegexp = regexp.MustCompile("(?i)"+msgPat.Msg)
-		if msgPat.MsgRegexp == nil { fmt.Printf("error in regexp of Msg of %s: %s \n",name, msgPat.Msg); isOk=false }
-	}
+        if msgPat.MsgRegexp == nil { fmt.Printf("error in regexp of Msg of %s: %s \n",name, msgPat.Msg); isOk=false }
+    }
     if msgPat.Msg1 != "" {
         msgPat.Msg1Regexp = regexp.MustCompile("(?i)"+msgPat.Msg1) 
-		if msgPat.Msg1Regexp == nil { fmt.Printf("error in regexp of Msg1 of %s: %s \n",name, msgPat.Msg1); isOk=false }
-	}
-	return isOk
+        if msgPat.Msg1Regexp == nil { fmt.Printf("error in regexp of Msg1 of %s: %s \n",name, msgPat.Msg1); isOk=false }
+    }
+    return isOk
 }
 
 func readDeviceConfig(fileconf string) (err error) {
@@ -177,15 +177,15 @@ func readDeviceConfig(fileconf string) (err error) {
 // list found devices and check regexp of msg
     logger.Printf("Found %d device configurations",len(devs))
     for id,_ := range devs {
-		dev := &devs[id]
-		dev.Mode = strings.ToLower(dev.Mode)
-		if dev.Mode == "" { dev.Mode = "string" }
-		compileMsg(&dev.Login, "Login")
-		if dev.Login.Mode == "" { dev.Login.Mode = dev.Mode }
-		compileMsg(&dev.Heartbeat, "Heartbeat")
-		if dev.Heartbeat.Mode == "" { dev.Heartbeat.Mode = dev.Mode }
-		compileMsg(&dev.Gps_data, "Gps_data")
-		if dev.Gps_data.Mode == "" { dev.Gps_data.Mode = dev.Mode }
+        dev := &devs[id]
+        dev.Mode = strings.ToLower(dev.Mode)
+        if dev.Mode == "" { dev.Mode = "string" }
+        compileMsg(&dev.Login, "Login")
+        if dev.Login.Mode == "" { dev.Login.Mode = dev.Mode }
+        compileMsg(&dev.Heartbeat, "Heartbeat")
+        if dev.Heartbeat.Mode == "" { dev.Heartbeat.Mode = dev.Mode }
+        compileMsg(&dev.Gps_data, "Gps_data")
+        if dev.Gps_data.Mode == "" { dev.Gps_data.Mode = dev.Mode }
         logger.Printf("Device %s - OK",dev.Device)
     }
     return
@@ -195,41 +195,41 @@ func readDeviceConfig(fileconf string) (err error) {
 // Replace (sed style) \1, \2 ... in inStr with corresponding string inMatch[1], matched[2] etc
 func replaceMatched(inStr string, inMatch []string) string {
     if inMatch==nil || len(inMatch)==0 || inStr=="" { return "" }
-	re := regexp.MustCompile("\\([0-9])")
-	match := re.FindStringSubmatch(inStr)
-	fmt.Println("inStr match"); fmt.Println(match)
-	if len(match) > 0 {
-		for i:=1; i<len(match); i++ {
-			j,err := strconv.Atoi(match[i])
-			if err == nil && j < len(inMatch) {
-				inStr = strings.Replace(inStr,"\\"+match[i],inMatch[j],-1)
-			}
-		}
-	}
-	return inStr
+    re := regexp.MustCompile("\\([0-9])")
+    match := re.FindStringSubmatch(inStr)
+    fmt.Println("inStr match"); fmt.Println(match)
+    if len(match) > 0 {
+        for i:=1; i<len(match); i++ {
+            j,err := strconv.Atoi(match[i])
+            if err == nil && j < len(inMatch) {
+                inStr = strings.Replace(inStr,"\\"+match[i],inMatch[j],-1)
+            }
+        }
+    }
+    return inStr
 }
 
 func checkMsg(msg string, msgPat *MsgPattern) (isOk bool, response string, matchedStrings []string) {
-	isOk = false
-	response = ""
-	matchedStrings = []string{}
-	if len(msg) > 0 {
-		if len(msgPat.Msg)>0 && msgPat.MsgRegexp != nil {
-			matchedStrings = msgPat.MsgRegexp.FindStringSubmatch(msg)	
-			if len(matchedStrings) > 0 {
-				isOk = true
-				response = msgPat.Resp
-			}
-		}
-		if !isOk && len(msgPat.Msg1)>0 && msgPat.Msg1Regexp != nil {
-			matchedStrings = msgPat.Msg1Regexp.FindStringSubmatch(msg)
-			if len(matchedStrings) > 0 {
-				isOk = true
-				response = msgPat.Resp1
-			}
-		}
-	}
-	return isOk, response, matchedStrings
+    isOk = false
+    response = ""
+    matchedStrings = []string{}
+    if len(msg) > 0 {
+        if len(msgPat.Msg)>0 && msgPat.MsgRegexp != nil {
+            matchedStrings = msgPat.MsgRegexp.FindStringSubmatch(msg)   
+            if len(matchedStrings) > 0 {
+                isOk = true
+                response = msgPat.Resp
+            }
+        }
+        if !isOk && len(msgPat.Msg1)>0 && msgPat.Msg1Regexp != nil {
+            matchedStrings = msgPat.Msg1Regexp.FindStringSubmatch(msg)
+            if len(matchedStrings) > 0 {
+                isOk = true
+                response = msgPat.Resp1
+            }
+        }
+    }
+    return isOk, response, matchedStrings
 }
 
 func filter_gps_device(msg string, status *statInfo) (response string, query string, err error) {
@@ -244,64 +244,64 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
     isData := false
     var matchedStrings []string
 
-	isBinary := false
+    isBinary := false
     for i:=0 ;i<len(devs) ;i++ {
         dev := &devs[i];
         id = i;
-		isBinary = dev.Mode == "binary"
-		msg1 := msg
-		if isBinary {    // binary data -> hex string
-			msg1 = strings.TrimSpace(fmt.Sprintf("%X ",[]byte(msg)))
-			if isVerbose {
-				logger.Printf("Binary mode for device %s\n",dev.Device)
-				logger.Printf("Message: %s\n", msg1)
-			}
-		}
-		if isLogin, response, matchedStrings = checkMsg(msg1, &dev.Login); isLogin { break }
-		if status != nil && len(dev.Login.Msg)==0 { status.isLogin=true }  // no login required
-		if isHeart, response, matchedStrings = checkMsg(msg1, &dev.Heartbeat); isHeart { break }
-		if isData, response, matchedStrings = checkMsg(msg1, &dev.Gps_data); isData { break }
+        isBinary = dev.Mode == "binary"
+        msg1 := msg
+        if isBinary {    // binary data -> hex string
+            msg1 = strings.TrimSpace(fmt.Sprintf("%X ",[]byte(msg)))
+            if isVerbose {
+                logger.Printf("Binary mode for device %s\n",dev.Device)
+                logger.Printf("Message: %s\n", msg1)
+            }
+        }
+        if isLogin, response, matchedStrings = checkMsg(msg1, &dev.Login); isLogin { break }
+        if status != nil && len(dev.Login.Msg)==0 { status.isLogin=true }  // no login required
+        if isHeart, response, matchedStrings = checkMsg(msg1, &dev.Heartbeat); isHeart { break }
+        if isData, response, matchedStrings = checkMsg(msg1, &dev.Gps_data); isData { break }
     }
 
-	if len(response) > 0 && isBinary { 
-		s,err := hex.DecodeString(response)
-		if err == nil { 
-			response = string(s) 
-		} else {
-			if isVerbose { logger.Println("Conversion of response to binary failed - need to be a hex string") }
-		}
-	}
+    if len(response) > 0 && isBinary { 
+        s,err := hex.DecodeString(response)
+        if err == nil { 
+            response = string(s) 
+        } else {
+            if isVerbose { logger.Println("Conversion of response to binary failed - need to be a hex string") }
+        }
+    }
 
     if isLogin {
         logger.Print("Login message of "+devs[id].Device) 
-		if status != nil {
-			status.isLogin=true
-			status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVID)
-            if status.DeviceID == "" {	status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVIMEI) }
-			status.DeviceID = url.QueryEscape(status.DeviceID)
-			if isVerbose && len(status.DeviceID)>0 { logger.Printf("Device id found: %s\n",status.DeviceID) }
-		}
+        if status != nil {
+            status.isLogin=true
+            status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVID)
+            if status.DeviceID == "" {  status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVIMEI) }
+            status.DeviceID = url.QueryEscape(status.DeviceID)
+            if isVerbose && len(status.DeviceID)>0 { logger.Printf("Device id found: %s\n",status.DeviceID) }
+        }
     } else if isHeart {
         logger.Print("Heartbeat message of "+devs[id].Device) 
     } else if isData {
         logger.Print("GPS-data of "+devs[id].Device) 
         if isData { 
-			query,err 	= createGPRMCQuery(devs[id].Gps_data,matchedStrings)
-			DevID := ""
+            query,err   = createGPRMCQuery(devs[id].Gps_data,matchedStrings)
+            DevID := ""
             if status.isLogin && len(status.DeviceID) > 2 { 
-				DevID = status.DeviceID 
-			} else {
-				DevID,_ = getGPSValue(devs[id].Gps_data,matchedStrings,DEVID)
-			}
-			DevIMEI,_ := getGPSValue(devs[id].Gps_data,matchedStrings,DEVIMEI)
-			if len(DevID) > 2 || len(DevIMEI) > 2 {
-				if len(DevID) > 2 { query = "id="+url.QueryEscape(DevID)+"&"+query }
-				if len(DevIMEI) > 2 { query = "imei="+url.QueryEscape(DevIMEI)+"&"+query } 				
-			} else {
- 			    query = "" 
-				err = errors.New("No device ID or IMEI found")
-			}
-		}
+                DevID = status.DeviceID 
+            } else {
+                DevID,_ = getGPSValue(devs[id].Gps_data,matchedStrings,DEVID)
+            }
+            DevIMEI,_ := getGPSValue(devs[id].Gps_data,matchedStrings,DEVIMEI)
+            if len(DevID) > 2 || len(DevIMEI) > 2 {
+                if len(DevID) > 2 { query = "id="+url.QueryEscape(DevID)+"&"+query }
+                if len(DevIMEI) > 2 { query = "imei="+url.QueryEscape(DevIMEI)+"&"+query }              
+            } else {
+                query = "" 
+                err = errors.New("No device ID or IMEI found")
+            }
+        }
     } else { 
         err = errors.New("Unknown Device")
         if isVerbose { logger.Print("Unknown Device") } 
@@ -351,82 +351,82 @@ func createGPRMCQuery(dev MsgPattern, matches []string) (query string, err error
 }
 
 func getKeyword(id int) string {
-	for key, idx := range keywords { 
-		if idx==id { return key }
-	}
-	return "NONE"
+    for key, idx := range keywords { 
+        if idx==id { return key }
+    }
+    return "NONE"
 }
 
 
 func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int) {
-	isBinary := dev.Mode == "binary"	
-	if isVerbose { logger.Printf("GetValue for %s\n",getKeyword(key) ) }
-	if isVerbose && isBinary { logger.Printf("   Binary mode\n" ) }
+    isBinary := dev.Mode == "binary"    
+    if isVerbose { logger.Printf("GetValue for %s\n",getKeyword(key) ) }
+    if isVerbose && isBinary { logger.Printf("   Binary mode\n" ) }
     val = ""
-    i:=0	
+    i:=0    
     for i=0; i<len(dev.Order) && dev.Order[i]!=key;i++ {}
     if i<len(dev.Order) && dev.Order[i]==key && len(matches)>(i+1) { 
         val = matches[i+1]
-		if isVerbose { logger.Printf("  Match:  %s\n",val ) }
-		// handle bit patterns
-		if len(dev.Bits.Pat) > i && dev.Bits.Pat[i] != "" {	// check for bit patterns
-			if isVerbose { logger.Printf("   Bit pattern %s\n", dev.Bits.Pat[i]) }
-			pat, err := strconv.ParseUint(dev.Bits.Pat[i], 16, 64)	// pattern is a hex string
-			if err == nil {
-				value, err := strconv.ParseUint(val,16,64) // input string is expected to be hex (max 16 digits = 64bits)
-				if err == nil {
-					if dev.Bits.Res[i] != "" {
-						res := strings.Split(dev.Bits.Res[i],":")
-						if len(res) == 2 { 
-							if value & pat == 0  { val = res[1] } else { val = res[0] }
-						} else { val="" }
-					} else {
-						if isBinary { 
-							val = fmt.Sprintf("%X",value & pat) 
-						} else {
-							val = fmt.Sprintf("%d",value & pat)
-						}
-					}
-				}
-				if isVerbose { logger.Printf("   Result %s\n", val) }
-			}
-		}
-		// handle scale factor
-		fac := 1.0
-		if len(dev.Scale) > i { fac = dev.Scale[i] }
-		valFloat := -1E6
-	    if isBinary {
-			valInt,err := strconv.ParseInt(val, 16, 64)
+        if isVerbose { logger.Printf("  Match:  %s\n",val ) }
+        // handle bit patterns
+        if len(dev.Bits.Pat) > i && dev.Bits.Pat[i] != "" { // check for bit patterns
+            if isVerbose { logger.Printf("   Bit pattern %s\n", dev.Bits.Pat[i]) }
+            pat, err := strconv.ParseUint(dev.Bits.Pat[i], 16, 64)  // pattern is a hex string
+            if err == nil {
+                value, err := strconv.ParseUint(val,16,64) // input string is expected to be hex (max 16 digits = 64bits)
+                if err == nil {
+                    if dev.Bits.Res[i] != "" {
+                        res := strings.Split(dev.Bits.Res[i],":")
+                        if len(res) == 2 { 
+                            if value & pat == 0  { val = res[1] } else { val = res[0] }
+                        } else { val="" }
+                    } else {
+                        if isBinary { 
+                            val = fmt.Sprintf("%X",value & pat) 
+                        } else {
+                            val = fmt.Sprintf("%d",value & pat)
+                        }
+                    }
+                }
+                if isVerbose { logger.Printf("   Result %s\n", val) }
+            }
+        }
+        // handle scale factor
+        fac := 1.0
+        if len(dev.Scale) > i { fac = dev.Scale[i] }
+        valFloat := -1E6
+        if isBinary {
+            valInt,err := strconv.ParseInt(val, 16, 64)
             if err == nil { valFloat = float64(valInt) } 
-		} else { 
-			valF,err := strconv.ParseFloat(val,64) 
+        } else { 
+            valF,err := strconv.ParseFloat(val,64) 
             if err == nil { valFloat = valF } 
-		}
-		valFloat *= fac
+        }
+        valFloat *= fac
 
         switch key {
             case TIME:  fallthrough
             case DATE:
-				isInv := len(dev.Units)>i && dev.Units[i] == INV 
-				if !isInv {	// DDMMYY and hhmmss format
-					if isBinary {
-						valByte,err	:= hex.DecodeString(val)
-						if err != nil {break}
-						val = ""
-						for _,valB := range valByte { val = val+fmt.Sprintf("%02d",valB) }
-					} else {
-						val = fmt.Sprintf("%6s",val)
-					}
-				} else {	// YYMMDD format
-					if isBinary {
-						valByte,err	:= hex.DecodeString(val)
-						if err != nil {break}
-						val = ""
-						for _,valB := range valByte { val = fmt.Sprintf("%02d",valB) + val }
-					} else {
-						val = fmt.Sprintf("%2d%2d%2d",val[4:5],val[2:3],val[0:1])
-					}
-				}
+                isInv := len(dev.Units)>i && dev.Units[i] == INV 
+                if !isInv { // DDMMYY and hhmmss format
+                    if isBinary {
+                        valByte,err := hex.DecodeString(val)
+                        if err != nil {break}
+                        val = ""
+                        for _,valB := range valByte { val = val+fmt.Sprintf("%02d",valB) }
+                    } else {
+                        val = fmt.Sprintf("%6s",val)
+                    }
+                } else {    // YYMMDD format
+                    if isBinary {
+                        valByte,err := hex.DecodeString(val)
+                        if err != nil {break}
+                        val = ""
+                        for _,valB := range valByte { val = fmt.Sprintf("%02d",valB) + val }
+                    } else {
+                        val = fmt.Sprintf("%2d%2d%2d",val[4:5],val[2:3],val[0:1])
+                    }
+                }
             case ALT:
                 val = fmt.Sprintf("%d",int(valFloat))
             case ACTIVE:
@@ -436,8 +436,8 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
 
             case LAT:   fallthrough
             case LON:
-				degval := valFloat
-				val = fmt.Sprintf("%f",degval)
+                degval := valFloat
+                val = fmt.Sprintf("%f",degval)
                 if len(dev.Units)>i && dev.Units[i] == DEGMIN { break } // correct unit for GPRMC -> do nothing
                 if len(dev.Units)>i && dev.Units[i] == DEGREE {     // calculate degree*100 + minutes
                     deg := float64(int(degval))     
@@ -447,7 +447,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
                     val = fmt.Sprintf(degfmt,int(math.Abs(deg)),min)
                 }
             case SPEED: // get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
-			    v := valFloat
+                v := valFloat
                 if len(dev.Units)>i && dev.Units[i] == KMPERH   { v /= 1.852 }      // calc knots
                 if len(dev.Units)>i && dev.Units[i] == MPERS    { v *= 3.6/1.852 }  // calc knots
                 if len(dev.Units)>i && dev.Units[i] == KNOTS    { }                 // nothing to do    
