@@ -16,15 +16,15 @@ Options
 -------
 Run `./tcp_udp_http_bridge --help` to see the options to pass to the program.
 
-	-httpserver string
-		name of HTTP server (default "http://localhost")
-	-key string
+    -httpserver string
+        name of HTTP server (default "http://localhost")
+    -key string
         secret key to terminate program via TCP/UDP port (default "12345")
-	-port int
+    -port int
         port number (default 20202)
-	-urlpath string
+    -urlpath string
         relative url path (default "index.php")
-	-verbose
+    -verbose
         enable verbose logging output
 
 Run the server
@@ -83,12 +83,23 @@ For each type a set of Order, Units and Scale keys can be added. These are array
     - Example: an integer is send, but represents the latitude in `minutes*30000`. Unit can be given as `%DEGREE%` and the scaling would be `1/30000/60=5.5555555E-7`. This inverts the factor 30000 and scales minutes to degree
 
 **Bits:**
- - Mask bits and extract string/value. The input string is assumed to be in hex format! 
+ - Array of hex strings - Mask bits and extract string/value. The input string is assumed to be in hex format! 
    - **pat:** array of strings - hex number to mask bits (e.g. "3ff")
    - **res:** array of strings - result of the operation (true:false). Give two string separated by ":" (e.g. "N:S"). Empty string, if the value should be used directly
    - Hint: in order to apply different bit masks to the same byte, you need to capture the same regexp group multiple times:
      - Byte captured once ([[:xdigit:]]{2})
      - Byte captured twice (([[:xdigit:]]{2})) etc. 
+   - Example: capture 2 bytes (course angle) and 3 times the first byte (NS, EW, ACTIVE)
+     - ´´´ 
+        Gps_data":     {
+                "msg":  "^(((([[:xdigit:]]{2})))[[:xdigit:]]{2}).*0D0A$",     "resp":"OK",
+                "Order":  [    %ANGLE%,    %NS%,  %EW%, %ACTIVE% ],
+                "Units":  [    %DEGREE%, %NONE%, %NONE%, %NONE% ],
+				"Bits": { "pat": [ "2ff",    "4",  "8" ,   "10"],
+                          "res": [  "",    "N:S",  "W:E",  "A:V"]
+						}
+			}
+     ´´´
 
 The GPS data record is described by a regular expresssion
 Each match in the regular expression has to be accompanied by an **Order** and **Units** list. If the device sends a `GPRMC` record, the `%GPRMC%` keyword can be used.
@@ -115,7 +126,6 @@ TIME     : time (HHMMSS)
 DATE     : date (DDMMYY). For inverse date (YYMMDD) set units to "INV"
 ALT      : altitude
 ACC      : accuracy/precision of location
-BITS		: bits need to be analysed. Requires additional Bits block (see above)
 
 Units:
 DEGMIN   : format of lat/lon  in degree*100 + minutes (GPRMC format)
