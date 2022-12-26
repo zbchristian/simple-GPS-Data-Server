@@ -92,13 +92,16 @@ type bitsMatch struct { 	// match bit pattern and define result
 
 type MsgPattern struct { // regular expressions describing the message + response
     Mode		string	 	// Mode is String or binary 
-    Msg     	string
-    Resp    	string
+    Msg     	string		// message pattern
+	Resp    	string		// response
+    Msg1     	string		// optional 2. message
+    Resp1    	string		// optional 2. response
     Order       []int       // define the Order of the incoming parameters (see list of keywords)
     Units       []int       // for unit conversion provide unit of parameter (enum UNITS)
     Scale       []float64	// scale factor for value (e.g. lat is given as integer. Scale back to minutes/degree.)
-	Bits		bitsMatch  // match bit patterns 
-    MsgRegexp *regexp.Regexp
+	Bits		bitsMatch  	// match bit patterns 
+    MsgRegexp   *regexp.Regexp
+    Msg1Regexp  *regexp.Regexp
 }
 
 type devPattern struct {
@@ -127,6 +130,20 @@ var devs []devPattern
 //  o if device sends a GPRMC record, use the predefined constant (see above)
 //  o assign to each matched pattern (in parentheses) a key word (DEVIMEI, DEVID, ACTIVE, LAT, LON, NS, EW, SPEED, ANGLE, DATE)
 //  o for unit conversion give for each matched pattern (LAT, LON, SPEED, ANGLE) the unit 
+
+
+func compileMsg(msgPat *MsgPattern, name string) bool {
+	isOk := true
+    if msgPat.Msg != "" {
+        msgPat.MsgRegexp = regexp.MustCompile("(?i)"+msgPat.Msg)
+		if msgPat.MsgRegexp == nil { fmt.Printf("error in regexp of Msg of %s: %s \n",name, msgPat.Msg); isOk=false }
+	}
+    if msgPat.Msg1 != "" {
+        msgPat.Msg1Regexp = regexp.MustCompile("(?i)"+msgPat.Msg1) 
+		if msgPat.Msg1Regexp == nil { fmt.Printf("error in regexp of Msg1 of %s: %s \n",name, msgPat.Msg1); isOk=false }
+	}
+	return isOk
+}
 
 func readDeviceConfig(fileconf string) (err error) {
     logger.Printf("Configuration file - %s",fileconf)
@@ -163,21 +180,12 @@ func readDeviceConfig(fileconf string) (err error) {
 		dev := &devs[id]
 		dev.Mode = strings.ToLower(dev.Mode)
 		if dev.Mode == "" { dev.Mode = "string" }
-        if dev.Login.Msg != "" {
-            dev.Login.MsgRegexp = regexp.MustCompile("(?i)"+dev.Login.Msg) 
-            if dev.Login.MsgRegexp == nil { fmt.Printf("error in regexp of Login: %s \n",dev.Login.Msg); return }
-			if dev.Login.Mode == "" { dev.Login.Mode = dev.Mode }
-        }
-        if dev.Heartbeat.Msg != "" { 
-            dev.Heartbeat.MsgRegexp = regexp.MustCompile("(?i)"+dev.Heartbeat.Msg) 
-            if dev.Heartbeat.MsgRegexp == nil { fmt.Printf("error in regexp of Heartbeat: %s \n",dev.Heartbeat.Msg); return }
-			if dev.Heartbeat.Mode == "" { dev.Heartbeat.Mode = dev.Mode }
-        }
-        if dev.Gps_data.Msg != "" { 
-            dev.Gps_data.MsgRegexp = regexp.MustCompile("(?i)"+dev.Gps_data.Msg) 
-            if dev.Gps_data.MsgRegexp == nil { fmt.Printf("error in regexp of Gps_data: %s \n",dev.Gps_data.Msg); return }
-			if dev.Gps_data.Mode == "" { dev.Gps_data.Mode = dev.Mode }
-        }
+		compileMsg(&dev.Login, "Login")
+		if dev.Login.Mode == "" { dev.Login.Mode = dev.Mode }
+		compileMsg(&dev.Heartbeat, "Heartbeat")
+		if dev.Heartbeat.Mode == "" { dev.Heartbeat.Mode = dev.Mode }
+		compileMsg(&dev.Gps_data, "Gps_data")
+		if dev.Gps_data.Mode == "" { dev.Gps_data.Mode = dev.Mode }
         logger.Printf("Device %s - OK",dev.Device)
     }
     return
@@ -201,6 +209,28 @@ func replaceMatched(inStr string, inMatch []string) string {
 	return inStr
 }
 
+func checkMsg(msg string, msgPat *MsgPattern) (isOk bool, response string, matchedStrings []string) {
+	isOk = false
+	response = ""
+	matchedStrings = []string{}
+	if len(msg) > 0 {
+		if len(msgPat.Msg)>0 && msgPat.MsgRegexp != nil {
+			matchedStrings = msgPat.MsgRegexp.FindStringSubmatch(msg)	
+			if len(matchedStrings) > 0 {
+				isOk = true
+				response = msgPat.Resp
+			}
+		}
+		if !isOk && len(msgPat.Msg1)>0 && msgPat.Msg1Regexp != nil {
+			matchedStrings = msgPat.Msg1Regexp.FindStringSubmatch(msg)
+			if len(matchedStrings) > 0 {
+				isOk = true
+				response = msgPat.Resp1
+			}
+		}
+	}
+	return isOk, response, matchedStrings
+}
 
 func filter_gps_device(msg string, status *statInfo) (response string, query string, err error) {
     response = ""
@@ -218,7 +248,6 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
     for i:=0 ;i<len(devs) ;i++ {
         dev := &devs[i];
         id = i;
-        nmatch := 0
 		isBinary = dev.Mode == "binary"
 		msg1 := msg
 		if isBinary {    // binary data -> hex string
@@ -228,35 +257,10 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
 				logger.Printf("Message: %s\n", msg1)
 			}
 		}
-        if len(dev.Login.Msg)>0 {		// check for login message
-//            if dev.Login.MsgRegexp == nil { dev.Login.MsgRegexp = regexp.MustCompile(dev.Login.Msg) }
-            matchedStrings = dev.Login.MsgRegexp.FindStringSubmatch(msg1)
-            if nmatch=len(matchedStrings); nmatch > 0 {
-                isLogin = true
-                response = dev.Login.Resp
-                break
-            }
-        } else { 
-			if status != nil { status.isLogin=true }  // no login required
-		}
-        if len(dev.Heartbeat.Msg)>0 {
- //           if dev.Heartbeat.MsgRegexp == nil { dev.Heartbeat.MsgRegexp = regexp.MustCompile(dev.Heartbeat.Msg) }
-            matchedStrings = dev.Heartbeat.MsgRegexp.FindStringSubmatch(msg1)
-            if nmatch=len(matchedStrings); nmatch > 0 {
-                isHeart = true
-                response = dev.Heartbeat.Resp
-                break
-            }
-        }
-        if len(dev.Gps_data.Msg)>0  {
- //           if dev.Gps_data.MsgRegexp == nil { dev.Gps_data.MsgRegexp = regexp.MustCompile(dev.Gps_data.Msg) }
-            matchedStrings = dev.Gps_data.MsgRegexp.FindStringSubmatch(msg1)
-            if nmatch=len(matchedStrings); nmatch > 2 {
-                isData = true
-                response = dev.Gps_data.Resp
-                break
-            }
-        }
+		if isLogin, response, matchedStrings = checkMsg(msg1, &dev.Login); isLogin { break }
+		if status != nil && len(dev.Login.Msg)==0 { status.isLogin=true }  // no login required
+		if isHeart, response, matchedStrings = checkMsg(msg1, &dev.Heartbeat); isHeart { break }
+		if isData, response, matchedStrings = checkMsg(msg1, &dev.Gps_data); isData { break }
     }
 
 	if len(response) > 0 && isBinary { 

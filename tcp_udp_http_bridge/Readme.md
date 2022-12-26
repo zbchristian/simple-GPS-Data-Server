@@ -1,5 +1,8 @@
-Build the TCP/UDP Bridge
-========================
+TCP/UDP to HTTP Bridge - Build and Configure
+============================================
+
+Installation
+------------
 To install the golang compiler and to build the program  
 - `sudo apt install golang`
 - There is an additional crypto package needed: `go get -u golang.org/x/crypto/pbkdf2`
@@ -40,6 +43,9 @@ Just running the program in foreground without any options:
 
 Configure Devices
 -----------------
+Devices are configured by defining regular expressions to match the incoming data (ASCII string or binary data) to the corresponding information (time, date, latitude etc). 
+Binary data are converted to a HEX string. 
+ 
 The configuration file `devices.config` is mainly in JSON format ("key", value pairs), but with comment lines "//" and some special keywords (see below).
 The messages from devices are matched using regular expressions (case insensitive).
 
@@ -91,7 +97,7 @@ For each type a set of Order, Units and Scale keys can be added. These are array
      - Byte captured twice (([[:xdigit:]]{2})) etc. 
    - Example: capture 2 bytes (course angle) and 3 times the first byte (NS, EW, ACTIVE)
 ```
-        Gps_data":     {
+        "Gps_data":     {
                 "msg":  "^(((([[:xdigit:]]{2})))[[:xdigit:]]{2}).*0D0A$",     "resp":"OK",
                 "Order":  [    %ANGLE%,    %NS%,  %EW%, %ACTIVE% ],
                 "Units":  [    %DEGREE%, %NONE%, %NONE%, %NONE% ],
