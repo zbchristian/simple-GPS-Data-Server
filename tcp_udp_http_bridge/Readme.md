@@ -90,7 +90,7 @@ For each type a set of Order, Units and Scale keys can be added. These are array
      - Byte captured once ([[:xdigit:]]{2})
      - Byte captured twice (([[:xdigit:]]{2})) etc. 
    - Example: capture 2 bytes (course angle) and 3 times the first byte (NS, EW, ACTIVE)
-´´´
+```
         Gps_data":     {
                 "msg":  "^(((([[:xdigit:]]{2})))[[:xdigit:]]{2}).*0D0A$",     "resp":"OK",
                 "Order":  [    %ANGLE%,    %NS%,  %EW%, %ACTIVE% ],
@@ -99,7 +99,7 @@ For each type a set of Order, Units and Scale keys can be added. These are array
                           "res": [  "",    "N:S",  "W:E",  "A:V"]
 						}
 			}
-´´´
+```
 
 The GPS data record is described by a regular expresssion
 Each match in the regular expression has to be accompanied by an **Order** and **Units** list. If the device sends a `GPRMC` record, the `%GPRMC%` keyword can be used.
