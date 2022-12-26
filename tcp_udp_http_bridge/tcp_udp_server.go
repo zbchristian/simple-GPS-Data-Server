@@ -20,6 +20,7 @@ import (
     "os/signal"
     "syscall"
     "flag"
+    "fmt"
     "strconv"
     "strings"
     "time"
@@ -39,7 +40,7 @@ const (
     DEFAULT_PORT    = 20202
     DEFAULT_KEY     = "12345"
     DEFAULT_URLPATH = "index.php"
-    TIMEOUT         = 2
+    TIMEOUT         = 5
     MAXCHILDS       = 100
     MAXTCPCONN      = 2*60  // after this number of minutes the TCP connection is closed
     MAXTCPINACTIVE  = 120   // after this number of seconds w/o received data, the TCP connection is closed
@@ -134,7 +135,7 @@ func main() {
         if runtime.NumGoroutine() < MAXCHILDS {
             // Handle connections in a new goroutine.
             wg.Add(1)
-            go handleRequest(conn)
+            go handleTCPRequest(conn)
         } else {    // too many childs running
             conn.Close()
             logger.Print("Reject connection - max number of connections exceeded")
@@ -145,6 +146,8 @@ func main() {
 }
 
 func UDPServer() {
+    var status statInfo
+
     defer wg.Done()
     addr, err := net.ResolveUDPAddr("udp",":"+strconv.Itoa(Port))
     l, err := net.ListenUDP("udp", addr)
@@ -166,9 +169,9 @@ func UDPServer() {
             logger.Print("Error accepting UDP: ", err.Error())
             break
         }
-        response, _, err := handleMessage(string(buf[:n]),"UDP")
+        response, _, err := handleMessage(buf[:n], "UDP", &status)
         if err == nil && len(response)>0 {
-            if isVerbose  { logger.Print("Response - "+response) }
+            if isVerbose  { logger.Print("Response - "+formatLogMsg(response)) }
             l.WriteToUDP([]byte(response),destSrv) 
         } else if err != nil {
             logger.Print(err.Error())
@@ -177,9 +180,17 @@ func UDPServer() {
     logger.Print("Exit UDP-server ...")
 }
 
+type statInfo struct {
+	isLogin 	bool
+	DeviceID 	string
+} 
 
 // Handles a single TCP connection
-func handleRequest(conn net.Conn) {
+func handleTCPRequest(conn net.Conn) {
+    var status statInfo
+
+	if isVerbose {logger.Println("Handle new TCP connection") }
+
     defer wg.Done()
     defer conn.Close()
     isClose:= false
@@ -189,6 +200,7 @@ func handleRequest(conn net.Conn) {
 
     startTime := time.Now()
     timeInactive := 0
+	status.isLogin=false
     for !isClose && !isExit && time.Since(startTime).Minutes() < MAXTCPCONN && timeInactive < MAXTCPINACTIVE {  
         conn.SetDeadline(time.Now().Add(TIMEOUT*time.Second))
         // Read the incoming connection into the buffer.
@@ -203,11 +215,11 @@ func handleRequest(conn net.Conn) {
         }
         if nb > 0 {
             timeInactive = 0
-            response, isClose, err = handleMessage(string(buf[:nb]),"TCP")
+            response, isClose, err = handleMessage(buf[:nb], "TCP", &status)
             // Send the response
             if err == nil && len(response)>0 {
-                if isVerbose { logger.Print("Response: "+response) }
-                conn.Write([]byte(response)) 
+                if isVerbose { logger.Print("Response: "+formatLogMsg(response)) }
+                conn.Write([]byte(response))
             } else if err != nil {
                 logger.Print(err.Error())
                 break
@@ -217,8 +229,11 @@ func handleRequest(conn net.Conn) {
     if isVerbose {logger.Print("Close TCP connection ...") }
 }
 
-func handleMessage(msg string, connType string) (response string, isClose bool, err error) {
-    msg = strings.TrimSpace(msg)
+func handleMessage(bufmsg []byte, connType string, status *statInfo) (response string, isClose bool, err error) {
+    msg := strings.TrimSpace(string(bufmsg))
+	
+	if isVerbose {logger.Println("Handle message "+formatLogMsg(msg)) }
+
     // fill regexp for close/exit message
     if regexCMD == nil {regexCMD = regexp.MustCompile("^(close|exit|status|reload)\\s+("+SecretKey+")\\s*$") }
     response = ""
@@ -249,10 +264,14 @@ func handleMessage(msg string, connType string) (response string, isClose bool, 
     }
     // try to decrypt message 
     msg,err = decryptMessage(msg)
-    if err == nil { connType += " (encrypted)" }
-    logger.Print("Message via "+connType+": " + msg)
+    if err == nil { 
+		connType += " (encrypted)" 
+		bufmsg = []byte(msg)
+	}
+    logger.Print("Message via "+connType+": " + formatLogMsg(string(bufmsg)))
     // check if incoming message matches a known device 
-    response, query, err = filter_gps_device(msg)
+    response, query, err = filter_gps_device(string(bufmsg), status)
+//    response, query, err = filter_gps_device(strings.TrimSuffix(string(bufmsg),"\n"), status)
         
     // send HTTPS request to server
     responseHTTP := ""
@@ -264,4 +283,23 @@ func handleMessage(msg string, connType string) (response string, isClose bool, 
         _,err = analyseHTTPResponse(responseHTTP)
     }
     return
+}
+
+func formatLogMsg(msg string) string {
+	if isASCII(msg) {
+		return msg
+	} else {
+		return fmt.Sprintf("%x ",[]byte(msg))
+	}
+}
+
+func isASCII(s string) bool {
+	s = strings.TrimSuffix(s, "\n")
+	sval := []byte(s)
+    for i := 0; i < len(sval); i++ {
+		if sval[i] > 0x7d || sval[i] < 0x20 { 
+            return false
+        }
+    }
+    return true
 }
