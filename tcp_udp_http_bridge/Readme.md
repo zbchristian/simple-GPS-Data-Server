@@ -48,7 +48,7 @@ The messages from devices are matched using regular expressions (case insensitiv
 ### JSON keys per device
 
 **Device:**
---name of device (string)
+-name of device (string)
 
 **Mode:**
 - "string" or "binary". Default is "string" 
@@ -96,31 +96,32 @@ Each match in the regular expression has to be accompanied by an **Order** and *
 ALL KEYWORDS HAVE TO BE ENCLOSED IN "%", e.g. `%DEVIMEI%` for the device IMEI number
 
 **Allowed Keywords:**
-> REGEXP_GPRMC : regular expression for the standard GPRMC record w/o $GPRMC header, magnetic deviation and check sum (from TIME up to DATE)
->                "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
-> "Order": [       TIME,   ACTIVE,  LAT,    NS,   LON,    EW,   SPEED,  ANGLE,   DATE]
-> "Units": [       NONE,    NONE,  DEGMIN, NONE, DEGMIN, NONE,  KNOTS, DEGREE,   NONE]
->
-> DEVIMEI  : device IMEI number. This might be the identification of the device (no DEVID present)
-> DEVID    : device ID defined in the HTTP interface and provided by device
-> ACTIVE   : A or V (active or void) entry
-> LAT      : latitude
-> NS       : N or S (North or South)
-> LON      : longitude
-> EW       : E or W (East or West)
-> SPEED    : current speed
-> ANGLE    : angle of movement
-> TIME     : time (HHMMSS)
-> DATE     : date (DDMMYY). For inverse date (YYMMDD) set units to "INV"
-> ALT      : altitude
-> ACC      : accuracy/precision of location
-> BITS		: bits need to be analysed. Requires additional Bits block (see above)
->
-> Units:
-> DEGMIN   : format of lat/lon  in degree*100 + minutes (GPRMC format)
-> DEGREE   : format of lat/lon/angle  in degree
-> KMPERH   : speed in km/h
-> MPERS    : speed in m/s
-> KNOTS    : speed in knots
-> INV      : invert order (e.g. DATE YYMMDD to DDMMYY)
- 
+```
+REGEXP_GPRMC : regular expression for the standard GPRMC record w/o $GPRMC header, magnetic deviation and check sum (from TIME up to DATE)
+                "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
+"Order": [       TIME,   ACTIVE,  LAT,    NS,   LON,    EW,   SPEED,  ANGLE,   DATE]
+"Units": [       NONE,    NONE,  DEGMIN, NONE, DEGMIN, NONE,  KNOTS, DEGREE,   NONE]
+
+DEVIMEI  : device IMEI number. This might be the identification of the device (no DEVID present)
+DEVID    : device ID defined in the HTTP interface and provided by device
+ACTIVE   : A or V (active or void) entry
+LAT      : latitude
+NS       : N or S (North or South)
+LON      : longitude
+EW       : E or W (East or West)
+SPEED    : current speed
+ANGLE    : angle of movement
+TIME     : time (HHMMSS)
+DATE     : date (DDMMYY). For inverse date (YYMMDD) set units to "INV"
+ALT      : altitude
+ACC      : accuracy/precision of location
+BITS		: bits need to be analysed. Requires additional Bits block (see above)
+
+Units:
+DEGMIN   : format of lat/lon  in degree*100 + minutes (GPRMC format)
+DEGREE   : format of lat/lon/angle  in degree
+KMPERH   : speed in km/h
+MPERS    : speed in m/s
+KNOTS    : speed in knots
+INV      : invert order (e.g. DATE YYMMDD to DDMMYY)
+```
