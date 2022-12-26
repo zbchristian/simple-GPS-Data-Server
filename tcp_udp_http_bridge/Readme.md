@@ -95,10 +95,10 @@ For each type a set of Order, Units and Scale keys can be added. These are array
                 "msg":  "^(((([[:xdigit:]]{2})))[[:xdigit:]]{2}).*0D0A$",     "resp":"OK",
                 "Order":  [    %ANGLE%,    %NS%,  %EW%, %ACTIVE% ],
                 "Units":  [    %DEGREE%, %NONE%, %NONE%, %NONE% ],
-				"Bits": { "pat": [ "2ff",    "4",  "8" ,   "10"],
+                "Bits": { "pat": [ "2ff",    "4",  "8" ,   "10"],
                           "res": [  "",    "N:S",  "W:E",  "A:V"]
-						}
-			}
+                        }
+            }
 ```
 
 The GPS data record is described by a regular expresssion
