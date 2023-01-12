@@ -25,11 +25,14 @@ import (
         "golang.org/x/crypto/pbkdf2"   // go get -u golang.org/x/crypto/pbkdf2
 )
 
-const ( 
+const (
     NONE    int = iota
+    S1      int = iota
+    S2      int = iota
+    S3      int = iota
     DEVID   int = iota
     DEVIMEI int = iota
-    GPRMC   int = iota  
+    GPRMC   int = iota
     TIME    int = iota
     ACTIVE  int = iota
     LAT     int = iota
@@ -41,6 +44,7 @@ const (
     DATE    int = iota
     ALT     int = iota
     ACC     int = iota
+    LASTKEY int = iota
     DEGMIN  int = iota
     KMPERH  int = iota
     MPERS   int = iota
@@ -54,9 +58,12 @@ const (
 
 var keywords = map[string]int{
     "NONE":     NONE,
+    "S1":       S1,
+    "S2":       S2,
+    "S3":       S3,
     "DEVID":    DEVID,
     "DEVIMEI":  DEVIMEI,
-    "GPRMC":    GPRMC,  
+    "GPRMC":    GPRMC,
     "TIME":     TIME,
     "ACTIVE":   ACTIVE,
     "LAT":      LAT,
@@ -81,7 +88,6 @@ var keywords = map[string]int{
 
 type keys struct {
     key string
-    
 }
 
 
@@ -91,33 +97,39 @@ type bitsMatch struct {     // match bit pattern and define result
 }
 
 type MsgPattern struct { // regular expressions describing the message + response
-    Mode        string      // Mode is String or binary 
-    Msg         string      // message pattern
-    Resp        string      // response
-    Msg1        string      // optional 2. message
-    Resp1       string      // optional 2. response
+    Mode        string         // Mode is String or binary 
+    Msg         string        // message pattern
+    Resp        string        // response
+    Msg1        string        // optional 2. message
+    Resp1       string        // optional 2. response
     Order       []int       // define the Order of the incoming parameters (see list of keywords)
     Units       []int       // for unit conversion provide unit of parameter (enum UNITS)
-    Scale       []float64   // scale factor for value (e.g. lat is given as integer. Scale back to minutes/degree.)
-    Bits        bitsMatch   // match bit patterns 
+    Scale       []float64    // scale factor for value (e.g. lat is given as integer. Scale back to minutes/degree.)
+    Bits        bitsMatch      // match bit patterns 
     MsgRegexp   *regexp.Regexp
     Msg1Regexp  *regexp.Regexp
 }
 
 type devPattern struct {
     Device      string      // device name/imei 
-    Mode        string      // "string" or "binary" 
+    Mode        string       // "string" or "binary" 
     Login       MsgPattern
     Heartbeat   MsgPattern
     Gps_data    MsgPattern
 } 
 
+
 // 
 // regular expression for GPRMC record w/o header, magnetic deviation and checksum 
 const (
-    REGEXP_GPRMC  = "([0-9]{6},[A|V]*,[0-9.]+,[N|S],[0-9.]+,[E|W],[0-9.]+,[0-9.]+,[0-9]{6})"
-//                     time  active/void  lat          lon          speed   angle    date 
+    REGEXP_GPRMC  = "(([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}))"
+//                     time  active/void    lat               lon                 speed   angle    date 
 )
+// Items associated with GPRMC regex
+var gprmcItems = "%TIME%,%ACTIVE%, %LAT%,  %NS%,   %LON%,  %EW%,  %SPEED%,%ANGLE%, %DATE%"
+
+// GPRMC format digested by openGTS server
+var gprmcOrder = []int{HEAD,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE,MAGN}
 
 var devs []devPattern
 
@@ -154,11 +166,13 @@ func readDeviceConfig(fileconf string) (err error) {
     jsonBlob := ""
 // remove comment lines
     for scanner.Scan() {
-            line := strings.TrimSpace(scanner.Text())
+        line := strings.TrimSpace(scanner.Text())
         if len(line)> 0 && line[:1] != "/" { jsonBlob += scanner.Text() }
     }
-// replace keywords
+// expand regeular expression and corresponding items
     jsonBlob = strings.Replace(jsonBlob,"%REGEXP_GPRMC%",REGEXP_GPRMC,-1)
+    jsonBlob = strings.Replace(jsonBlob,"%GPRMC%","%GPRMC%,"+gprmcItems,-1)
+// replace keywords
     for key, idx := range keywords {
         jsonBlob = strings.Replace(jsonBlob,"%"+key+"%",strconv.Itoa(idx),-1)
     }
@@ -188,34 +202,52 @@ func readDeviceConfig(fileconf string) (err error) {
         if dev.Gps_data.Mode == "" { dev.Gps_data.Mode = dev.Mode }
         logger.Printf("Device %s - OK",dev.Device)
     }
+
+// create regex with all keywords
+    reStr := "NONE"
+    for key,idx := range keywords {
+        if idx > 0 && idx < LASTKEY { reStr += "|"+key }
+    }
+    reStr = "\\\\("+reStr+")\\\\"
+    searchPat=regexp.MustCompile(reStr)
     return
 }
 
-// NOT TESTED YET
-// Replace (sed style) \1, \2 ... in inStr with corresponding string inMatch[1], matched[2] etc
-func replaceMatched(inStr string, inMatch []string) string {
-    if inMatch==nil || len(inMatch)==0 || inStr=="" { return "" }
-    re := regexp.MustCompile("\\([0-9])")
-    match := re.FindStringSubmatch(inStr)
-    fmt.Println("inStr match"); fmt.Println(match)
-    if len(match) > 0 {
-        for i:=1; i<len(match); i++ {
-            j,err := strconv.Atoi(match[i])
-            if err == nil && j < len(inMatch) {
-                inStr = strings.Replace(inStr,"\\"+match[i],inMatch[j],-1)
-            }
-        }
+var searchPat *regexp.Regexp
+
+// Replace "\KEY\" in inStr with corresponding value found in msg
+func replaceMatched(inStr string, dev *MsgPattern, matchedStrings []string) string {
+    if inStr=="" { return "" }
+    matchAll := searchPat.FindAllStringSubmatch(inStr,-1)
+    for _, match := range matchAll {
+           idx := -1
+           for key,j := range keywords { 
+               if key == match[1] { idx=j; break }
+           }
+// get value for key
+           res,_ := getGPSValue(*dev, matchedStrings, idx)
+           inStr = strings.Replace(inStr,match[0],res,-1)
     }
+    if isVerbose { fmt.Println("Replaced string :"+inStr) }
     return inStr
 }
 
 func checkMsg(msg string, msgPat *MsgPattern) (isOk bool, response string, matchedStrings []string) {
     isOk = false
     response = ""
+    isHex := msgPat.Mode == "binary" || msgPat.Mode == "bcd"
+    if isHex {    // binary/bcd data -> hex string
+        msg = strings.TrimSpace(fmt.Sprintf("%X ",[]byte(msg)))
+        if isVerbose {
+           logger.Printf("CheckMsg - Message: %s\n", msg)
+        }
+    } else {
+        msg=strings.TrimSpace(msg)
+    }
     matchedStrings = []string{}
     if len(msg) > 0 {
         if len(msgPat.Msg)>0 && msgPat.MsgRegexp != nil {
-            matchedStrings = msgPat.MsgRegexp.FindStringSubmatch(msg)   
+            matchedStrings = msgPat.MsgRegexp.FindStringSubmatch(msg)
             if len(matchedStrings) > 0 {
                 isOk = true
                 response = msgPat.Resp
@@ -229,6 +261,16 @@ func checkMsg(msg string, msgPat *MsgPattern) (isOk bool, response string, match
             }
         }
     }
+    response = replaceMatched(response, msgPat, matchedStrings)
+    if len(response) > 0 && isHex { 
+        s,err := hex.DecodeString(response)
+        if err == nil { 
+            response = string(s) 
+        } else {
+            if isVerbose { logger.Println("Conversion of response to binary failed - need to be a hex string") }
+        }
+    }
+
     return isOk, response, matchedStrings
 }
 
@@ -244,40 +286,23 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
     isData := false
     var matchedStrings []string
 
-    isBinary := false
     for i:=0 ;i<len(devs) ;i++ {
         dev := &devs[i];
         id = i;
-        isBinary = dev.Mode == "binary"
         msg1 := msg
-        if isBinary {    // binary data -> hex string
-            msg1 = strings.TrimSpace(fmt.Sprintf("%X ",[]byte(msg)))
-            if isVerbose {
-                logger.Printf("Binary mode for device %s\n",dev.Device)
-                logger.Printf("Message: %s\n", msg1)
-            }
-        }
         if isLogin, response, matchedStrings = checkMsg(msg1, &dev.Login); isLogin { break }
-        if status != nil && len(dev.Login.Msg)==0 { status.isLogin=true }  // no login required
         if isHeart, response, matchedStrings = checkMsg(msg1, &dev.Heartbeat); isHeart { break }
         if isData, response, matchedStrings = checkMsg(msg1, &dev.Gps_data); isData { break }
     }
-
-    if len(response) > 0 && isBinary { 
-        s,err := hex.DecodeString(response)
-        if err == nil { 
-            response = string(s) 
-        } else {
-            if isVerbose { logger.Println("Conversion of response to binary failed - need to be a hex string") }
-        }
-    }
+    if (isHeart || isData) && status != nil && len(devs[id].Login.Msg)==0 { status.isLogin=true }  // no login expected
 
     if isLogin {
         logger.Print("Login message of "+devs[id].Device) 
         if status != nil {
+			if status.isLogin { response="" }	// do not send login response multiple times
             status.isLogin=true
             status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVID)
-            if status.DeviceID == "" {  status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVIMEI) }
+            if status.DeviceID == "" {    status.DeviceID,_ = getGPSValue(devs[id].Login,matchedStrings,DEVIMEI) }
             status.DeviceID = url.QueryEscape(status.DeviceID)
             if isVerbose && len(status.DeviceID)>0 { logger.Printf("Device id found: %s\n",status.DeviceID) }
         }
@@ -286,7 +311,7 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
     } else if isData {
         logger.Print("GPS-data of "+devs[id].Device) 
         if isData { 
-            query,err   = createGPRMCQuery(devs[id].Gps_data,matchedStrings)
+            query,err     = createGPRMCQuery(devs[id].Gps_data,matchedStrings)
             DevID := ""
             if status.isLogin && len(status.DeviceID) > 2 { 
                 DevID = status.DeviceID 
@@ -296,9 +321,9 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
             DevIMEI,_ := getGPSValue(devs[id].Gps_data,matchedStrings,DEVIMEI)
             if len(DevID) > 2 || len(DevIMEI) > 2 {
                 if len(DevID) > 2 { query = "id="+url.QueryEscape(DevID)+"&"+query }
-                if len(DevIMEI) > 2 { query = "imei="+url.QueryEscape(DevIMEI)+"&"+query }              
+                if len(DevIMEI) > 2 { query = "imei="+url.QueryEscape(DevIMEI)+"&"+query }
             } else {
-                query = "" 
+                 query = "" 
                 err = errors.New("No device ID or IMEI found")
             }
         }
@@ -309,8 +334,6 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
     return
 } 
 
-// GPRMC format digested by openGTS server
-var gprmcOrder = []int{HEAD,TIME,ACTIVE,LAT,NS,LON,EW,SPEED,ANGLE,DATE,MAGN}
 
 func createGPRMCQuery(dev MsgPattern, matches []string) (query string, err error) {
     err = nil
@@ -328,7 +351,7 @@ func createGPRMCQuery(dev MsgPattern, matches []string) (query string, err error
                     case HEAD:
                         query +="$GPRMC"
                     case MAGN:  // add dummy magnetic deviation
-                        query +=",0.0,W";                   
+                        query +=",0.0,W";
                     default:
                         query += ","
                         if val,_=getGPSValue(dev,matches,gprmcOrder[i]); len(val)>0 { query += url.QueryEscape(val) }
@@ -344,7 +367,7 @@ func createGPRMCQuery(dev MsgPattern, matches []string) (query string, err error
         query = query+fmt.Sprintf("%02X",cs)
         query = "gprmc="+query  // openGTS HTTP request
         if val,_=getGPSValue(dev,matches,  ALT); len(val)>0     { query = "alt="+url.QueryEscape(val)+"&"+query }
-        if val,_=getGPSValue(dev,matches,  ACC); len(val)>0     { query = "acc="+url.QueryEscape(val)+"&"+query }       
+        if val,_=getGPSValue(dev,matches,  ACC); len(val)>0     { query = "acc="+url.QueryEscape(val)+"&"+query }
     }
 //  fmt.Println("GPRMC-record : "+query)
     return
@@ -359,19 +382,21 @@ func getKeyword(id int) string {
 
 
 func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int) {
-    isBinary := dev.Mode == "binary"    
+    isBinary := dev.Mode == "binary"
+    isBCD := dev.Mode == "bcd"
+    isHex := isBinary || isBCD
     if isVerbose { logger.Printf("GetValue for %s\n",getKeyword(key) ) }
-    if isVerbose && isBinary { logger.Printf("   Binary mode\n" ) }
+    if isVerbose && isHex { logger.Printf("   Binary/BCD mode\n" ) }
     val = ""
-    i:=0    
+    i:=0
     for i=0; i<len(dev.Order) && dev.Order[i]!=key;i++ {}
     if i<len(dev.Order) && dev.Order[i]==key && len(matches)>(i+1) { 
         val = matches[i+1]
         if isVerbose { logger.Printf("  Match:  %s\n",val ) }
         // handle bit patterns
-        if len(dev.Bits.Pat) > i && dev.Bits.Pat[i] != "" { // check for bit patterns
+        if len(dev.Bits.Pat) > i && dev.Bits.Pat[i] != "" {    // check for bit patterns
             if isVerbose { logger.Printf("   Bit pattern %s\n", dev.Bits.Pat[i]) }
-            pat, err := strconv.ParseUint(dev.Bits.Pat[i], 16, 64)  // pattern is a hex string
+            pat, err := strconv.ParseUint(dev.Bits.Pat[i], 16, 64)    // pattern is a hex string
             if err == nil {
                 value, err := strconv.ParseUint(val,16,64) // input string is expected to be hex (max 16 digits = 64bits)
                 if err == nil {
@@ -381,7 +406,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
                             if value & pat == 0  { val = res[1] } else { val = res[0] }
                         } else { val="" }
                     } else {
-                        if isBinary { 
+                        if isHex { 
                             val = fmt.Sprintf("%X",value & pat) 
                         } else {
                             val = fmt.Sprintf("%d",value & pat)
@@ -398,6 +423,9 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
         if isBinary {
             valInt,err := strconv.ParseInt(val, 16, 64)
             if err == nil { valFloat = float64(valInt) } 
+        } else if isBCD {
+            valInt,err := strconv.ParseInt(val, 10, 64)
+            if err == nil { valFloat = float64(valInt) } 
         } else { 
             valF,err := strconv.ParseFloat(val,64) 
             if err == nil { valFloat = valF } 
@@ -408,9 +436,9 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
             case TIME:  fallthrough
             case DATE:
                 isInv := len(dev.Units)>i && dev.Units[i] == INV 
-                if !isInv { // DDMMYY and hhmmss format
+                if !isInv {    // DDMMYY and hhmmss format
                     if isBinary {
-                        valByte,err := hex.DecodeString(val)
+                        valByte,err    := hex.DecodeString(val)
                         if err != nil {break}
                         val = ""
                         for _,valB := range valByte { val = val+fmt.Sprintf("%02d",valB) }
@@ -419,7 +447,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
                     }
                 } else {    // YYMMDD format
                     if isBinary {
-                        valByte,err := hex.DecodeString(val)
+                        valByte,err    := hex.DecodeString(val)
                         if err != nil {break}
                         val = ""
                         for _,valB := range valByte { val = fmt.Sprintf("%02d",valB) + val }
@@ -430,22 +458,20 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
             case ALT:
                 val = fmt.Sprintf("%d",int(valFloat))
             case ACTIVE:
-                
+ 
             case ANGLE:
                val = fmt.Sprintf("%f",valFloat)
 
             case LAT:   fallthrough
             case LON:
-                degval := valFloat
+                degval := math.Abs(valFloat)    // What about signed LAT/LON?
                 val = fmt.Sprintf("%f",degval)
-                if len(dev.Units)>i && dev.Units[i] == DEGMIN { break } // correct unit for GPRMC -> do nothing
                 if len(dev.Units)>i && dev.Units[i] == DEGREE {     // calculate degree*100 + minutes
-                    deg := float64(int(degval))     
+                    deg := float64(int(degval))
                     min := (degval - deg)*60.0;
-                    degfmt := "%02d%08.5f"
-                    if key == LON { degfmt = "%03d%08.5f" }
-                    val = fmt.Sprintf(degfmt,int(math.Abs(deg)),min)
+                    degval = deg*100.0+min
                 }
+                val = fmt.Sprintf("%.5f",degval)
             case SPEED: // get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
                 v := valFloat
                 if len(dev.Units)>i && dev.Units[i] == KMPERH   { v /= 1.852 }      // calc knots
@@ -475,7 +501,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
                 if idx > 0 && idx < len(matches) { 
                     degval,err:=strconv.ParseFloat(matches[idx],32)
                     if err == nil && degval < 0.0 { val = "W" }
-                }               
+                }
             case ACTIVE:
                 val = "A"
             case DEVIMEI:   fallthrough
@@ -484,8 +510,8 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
             default:
                 val = "0.0" // default for non-existing keys
         }
-    }   
-    return 
+    }
+    return
 }
 
 // expected response from web server: device-ID/IMEI OK|REJECTED

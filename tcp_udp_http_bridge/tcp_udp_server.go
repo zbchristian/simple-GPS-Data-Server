@@ -218,7 +218,7 @@ func handleTCPRequest(conn net.Conn) {
             response, isClose, err = handleMessage(buf[:nb], "TCP", &status)
             // Send the response
             if err == nil && len(response)>0 {
-                if isVerbose { logger.Print("Response: "+formatLogMsg(response)) }
+                logger.Print("Response: "+formatLogMsg(response))
                 conn.Write([]byte(response))
             } else if err != nil {
                 logger.Print(err.Error())
@@ -226,12 +226,11 @@ func handleTCPRequest(conn net.Conn) {
             }
         }
     }
-    if isVerbose {logger.Print("Close TCP connection ...") }
+    logger.Print("Close TCP connection ...")
 }
 
 func handleMessage(bufmsg []byte, connType string, status *statInfo) (response string, isClose bool, err error) {
     msg := strings.TrimSpace(string(bufmsg))
-	
 	if isVerbose {logger.Println("Handle message "+formatLogMsg(msg)) }
 
     // fill regexp for close/exit message
@@ -242,7 +241,9 @@ func handleMessage(bufmsg []byte, connType string, status *statInfo) (response s
     // check for close | exit
     strMatched := regexCMD.FindStringSubmatch(msg)
     if len(strMatched) > 2 {
-        if isVerbose { logger.Print("Command received via "+connType+": " + msg) }
+        if isVerbose { 
+		logger.Print("Command received via "+connType+": " + msg) 
+	}
         cmd := strMatched[1]
         isClose = cmd == "close" && connType == "TCP"
         isExit  = cmd == "exit"
@@ -269,9 +270,9 @@ func handleMessage(bufmsg []byte, connType string, status *statInfo) (response s
 		bufmsg = []byte(msg)
 	}
     logger.Print("Message via "+connType+": " + formatLogMsg(string(bufmsg)))
+    if isVerbose { logger.Printf("     Binary : %x\n",bufmsg) }
     // check if incoming message matches a known device 
     response, query, err = filter_gps_device(string(bufmsg), status)
-//    response, query, err = filter_gps_device(strings.TrimSuffix(string(bufmsg),"\n"), status)
         
     // send HTTPS request to server
     responseHTTP := ""
