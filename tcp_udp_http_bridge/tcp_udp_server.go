@@ -270,7 +270,7 @@ func handleMessage(bufmsg []byte, connType string, status *statInfo) (response s
 			if isVerbose {
 				logger.Print("close/exit message received")
 			}
-			err = errors.New("Close connection")
+			err = errors.New("close connection")
 			return
 		} else if cmd == "status" {
 			response = "OK"

@@ -52,7 +52,7 @@ const (
 	HEAD    int = iota
 	CHECK   int = iota
 	MAGN    int = iota
-	INV     int = iota
+	YYMMDD  int = iota
 )
 
 var keywords = map[string]int{
@@ -82,7 +82,7 @@ var keywords = map[string]int{
 	"HEAD":    HEAD,
 	"CHECK":   CHECK,
 	"MAGN":    MAGN,
-	"INV":     INV,
+	"YYMMDD":  YYMMDD,
 }
 
 type bitsMatch struct { // match bit pattern and define result
@@ -180,7 +180,7 @@ func readDeviceConfig(fileconf string) (err error) {
 		jsonBlob = strings.Replace(jsonBlob, "%"+key+"%", strconv.Itoa(idx), -1)
 	}
 	// find remaining keywords
-	re := regexp.MustCompile("\\%\\w+\\%")
+	re := regexp.MustCompile(`\%\w+\%`)
 	byMatch := re.Find([]byte(jsonBlob))
 	if byMatch != nil {
 		fmt.Printf("Unknown key %s found \n", string(byMatch))
@@ -372,11 +372,11 @@ func filter_gps_device(msg string, status *statInfo) (response string, query str
 				}
 			} else {
 				query = ""
-				err = errors.New("No device ID or IMEI found")
+				err = errors.New("no device ID or IMEI found")
 			}
 		}
 	} else {
-		err = errors.New("Unknown Device")
+		err = errors.New("unknown device")
 		if isVerbose {
 			logger.Print("Unknown Device")
 		}
@@ -527,7 +527,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
 		case TIME:
 			fallthrough
 		case DATE:
-			isInv := len(dev.Units) > i && dev.Units[i] == INV
+			isInv := len(dev.Units) > i && dev.Units[i] == YYMMDD
 			if !isInv { // DDMMYY and hhmmss format
 				if isBinary {
 					valByte, err := hex.DecodeString(val)
@@ -565,7 +565,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
 		case LAT:
 			fallthrough
 		case LON:
-			degval := math.Abs(valFloat)                      // What about signed LAT/LON?
+			degval := math.Abs(valFloat)                      // Sign of LAT/LON used to obtain N/S, E/W (see below)
 			if len(dev.Units) > i && dev.Units[i] == DEGREE { // calculate degree*100 + minutes
 				deg := float64(int(degval))
 				min := (degval - deg) * 60.0
@@ -574,14 +574,13 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
 			val = fmt.Sprintf("%.5f", degval)
 		case SPEED: // get value in m/s (GPRMC stores KNOTS, openGTS expects m/s)
 			v := valFloat
-			if len(dev.Units) > i && dev.Units[i] == KMPERH {
-				v /= 1.852
-			} // calc knots
-			if len(dev.Units) > i && dev.Units[i] == MPERS {
-				v *= 3.6 / 1.852
-			} // calc knots
-			if len(dev.Units) > i && dev.Units[i] == KNOTS {
-			} // nothing to do
+			if len(dev.Units) > i { // need speed in knots
+				if dev.Units[i] == KMPERH {
+					v /= 1.852
+				} else if dev.Units[i] == MPERS {
+					v *= 3.6 / 1.852
+				}
+			}
 			val = fmt.Sprintf("%.1f", v)
 		case DEVIMEI: // imei too short -> extend to 15 digits
 			if len(val) < 15 {
@@ -627,7 +626,7 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
 }
 
 // expected response from web server: device-ID/IMEI OK|REJECTED
-var regexpHTTPResponse = regexp.MustCompile("^\\s*[0-9A-Za-z]+\\s+(OK|REJECTED)\\s*")
+var regexpHTTPResponse = regexp.MustCompile(`^\s*[0-9A-Za-z]+\s+(OK|REJECTED)\s*`)
 
 func analyseHTTPResponse(response string) (ans string, err error) {
 	ans = "no valid response - check connection to HTTP server"
@@ -668,7 +667,7 @@ var preshared_key = ""
 
 func decryptMessage(msg string) (plaintxt string, err error) {
 	plaintxt = msg
-	err = errors.New("Message is not encrypted")
+	err = errors.New("message is not encrypted")
 	if len(msg) >= MIN_MSG_LEN {
 		txtcomp := strings.Split(msg, "-")
 		if len(txtcomp) == 4 {
@@ -711,7 +710,7 @@ func decryptMessage(msg string) (plaintxt string, err error) {
 			}
 			ptxt := strings.Trim(string(plain), " ")
 			if len(ptxt) < 10 {
-				err = errors.New("Message too short")
+				err = errors.New("message too short")
 			} else {
 				plaintxt = ptxt
 			}
