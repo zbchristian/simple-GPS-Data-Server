@@ -35,27 +35,29 @@ AAADAAAYAADAAAAABgAAMAAAgAEAAAwAAGAAAAADAAAYAADAAAAABgAAMAAAgAEAAAwAAGAAAAAD
 AAAGAAAwAACAAQAADAAAYAAAAAMAABgAAMAAAAAGAAAwAACAAQAADAAAYAAAAAMAABgAAMAAAAAG
 AAAMAABgAAAAAwAAGAAAwAAAAAYAADAAAIABAAAMAABgAAAAAwAAGAAA4M4CpPgG/Uzr+kEAAAAA
 SUVORK5CYII=" width="512" height="512" id="img0"/>
-  <g id="abgerundetes Quadrat/Rechteck">
-    <path fill="#ffffff" fill-rule="evenodd" d="M52.2 0.5 L457.8 0.5 C483.15 0.5 508.5 25.85 508.5 51.2 L508.5 459.8 C508.5 485.15 483.15 510.5 457.8 510.5 L52.2 510.5 C26.85 510.5 1.5 485.15 1.5 459.8 L1.5 51.2 C1.5 25.85 26.85 0.5 52.2 0.5 Z"/>
+  <g id="abgerundetes Quadrat/Rechteck" transform="matrix(1.010848 0 0 1 -1.516273 0)">
+    <path fill="#ffffff" fill-rule="evenodd" d="M51.95 0.5 L458.05 0.5 C483.27 0.5 508.5 26 508.5 51.5 L508.5 459.5 C508.5 485 483.27 510.5 458.05 510.5 L51.95 510.5 C26.73 510.5 1.5 485 1.5 459.5 L1.5 51.5 C1.5 26 26.73 0.5 51.95 0.5 Z"/>
   </g>
-  <g transform="matrix(0.86 0 0 0.714068 -176.823944 -26.196895)">
+  <g transform="matrix(1 0 0 1 0 5.978027)">
+    <g id="Kreis/Ellipse" transform="matrix(0.880358 0 0 0.622223 137.425827 200.544311)">
+      <path transform="matrix(1.135897 0 0 1.607142 -156.10202 -322.30252)" stroke-width="24" stroke-miterlimit="10" fill-rule="evenodd" stroke="#000000" d="M221.5 462.5 C221.5 454.77 236.5 448.5 254.95 448.5 C273.41 448.5 288.41 454.77 288.41 462.5 C288.41 470.22 273.41 476.5 254.95 476.5 C236.5 476.5 221.5 470.22 221.5 462.5 Z"/>
+    </g>
+    <g transform="matrix(0.927711 0 0 0.001 -6.433735 464.040496)">
+      <path transform="matrix(1.077922 0 0 1000 6.935067 -464040.5625)" stroke-width="30" stroke-linecap="round" stroke-miterlimit="10" fill="none" stroke="#000000" d="M26.5 464.5 L180.5 464.5"/>
+    </g>
+    <g transform="matrix(0.921687 0 0 0.999969 296.78012 3.983093)">
+      <path transform="matrix(1.084967 0 0 1.000031 -321.996765 -4.022063)" stroke-width="30" stroke-linecap="round" stroke-miterlimit="10" fill="none" stroke="#000000" d="M329.5 463.51 L482.5 464.51"/>
+    </g>
+  </g>
+  <g transform="matrix(0.897564 0 0 0.591112 -195.744674 -8.066405)">
     <g transform="matrix(-1.029259 0 0 1.081926 1015.105224 -58.074417)">
-      <path transform="matrix(-0.971571 0 0 0.924277 -36.490539 558.343872)" stroke-width="40" stroke-miterlimit="10" fill="none" stroke="#000000" d="M-356.6 -274.7 C-359.36 -144.39 -545.3 145.18 -545.3 145.18 M-748.85 -273.95 C-746.07 -143.88 -558.02 145.18 -558.02 145.18 M-748.76 -273.25 C-749.17 -278.25 -749.38 -283.3 -749.38 -288.41 C-749.38 -393.26 -661.23 -478.43 -552.71 -478.43 C-444.18 -478.43 -356.03 -393.26 -356.03 -288.41 C-356.03 -283.26 -356.24 -278.16 -356.66 -273.11 M-552.71 -98.38"/>
+      <path transform="matrix(-0.971571 0 0 0.924277 -36.490539 558.343872)" stroke-width="50" stroke-miterlimit="10" fill="none" stroke="#000000" d="M-356.6 -274.7 C-359.36 -144.39 -545.3 145.18 -545.3 145.18 M-748.85 -273.95 C-746.07 -143.88 -558.02 145.18 -558.02 145.18 M-748.76 -273.25 C-749.17 -278.25 -749.38 -283.3 -749.38 -288.41 C-749.38 -393.26 -661.23 -478.43 -552.71 -478.43 C-444.18 -478.43 -356.03 -393.26 -356.03 -288.41 C-356.03 -283.26 -356.24 -278.16 -356.66 -273.11 M-552.71 -98.38"/>
     </g>
     <g id="Quadrat/Rechteck">
-      <path fill-rule="evenodd" d="M498.2 666.13 L525.67 699.75 L501.25 739.58 L469.72 689.23 Z"/>
+      <path fill-rule="evenodd" d="M498.15 666.18 L528.89 703.81 L501.88 751.72 L465.98 692.27 Z"/>
     </g>
-    <g id="Kreis/Ellipse" transform="matrix(1.28814 0 0 1.46815 -175.508377 -101.676452)">
-      <path transform="matrix(0.776311 0 0 0.681127 380.931823 298.231353)" stroke-width="30" stroke-miterlimit="10" fill="none" stroke="#000000" d="M105.07 -52.46 C105.07 -102.69 140.87 -143.48 184.94 -143.48 C229 -143.48 264.8 -102.69 264.8 -52.46 C264.8 -2.23 229 38.57 184.94 38.57 C140.87 38.57 105.07 -2.23 105.07 -52.46 Z"/>
-    </g>
-    <g transform="matrix(1.113237 0 0 1.360353 207.311569 73.715286)">
-      <path transform="matrix(1.014571 0 0 0.999947 -0.81686 -25.830848)" stroke-width="30" stroke-miterlimit="10" fill="none" stroke="#000000" d="M138.3 176.34 L192.04 176.78 L194.83 176.81 M329.1 177.91 M329.1 177.91 L380.77 178.34"/>
-    </g>
-    <g transform="matrix(0.840906 0 0 1.519148 287.985168 52.678596)">
-      <path transform="matrix(1.343139 0 0 0.895423 -92.628929 -9.610344)" stroke-width="30" stroke-miterlimit="10" fill="none" stroke="#000000" d="M257.7 70.48 L257.22 118.3 M255.85 253.7 M255.85 253.7 L255.47 291.61"/>
-    </g>
-    <g id="Kreis/Ellipse" transform="matrix(1.129458 0 0 1.360281 213.747116 67.667907)">
-      <path transform="matrix(1 0 0 1 -3.234741 -21.752166)" stroke-width="13" stroke-miterlimit="10" fill-rule="evenodd" stroke="#000000" d="M238.6 179.78 C238.6 170.07 246.48 162.19 256.19 162.19 C265.89 162.19 273.78 170.07 273.78 179.78 C273.78 189.48 265.89 197.37 256.19 197.37 C246.48 197.37 238.6 189.48 238.6 179.78 Z"/>
+    <g id="Kreis/Ellipse" transform="matrix(1.110571 0 0 1.592062 -82.872741 -124.876739)">
+      <path transform="matrix(0.900433 0 0 0.628111 319.304168 307.413696)" stroke-width="30" stroke-miterlimit="10" fill-rule="evenodd" stroke="#000000" d="M159.03 -71.51 C159.03 -125.97 189.89 -170.21 227.89 -170.21 C265.88 -170.21 296.74 -125.97 296.74 -71.51 C296.74 -17.04 265.88 27.2 227.89 27.2 C189.89 27.2 159.03 -17.04 159.03 -71.51 Z"/>
     </g>
   </g>
 </svg>
