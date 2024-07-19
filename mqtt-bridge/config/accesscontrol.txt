@@ -1,0 +1,7 @@
+# admin has full access
+user gpsadmin
+topic readwrite #
+
+# devices can only write data
+user gps
+topic write #

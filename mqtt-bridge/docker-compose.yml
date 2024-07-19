@@ -28,7 +28,7 @@ services:
       MQTT_PORT: 1883
       MQTT_USER: gps
       MQTT_PW: ${MQTT_PW}
-      MQTT_TOPIC: owntracks/gps
+      MQTT_TOPIC: owntracks
       TCP_SERVER: example.tld
       TCP_PORT: 20202
       PSK_ENC: ${MQTT_ENC_SECRET}

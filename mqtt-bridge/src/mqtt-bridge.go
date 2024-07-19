@@ -9,10 +9,13 @@
 // https://owntracks.org/booklet/tech/json/
 //
 // output format
-// id/date,time,latitude,longitude,altitude,velocity
+// id/date,time,latitude,longitude,altitude,velocity,accuracy
 // example
-// k08844/150622,154343,43.2127445,6.0005451,483,0.0
+// k08844/150622,154343,43.2127445,6.0005451,483,0.0,5
 //
+// encrypted payload _type = "encrypted" can be decrypted. Requires the preshared key used by the devices
+//
+// CZ 2022 - 2024
 
 package main
 
