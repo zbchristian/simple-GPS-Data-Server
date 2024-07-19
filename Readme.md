@@ -75,7 +75,7 @@ Tracking devices
      * set distance bewteen data points: send no data, when distance is below a certain limit (e.g. 10m)
      * activate "stop recording, if no movement is detected"
 * Owntracks client APP
-  * The app sends the position data to a MQTT server (can be encrypted). Topic: `owntracks/<username>`
+  * The app sends the position data to a MQTT server (can be encrypted). Topic: `owntracks/<username>` e.g. `owntracks/gps`
   * A bridge code, which extracts the data from the MQTT server and sends them to the Simple GPS Data Server, is available under `mqtt-bridge`
   * The example includes the MQTT server as well
   * This is a pure docker implementation
