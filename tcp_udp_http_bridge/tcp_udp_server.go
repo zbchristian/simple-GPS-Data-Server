@@ -321,7 +321,7 @@ func formatLogMsg(msg string) string {
 }
 
 func isASCII(s string) bool {
-	s = strings.TrimSuffix(s, "\n")
+	s = strings.TrimRight(s, "\r\n")
 	sval := []byte(s)
 	for i := 0; i < len(sval); i++ {
 		if sval[i] > 0x7d || sval[i] < 0x20 {
