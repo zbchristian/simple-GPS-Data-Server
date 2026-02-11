@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 	"math"
 	"net/url"
 	"os"
@@ -43,6 +44,8 @@ const (
 	DATE    int = iota
 	ALT     int = iota
 	ACC     int = iota
+	DATENOW int = iota
+	TIMENOW int = iota
 	LASTKEY int = iota
 	DEGMIN  int = iota
 	KMPERH  int = iota
@@ -83,6 +86,8 @@ var keywords = map[string]int{
 	"CHECK":   CHECK,
 	"MAGN":    MAGN,
 	"YYMMDD":  YYMMDD,
+	"DATENOW":  DATENOW,
+	"TIMENOW":  TIMENOW,
 }
 
 type bitsMatch struct { // match bit pattern and define result
@@ -115,8 +120,7 @@ type devPattern struct {
 // regular expression for GPRMC record w/o header, magnetic deviation and checksum
 const (
 	REGEXP_GPRMC = "(([0-9]{6}),([A|V]*),([0-9.]+),([N|S]),([0-9.]+),([E|W]),([0-9.]+),([0-9.]+),([0-9]{6}))"
-
-// time  active/void    lat               lon                 speed   angle    date
+//                     time    active/void   lat             lon               speed      angle    date
 )
 
 // Items associated with GPRMC regex
@@ -130,7 +134,10 @@ var devs []devPattern
 // how to define device patterns:
 // - add new devices to devices.conf
 // - regexp pattern required for login, heartbeat and actual data message
-// - for each case a response can be defined. Currently NO dynamic response possible
+// - for each case a response can be defined.
+// -  response can contain parts of the incoming msg, which are tagged (e.g. TIME, DATE or apecial tags S1, S2, S3)
+// -  current date and time can be placed into the response as well (TIMENOW, DATENOW)
+// -  all tags in the response have t be encölosed in "\\"
 // - in each case the device has to be identified by the IMEI or a deviceid
 // - for data message
 //  o if device sends a GPRMC record, use the predefined constant (see above)
@@ -618,6 +625,12 @@ func getGPSValue(dev MsgPattern, matches []string, key int) (val string, idx int
 			fallthrough
 		case DEVID:
 			val = ""
+		case DATENOW:
+			dtnow := time.Now()
+ 			val = dtnow.UTC().Format("020106")
+		case TIMENOW:
+			dtnow := time.Now()
+			val = dtnow.UTC().Format("150405")
 		default:
 			val = "0.0" // default for non-existing keys
 		}
@@ -657,7 +670,8 @@ func analyseHTTPResponse(response string) (ans string, err error) {
 const (
 	ENC_HEADER      = "$enc$"
 	PASSWORD        = ""
-	MIN_MSG_LEN     = 128 + 8 + 24
+//	MIN_MSG_LEN     = 128 + 8 + 24
+	MIN_MSG_LEN     = 120
 	ITERATION_COUNT = 10000
 	KEY_LENGTH      = 128 / 8 // key length in bytes
 
