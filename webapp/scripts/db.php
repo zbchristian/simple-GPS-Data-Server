@@ -76,7 +76,7 @@ function cleanup_table_db($devno,$hist) {
         $res=$db->query('SELECT count(*) FROM "'.$table.'"');       // check if table is empty
         $cnt=$res->fetchArray();
         $res->finalize();
-        if($cnt['count(*)'] == 0) $db->query('DROP TABLE IF EXISTS "'.$table.'"'); // remove empty table
+        if($cnt[0] && check_db("") ) $db->query('DROP TABLE IF EXISTS "'.$table.'"'); // remove empty table
     }
 }
 
