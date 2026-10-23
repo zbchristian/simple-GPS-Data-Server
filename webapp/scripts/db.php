@@ -80,31 +80,10 @@ function cleanup_table_db($devno,$hist) {
     }
 }
 
-// remove all entries in DB which are older than $history days
-/*function cleanup_db($history) {
-    global $db,$devicelist_tbl;;
-    if(!check_db("")) return false;
-    $now=gmdate("c",time());    // current date/time UTC
-    $date=gmdate("c",strtotime("-$history days",strtotime($now)));  // subtract history time
-    $res = $db->query("SELECT name FROM sqlite_master WHERE type='table';");    // get list of tables
-    if($res === false) return false;
-    $tables=array();
-    while ($table = $res->fetchArray()) $tables[] = $table["name"];
-    $res->finalize();
-    foreach($tables as $i => $table) {  // loop over tables
-        if($table === "sqlite_sequence") continue;  // ignore sqlite internal table
-        if($table === $devicelist_tbl) continue;    // ignore device list
-        $db->query('DELETE FROM "'.$table.'" WHERE tstamp < "'.$date.'"');  // delete old entries
-        $res=$db->query('SELECT count(*) FROM "'.$table.'"');       // check if table is empty
-        $cnt=$res->fetchArray();
-        $res->finalize();
-        if($cnt['count(*)'] == 0) $db->query('DROP TABLE IF EXISTS "'.$table.'"'); // remove empty table
-    }
-} */
-
 function gps_tablename($devno) { return  "devno_".$devno; }
 
 define("TIME1024WEEKS",1024*7*24*60*60);
+
 function insert_gps_db($data) {
     global $db;
     if(!sanity_check_gps($data)) return false;
@@ -116,16 +95,37 @@ function insert_gps_db($data) {
     if(abs(time()-$ts-TIME1024WEEKS) < 86400) { // 1024 weeks difference +- 1 day
         $ts += TIME1024WEEKS;
     }
-    $tstamp= gmdate('c',$ts);
-    $tstored= gmdate('c',strtotime($data["tstored"]));
+    $tstamp = $data["tstamp"] = gmdate('c',$ts);
+    $tstored = gmdate('c',strtotime($data["tstored"]));
     // check for already existing entry (same tstamp) and ignore
-    if(!val_exists_db($tbl_name,"tstamp",$tstamp)) {
+    if(!val_exists_db($tbl_name,"tstamp",$tstamp) && valid_gps_data($tbl_name,$data)) {
         $db->exec('INSERT INTO "'.$tbl_name.'" (tstamp,tstored,lat,lon,alt,acc,spd) VALUES
             ("'.$tstamp.'","'.$tstored.'",'.$data["lat"].','.$data["lon"].','.$data["alt"].','.$data["acc"].','.$data["spd"].')' );
         if(($id=$db->lastInsertRowid()) == 0) return false;
 //      echo "<h2>Insert ID $id</h2>";
     }
     return true;
+}
+
+// check for valid tstamp. Has to be later than previous $N entries, to ensure monotonic time order
+function valid_gps_data($tbl_name,$data) {
+    global $db;
+    if(!check_db($tbl_name)) die("<h2>No data available</h2>");
+
+    $N=10; // number of previous entries to compare with
+
+    if(isset($data["id"]) && $data["id"]>0 )
+            $results = $db->query('SELECT * FROM "'.$tbl_name.'" WHERE id<'.$data["id"].' ORDER BY id DESC LIMIT '.$N);
+    else
+            $results = $db->query('SELECT * FROM "'.$tbl_name.'" ORDER BY id DESC LIMIT '.$N);
+    $valid = true;
+    if($results !== false) {
+        $valid=false;
+        while (!$valid &&  ($row = $results->fetchArray())) {
+            $valid = (strtotime($data["tstamp"]) - strtotime($row["tstamp"])) > 0;
+        }
+    }
+    return $valid;
 }
 
 function retrieve_gps_db($devno,$enddate,$dt="24") {
@@ -136,15 +136,16 @@ function retrieve_gps_db($devno,$enddate,$dt="24") {
     if(!is_numeric($dt)) return false;
     $enddate= gmdate('c',strtotime($enddate));
     $startdate= gmdate('c',strtotime("-$dt min",strtotime($enddate)));
-    $results = $db->query('SELECT tstamp,lat,lon,alt,acc,spd FROM "'.$tbl.'" WHERE tstamp BETWEEN "'.$startdate.'" AND "'.$enddate.'" ORDER BY tstamp ASC');
+    $results = $db->query('SELECT id,tstamp,tstored,lat,lon,alt,acc,spd FROM "'.$tbl.'" WHERE tstamp BETWEEN "'.$startdate.'" AND "'.$enddate.'" ORDER BY tstamp ASC');
     $n=0;
     $gps=array();
     if($results !== false) {
         while ($row = $results->fetchArray()) {
-            if(!isset($row["tstamp"])||!isset($row["lat"])||!isset($row["lon"])||!isset($row["alt"])||!isset($row["acc"])) continue;
+            if(!isset($row["tstamp"])||!isset($row["lat"])||!isset($row["lon"])||!isset($row["alt"])||!isset($row["acc"])||!isset($row["ID"])) continue;
             $gps[$n]["lat"] = $row["lat"];
             $gps[$n]["lon"] = $row["lon"];
             $gps[$n]["time"]= $row["tstamp"];
+            $gps[$n]["id"]= $row["ID"];
             if(isset($row["alt"]) && $row["alt"] > -10000) $gps[$n]["alt"] = number_format($row["alt"],0,".","");
             if(isset($row["acc"]) && $row["acc"]>= 0) $gps[$n]["acc"]= number_format($row["acc"],0,".","");
             if(isset($row["spd"]) && $row["spd"]>= 0) $gps[$n]["spd"]= number_format($row["spd"],1,".","");

@@ -102,11 +102,13 @@ function create_gpx_data($devno,$gps) {
     $ntrk=0;
     $lspd = -999.0;
     foreach($gps as $i => $row) {
+        $row["tstamp"] = $row["time"];
         $row["time"]=gpx_time($row["time"]);
         // remove consecutive entries  with exact same positions
         if($i>0 && $llon == $row["lon"] && $llat == $row["lat"]) continue;
         // remove consecutive points with speed = 0 
         if($i>0 && $lspd == 0.0 && isset($row["spd"]) && $row["spd"] == 0.0) continue;
+
         if(!empty($tlast) && (strtotime($row["time"])-strtotime($tlast)) > $SplitTrackSec ) {
             $gpx .= '</trkseg></trk>';
             if($i>1) {
@@ -279,12 +281,13 @@ function correctDate($inputs) {
     return $date;
 }
 
-function  distanceInMeters($lon1,$lat1,$lon2,$lat2) {
-    define("NM",1852);      // nautical mile in m
-    define("mPerDeg",60*NM);    // meter per degree (longitude only at aquator)
-    $mlon1 = mPerDeg*cos(deg2rad($lat1));
-    $mlon2 = mPerDeg*cos(deg2rad($lat2));
-    $mlat1 = mPerDeg*$lat1;
-    $mlat2 = mPerDeg*$lat2;
-    return sqrt(pow(mlon1-mlat1,2)+pow(mlon2-mlat2,2));
+// Calculate simplified 2D distance between GPS coordinates in meters
+// Precision depends on the longitude difference and is below 1% up to 3 degrees.
+function distanceInMeters($lon1,$lat1,$lon2,$lat2) {
+    define("LOC_R_EARTH", 6371);
+    define("LOC_DEG2RAD", (3.1415926536 / 180));
+    $d_lat = ($lat1 - $lat2)*LOC_DEG2RAD*1000.0;  // scale diffs by 1000 to avoid too small squares
+    $d_lon = ($lon1 - $lon2)*LOC_DEG2RAD*cos($lat1*LOC_DEG2RAD)*1000.0;  // correction for distance to earth axis for given latitude 
+
+    return sqrt($d_lat*$d_lat + $d_lon*$d_lon)*LOC_R_EARTH*(1000.0/1000.0);  // scale by 1000 to get meters/remove above scale
 }
