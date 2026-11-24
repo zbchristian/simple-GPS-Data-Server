@@ -119,11 +119,11 @@ function valid_gps_data($tbl_name,$data) {
     else
             $results = $db->query('SELECT * FROM "'.$tbl_name.'" ORDER BY id DESC LIMIT '.$N);
     $valid = true;
-    if($results !== false) {
+    if($results !== false && ($row = $results->fetchArray()) ) {
         $valid=false;
-        while (!$valid &&  ($row = $results->fetchArray())) {
+        do {
             $valid = (strtotime($data["tstamp"]) - strtotime($row["tstamp"])) > 0;
-        }
+        } while (!$valid &&  ($row = $results->fetchArray()));
     }
     return $valid;
 }
